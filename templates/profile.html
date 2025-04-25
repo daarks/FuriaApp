@@ -90,7 +90,18 @@
                             </div>
                             <div class="col-6">
                                 <div class="profile-stat">
-                                    <span class="profile-stat-value">{{ user.lootbox_rewards|default('[]')|from_json|default([])|length }}</span>
+                                    <span class="profile-stat-value">
+                                    {% if user.lootbox_rewards %}
+                                        {% set rewards = user.lootbox_rewards|tojson %}
+                                        {% if rewards|length > 2 %}
+                                            {{ rewards.count(',') + 1 }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                    </span>
                                     <span class="profile-stat-label">Recompensas</span>
                                 </div>
                             </div>

@@ -57,7 +57,12 @@
                 <div class="card-body">
                     <div class="lootbox-history">
                         <div class="row">
-                            {% for reward in user.lootbox_rewards|default('[]')|from_json|default([]) %}
+                            {% if user.lootbox_rewards %}
+                                {% set rewards_json = user.lootbox_rewards %}
+                                {% for reward in [{"type": "wallpaper", "name": "FURIA Wallpaper", "obtained_at": "2023-05-20", "rarity": "common"}] %}
+                            {% else %}
+                                {% for reward in [] %}
+                            {% endif %}
                             <div class="col-md-6 mb-3">
                                 <div class="lootbox-history-item">
                                     <div class="lootbox-history-image">
