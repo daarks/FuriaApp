@@ -1,0 +1,21 @@
+Crie um aplicativo web usando Python com Flask, integrado com HTML, CSS e JavaScript, que implemente a estratégia Know Your Fan para fãs de esports, com foco na FURIA. O aplicativo deve conter as seguintes funcionalidades:
+
+Cadastro de Usuário: formulário para coletar nome completo, endereço, CPF, e-mail, data de nascimento, interesses relacionados a esports, atividades e eventos de esports frequentados no último ano e compras relacionadas a esports feitas no mesmo período.
+
+Upload e Validação de Documentos: permitir o upload de imagens de documentos (como RG ou CNH) e realizar uma validação automática simulada, usando OCR ou AI, para identificar nome e CPF e comparar com os dados cadastrados.
+
+Integração com Redes Sociais: campos para o usuário informar links de perfis no Twitter, Instagram, Twitch, etc. Simule a leitura de interações, hashtags usadas e páginas seguidas relacionadas a esports e à FURIA. Com base nisso, exiba um badge personalizado para o usuário (como “Super Fã” ou “Fã Casual”).
+
+Validação de Links de Conteúdo: permitir que o usuário cole links de artigos, vídeos ou perfis de esports e simular a validação do conteúdo via AI, verificando se é relevante ao perfil do fã por meio de palavras-chave e porcentagem de compatibilidade.
+
+Além das funcionalidades básicas, adicione as seguintes features criativas e inéditas para potencializar a estratégia Know Your Fan:
+
+Match de Perfil Esportista: com base nos interesses e histórico do usuário, sugerir qual jogador ou streamer da FURIA ele mais se parece, exibindo uma bio e imagem do jogador.
+
+Agenda Personalizada de Esports: um calendário de eventos esportivos que mostre apenas os eventos compatíveis com os interesses do usuário e permita favoritar eventos.
+
+Relatório de Fan Power: um painel com gráficos simulados mostrando o nível de engajamento do fã nas redes sociais, participação em eventos e consumo de conteúdo relevante, classificando-o como “Super Fã”, “Intermediário” ou “Novato”.
+
+Lootbox Virtual: uma lootbox diária onde o usuário pode abrir e ganhar brindes fictícios como wallpapers, gifs exclusivos ou descontos simulados.
+
+Quiz Personalizado: um quiz de perguntas rápidas sobre a FURIA e esports, com pontuação e categorização do fã (casual, intermediário ou especialista), armazenando o resultado no perfil do usuário.
