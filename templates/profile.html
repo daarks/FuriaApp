@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+
+{% block title %}Meu Perfil - FURIA Know Your Fan{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="profile-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-2 col-sm-3 text-center text-md-start mb-3 mb-md-0">
+                <div class="profile-avatar mx-auto mx-md-0">
+                    {% if user.player_match %}
+                    <img src="{{ user.player_image }}" alt="Avatar" class="img-fluid rounded-circle">
+                    {% else %}
+                    <i class="fas fa-user-circle fa-5x text-furia-primary"></i>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-7 col-sm-9">
+                <h1>{{ user.name }}</h1>
+                
+                <div class="mb-2">
+                    <span class="fan-badge fan-badge-{{ fan_badge|lower|replace(' ', '-')|replace('ã', 'a') }}">
+                        {{ fan_badge }}
+                    </span>
+                </div>
+                
+                <p class="mb-1"><i class="fas fa-envelope me-2"></i> {{ user.email }}</p>
+                <p class="mb-0"><i class="fas fa-calendar me-2"></i> Membro desde {{ user.registration_date.strftime('%d/%m/%Y') }}</p>
+            </div>
+            <div class="col-md-3 mt-3 mt-md-0 text-center text-md-end">
+                <a href="{{ url_for('document_validation') }}" class="btn btn-outline-primary mb-2 d-block d-md-inline-block">
+                    <i class="fas fa-id-card me-2"></i> Validar Documento
+                </a>
+                <a href="{{ url_for('social_media') }}" class="btn btn-outline-secondary d-block d-md-inline-block">
+                    <i class="fas fa-hashtag me-2"></i> Conectar Redes
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-lg-4 mb-4">
+            <div class="card bg-furia-grey h-100">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-user me-2"></i> Informações do Perfil</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Document Status -->
+                    <div class="mb-4">
+                        <h5 class="text-furia-secondary">Status do Documento</h5>
+                        {% if document %}
+                            {% if document.validation_status == 'verified' %}
+                            <div class="document-status document-status-verified">
+                                <i class="fas fa-check-circle me-2"></i> Documento verificado
+                            </div>
+                            {% elif document.validation_status == 'rejected' %}
+                            <div class="document-status document-status-rejected">
+                                <i class="fas fa-times-circle me-2"></i> Verificação falhou
+                                <a href="{{ url_for('document_validation') }}" class="btn btn-sm btn-outline-primary mt-2">Tentar novamente</a>
+                            </div>
+                            {% else %}
+                            <div class="document-status document-status-pending">
+                                <i class="fas fa-clock me-2"></i> Verificação pendente
+                            </div>
+                            {% endif %}
+                        {% else %}
+                        <div class="document-status document-status-pending">
+                            <i class="fas fa-exclamation-circle me-2"></i> Documento não enviado
+                            <a href="{{ url_for('document_validation') }}" class="btn btn-sm btn-outline-primary mt-2">Validar agora</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Profile Stats -->
+                    <div class="profile-stats mb-4">
+                        <h5 class="text-furia-secondary">Estatísticas</h5>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="profile-stat">
+                                    <span class="profile-stat-value">{{ user.quiz_score|default(0) }}/5</span>
+                                    <span class="profile-stat-label">Quiz Score</span>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="profile-stat">
+                                    <span class="profile-stat-value">{{ social_media.engagement_score|default(0)|round|int if social_media else 0 }}%</span>
+                                    <span class="profile-stat-label">Engajamento</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="profile-stat">
+                                    <span class="profile-stat-value">{{ user.lootbox_rewards|default('[]')|length }}</span>
+                                    <span class="profile-stat-label">Recompensas</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="profile-stat">
+                                    <span class="profile-stat-value">{{ player_match|default('N/A') }}</span>
+                                    <span class="profile-stat-label">Match</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Interests -->
+                    <div class="mb-3">
+                        <h5 class="text-furia-secondary">Interesses</h5>
+                        {% if interests %}
+                        <div class="d-flex flex-wrap">
+                            {% for interest in interests %}
+                            <span class="badge bg-furia-secondary text-dark me-2 mb-2">{{ interest.interest }}</span>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted">Nenhum interesse registrado</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="#" class="btn btn-sm btn-outline-secondary">Editar Perfil</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Grid -->
+        <div class="col-lg-8">
+            <h3 class="mb-3">Recursos Exclusivos</h3>
+            <div class="row g-3">
+                <!-- Player Match Card -->
+                <div class="col-md-6">
+                    <div class="card bg-furia-grey h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-user me-2"></i> Match de Jogador</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if user.player_match %}
+                            <div class="text-center mb-3">
+                                <img src="{{ user.player_image }}" alt="{{ user.player_match }}" class="img-fluid rounded" style="max-height: 120px;">
+                                <h5 class="mt-2 text-furia-primary">{{ user.player_match }}</h5>
+                            </div>
+                            <p class="small">{{ user.player_bio|truncate(100) }}</p>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-user-circle fa-3x text-furia-primary mb-3"></i>
+                                <p>Complete seu perfil para descobrir com qual jogador da FURIA você mais se parece!</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('player_match') }}" class="btn btn-sm btn-primary">Ver Detalhes</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fan Power Card -->
+                <div class="col-md-6">
+                    <div class="card bg-furia-grey h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i> Fan Power</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="progress mb-3" style="height: 10px;">
+                                {% if social_media %}
+                                <div class="progress-bar bg-furia-primary" role="progressbar" style="width: {{ social_media.engagement_score }}%"></div>
+                                {% else %}
+                                <div class="progress-bar bg-furia-primary" role="progressbar" style="width: 0%"></div>
+                                {% endif %}
+                            </div>
+                            {% if social_media %}
+                            <h4 class="text-furia-secondary">{{ social_media.engagement_score|round|int }}%</h4>
+                            <p>Nível de engajamento com a FURIA e esports</p>
+                            {% else %}
+                            <i class="fas fa-chart-line fa-3x text-furia-primary mb-3"></i>
+                            <p>Conecte suas redes sociais para ver seu nível de engajamento!</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('fan_power') }}" class="btn btn-sm btn-primary">Ver Detalhes</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Calendar Card -->
+                <div class="col-md-6">
+                    <div class="card bg-furia-grey h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-calendar me-2"></i> Calendário</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Veja os próximos eventos de esports baseados nos seus interesses.</p>
+                            <div class="upcoming-events">
+                                <div class="small text-furia-secondary mb-1">Próximos Eventos:</div>
+                                <ul class="list-unstyled">
+                                    <li class="mb-1">
+                                        <i class="fas fa-gamepad me-1"></i> BLAST Premier Fall Finals
+                                    </li>
+                                    <li class="mb-1">
+                                        <i class="fas fa-gamepad me-1"></i> IEM Katowice 2024
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-gamepad me-1"></i> CBCS Elite League
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('calendar') }}" class="btn btn-sm btn-primary">Ver Calendário</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lootbox Card -->
+                <div class="col-md-6">
+                    <div class="card bg-furia-grey h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-box-open me-2"></i> Lootbox</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if user.last_lootbox_date and user.last_lootbox_date == now().date() %}
+                            <div class="mb-3">
+                                <i class="fas fa-box-open fa-3x text-furia-primary"></i>
+                                <i class="fas fa-check text-success"></i>
+                            </div>
+                            <p>Você já abriu sua lootbox hoje!</p>
+                            <p class="small text-muted">Volte amanhã para novas recompensas</p>
+                            {% else %}
+                            <div class="mb-3">
+                                <i class="fas fa-box-open fa-3x text-furia-primary"></i>
+                            </div>
+                            <p>Sua lootbox diária está disponível!</p>
+                            <p class="small text-muted">Abra para ganhar recompensas exclusivas</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('lootbox') }}" class="btn btn-sm btn-primary">Abrir Lootbox</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Content Validation Card -->
+                <div class="col-md-6">
+                    <div class="card bg-furia-grey h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-link me-2"></i> Validação de Conteúdo</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Compartilhe links de conteúdo relacionado a esports e veja a relevância para seu perfil.</p>
+                            <div class="input-group mt-3">
+                                <input type="text" class="form-control" placeholder="Cole o link aqui" disabled>
+                                <button class="btn btn-outline-primary" type="button" disabled>Validar</button>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('content_validation') }}" class="btn btn-sm btn-primary">Validar Conteúdo</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quiz Card -->
+                <div class="col-md-6">
+                    <div class="card bg-furia-grey h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i> Quiz</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if user.quiz_score %}
+                            <div class="quiz-result mb-3">
+                                <div class="quiz-score display-6 text-furia-secondary">{{ user.quiz_score }}/5</div>
+                                <div class="quiz-level">{{ user.quiz_level }}</div>
+                            </div>
+                            <p>Teste seus conhecimentos novamente!</p>
+                            {% else %}
+                            <i class="fas fa-question-circle fa-3x text-furia-primary mb-3"></i>
+                            <p>Teste seus conhecimentos sobre a FURIA e esports!</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('quiz') }}" class="btn btn-sm btn-primary">Fazer Quiz</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 120">
+  <style>
+    .logo-black {
+      fill: #0c0c0c;
+    }
+    .logo-primary {
+      fill: #ff0057;
+    }
+    .logo-secondary {
+      fill: #00ffb7;
+    }
+    .logo-white {
+      fill: #ffffff;
+    }
+  </style>
+  <rect class="logo-black" width="300" height="120" rx="5" />
+  <path class="logo-primary" d="M150 20 L110 100 L114 100 L150 28 L186 100 L190 100 L150 20 Z" />
+  <path class="logo-primary" d="M76 40 L76 80 L124 80 L124 76 L80 76 L80 44 L124 44 L124 40 Z" />
+  <path class="logo-primary" d="M176 40 L176 80 L224 80 L224 76 L180 76 L180 44 L224 44 L224 40 Z" />
+  <path class="logo-white" d="M97 50 L97 70 L103 70 L103 50 Z" />
+  <path class="logo-white" d="M197 50 L197 70 L203 70 L203 50 Z" />
+  <path class="logo-secondary" d="M150 58 L135 85 L165 85 L150 58 Z" />
+  <text x="150" y="105" font-family="Arial, sans-serif" font-weight="bold" font-size="14" text-anchor="middle" class="logo-white">FURIA</text>
+</svg>

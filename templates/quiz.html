@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz de Esports - FURIA Know Your Fan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .quiz-option {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .quiz-option:hover {
+        background-color: var(--furia-primary);
+    }
+    
+    .quiz-option.selected {
+        background-color: var(--furia-primary);
+    }
+    
+    .unanswered-highlight {
+        animation: highlight-pulse 1s ease-in-out 3;
+    }
+    
+    @keyframes highlight-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 0, 87, 0.5); }
+        70% { box-shadow: 0 0 0 10px rgba(255, 0, 87, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 0, 87, 0); }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="mb-4"><i class="fas fa-question-circle me-2"></i> Quiz FURIA</h1>
+            
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i> Teste seus conhecimentos sobre a FURIA e o cenário de esports!
+            </div>
+            
+            {% if user.quiz_score %}
+            <div class="card bg-furia-grey mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Seu Histórico</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <div class="quiz-result">
+                                <div class="quiz-score display-4 text-furia-secondary">{{ user.quiz_score }}/5</div>
+                                <div class="quiz-level h4">{{ user.quiz_level }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="quiz-history">
+                                <h5 class="text-furia-secondary mb-3">Suas Tentativas</h5>
+                                {% if quiz_results %}
+                                <div class="quiz-history-chart-container" style="height: 200px;">
+                                    <canvas id="quiz-history-chart" data-quiz-results='{{ quiz_results|tojson }}'></canvas>
+                                </div>
+                                {% else %}
+                                <p>Sem histórico de tentativas anteriores.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div id="quiz-alerts"></div>
+            
+            {% if quiz_results and quiz_results|length > 0 and quiz_results[0].score == 5 %}
+            <div id="quiz-result" class="card bg-furia-grey mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Resultado Perfeito!</h3>
+                </div>
+                <div class="card-body text-center py-5">
+                    <div class="quiz-score display-1 text-furia-secondary mb-3" data-score="5">5</div>
+                    <div class="quiz-level h3 text-furia-primary mb-4">Expert</div>
+                    <p class="lead">Parabéns! Você acertou todas as perguntas e demonstrou um conhecimento excepcional sobre a FURIA e esports!</p>
+                    <a href="{{ url_for('quiz') }}" class="btn btn-primary mt-3">Jogar Novamente</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="card bg-furia-grey mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Teste Seus Conhecimentos</h3>
+                </div>
+                <div class="card-body">
+                    <div id="quiz-intro">
+                        <p class="mb-4">Este quiz contém 5 perguntas sobre a FURIA e o cenário de esports. Responda corretamente para aumentar seu nível de fã!</p>
+                        
+                        <h4 class="text-furia-secondary mb-3">Como Funciona:</h4>
+                        <ul class="mb-4">
+                            <li>Cada pergunta tem 4 opções de resposta</li>
+                            <li>Apenas uma resposta está correta</li>
+                            <li>Receba uma classificação baseada na sua pontuação:
+                                <ul>
+                                    <li>0-1 acertos: Fã Casual</li>
+                                    <li>2-3 acertos: Fã Intermediário</li>
+                                    <li>4-5 acertos: Fã Especialista</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        
+                        <div class="d-grid">
+                            <button id="start-quiz" class="btn btn-primary">Iniciar Quiz</button>
+                        </div>
+                    </div>
+                    
+                    <div id="quiz-questions" class="d-none">
+                        <form method="POST" action="{{ url_for('quiz') }}" id="quiz-form">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="quiz-progress mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span id="quiz-progress-text">0 de 5 perguntas respondidas</span>
+                                    <span>5 Questões</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div id="quiz-progress-bar" class="progress-bar bg-furia-primary" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Question 1 -->
+                            <div class="quiz-question mb-5" data-question="question_1">
+                                <h4 class="quiz-question-text mb-3">1. {{ form.question_1.label }}</h4>
+                                
+                                <div class="quiz-options">
+                                    {% for choice in form.question_1 %}
+                                    <div class="quiz-option mb-2 p-3 bg-furia-dark-grey" data-question="question_1" data-value="{{ choice.data }}">
+                                        {{ choice.data }} - {{ choice.label.text }}
+                                        
+                                        <div class="d-none">
+                                            {{ choice(class="form-check-input") }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                {{ form.correct_1() }}
+                            </div>
+                            
+                            <!-- Question 2 -->
+                            <div class="quiz-question mb-5" data-question="question_2">
+                                <h4 class="quiz-question-text mb-3">2. {{ form.question_2.label }}</h4>
+                                
+                                <div class="quiz-options">
+                                    {% for choice in form.question_2 %}
+                                    <div class="quiz-option mb-2 p-3 bg-furia-dark-grey" data-question="question_2" data-value="{{ choice.data }}">
+                                        {{ choice.label.text }}
+                                        
+                                        <div class="d-none">
+                                            {{ choice(class="form-check-input") }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                {{ form.correct_2() }}
+                            </div>
+                            
+                            <!-- Question 3 -->
+                            <div class="quiz-question mb-5" data-question="question_3">
+                                <h4 class="quiz-question-text mb-3">3. {{ form.question_3.label }}</h4>
+                                
+                                <div class="quiz-options">
+                                    {% for choice in form.question_3 %}
+                                    <div class="quiz-option mb-2 p-3 bg-furia-dark-grey" data-question="question_3" data-value="{{ choice.data }}">
+                                        {{ choice.label.text }}
+                                        
+                                        <div class="d-none">
+                                            {{ choice(class="form-check-input") }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                {{ form.correct_3() }}
+                            </div>
+                            
+                            <!-- Question 4 -->
+                            <div class="quiz-question mb-5" data-question="question_4">
+                                <h4 class="quiz-question-text mb-3">4. {{ form.question_4.label }}</h4>
+                                
+                                <div class="quiz-options">
+                                    {% for choice in form.question_4 %}
+                                    <div class="quiz-option mb-2 p-3 bg-furia-dark-grey" data-question="question_4" data-value="{{ choice.data }}">
+                                        {{ choice.label.text }}
+                                        
+                                        <div class="d-none">
+                                            {{ choice(class="form-check-input") }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                {{ form.correct_4() }}
+                            </div>
+                            
+                            <!-- Question 5 -->
+                            <div class="quiz-question mb-5" data-question="question_5">
+                                <h4 class="quiz-question-text mb-3">5. {{ form.question_5.label }}</h4>
+                                
+                                <div class="quiz-options">
+                                    {% for choice in form.question_5 %}
+                                    <div class="quiz-option mb-2 p-3 bg-furia-dark-grey" data-question="question_5" data-value="{{ choice.data }}">
+                                        {{ choice.label.text }}
+                                        
+                                        <div class="d-none">
+                                            {{ choice(class="form-check-input") }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                {{ form.correct_5() }}
+                            </div>
+                            
+                            <div class="d-grid mt-4">
+                                {{ form.submit(class="btn btn-primary btn-lg", id="quiz-submit", disabled=True) }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card bg-furia-grey">
+                <div class="card-header">
+                    <h3 class="mb-0">Sobre a FURIA</h3>
+                </div>
+                <div class="card-body">
+                    <p>A FURIA Esports é uma organização profissional brasileira de esports fundada em 2017 pelo jogador de poker André Akkari, pelo empresário Jaime Pádua e pelo jogador de CS:GO Cris "crisNinja" Orfanidis.</p>
+                    
+                    <p>A organização ficou conhecida inicialmente por sua equipe de Counter-Strike: Global Offensive, que rapidamente ascendeu no cenário competitivo internacional. Atualmente, a FURIA compete em diversas modalidades, incluindo CS:GO, Valorant, League of Legends, Free Fire, Rainbow Six Siege, entre outras.</p>
+                    
+                    <p>A FURIA é reconhecida não apenas pelos resultados competitivos, mas também por seu compromisso com o desenvolvimento do cenário de esports no Brasil e por sua abordagem profissional e estratégica.</p>
+                    
+                    <div class="text-center mt-4">
+                        <a href="https://furia.gg" target="_blank" class="btn btn-outline-primary">Visitar Site Oficial</a>
+                        <a href="https://twitter.com/FURIA" target="_blank" class="btn btn-outline-secondary ms-2">
+                            <i class="fab fa-twitter me-1"></i> Twitter
+                        </a>
+                        <a href="https://instagram.com/furia" target="_blank" class="btn btn-outline-secondary ms-2">
+                            <i class="fab fa-instagram me-1"></i> Instagram
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

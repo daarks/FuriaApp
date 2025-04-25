@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}FURIA - Know Your Fan{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7 animate-on-scroll">
+                <h1 class="mb-4">KNOW YOUR FAN</h1>
+                <p class="lead mb-4">Descubra seu perfil como fã da FURIA e ganhe uma experiência personalizada baseada nas suas interações, preferências e engajamento com o cenário de esports.</p>
+                
+                {% if 'user_id' not in session %}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary me-md-2">Cadastre-se Agora</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">Login</a>
+                </div>
+                {% else %}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a href="{{ url_for('profile') }}" class="btn btn-primary me-md-2">Meu Perfil</a>
+                    <a href="{{ url_for('fan_power') }}" class="btn btn-outline-secondary">Meu Fan Power</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="mb-4">Experimente as Funcionalidades</h2>
+                <p class="lead">Nossa plataforma oferece diversas ferramentas para você demonstrar e fortalecer seu vínculo com a FURIA.</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Feature 1 -->
+            <div class="col-md-4 animate-on-scroll">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="fas fa-id-card me-2"></i> Validação de Documentos
+                    </div>
+                    <div class="card-body">
+                        <p>Faça o upload de seus documentos e verifique sua identidade através de análise automatizada e segura com OCR.</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('document_validation' if 'user_id' in session else 'login') }}" class="btn btn-outline-primary btn-sm">Validar Documentos</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="col-md-4 animate-on-scroll">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="fas fa-hashtag me-2"></i> Integração com Redes Sociais
+                    </div>
+                    <div class="card-body">
+                        <p>Conecte suas redes sociais para análise de seu engajamento com esports e obtenha um badge exclusivo que representa seu nível como fã.</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('social_media' if 'user_id' in session else 'login') }}" class="btn btn-outline-primary btn-sm">Conectar Redes</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="col-md-4 animate-on-scroll">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="fas fa-link me-2"></i> Validação de Conteúdo
+                    </div>
+                    <div class="card-body">
+                        <p>Compartilhe links de conteúdo relacionado a esports e veja em tempo real a relevância e compatibilidade com seu perfil de fã.</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('content_validation' if 'user_id' in session else 'login') }}" class="btn btn-outline-primary btn-sm">Validar Conteúdo</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature 4 -->
+            <div class="col-md-4 animate-on-scroll">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="fas fa-user me-2"></i> Match de Perfil
+                    </div>
+                    <div class="card-body">
+                        <p>Descubra qual jogador ou streamer da FURIA mais combina com seu perfil, baseado em seus interesses e comportamento.</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('player_match' if 'user_id' in session else 'login') }}" class="btn btn-outline-primary btn-sm">Encontrar Meu Match</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature 5 -->
+            <div class="col-md-4 animate-on-scroll">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="fas fa-calendar me-2"></i> Agenda Personalizada
+                    </div>
+                    <div class="card-body">
+                        <p>Tenha acesso a um calendário de eventos de esports filtrado de acordo com seus interesses e salve seus eventos favoritos.</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('calendar' if 'user_id' in session else 'login') }}" class="btn btn-outline-primary btn-sm">Ver Calendário</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature 6 -->
+            <div class="col-md-4 animate-on-scroll">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="fas fa-chart-line me-2"></i> Fan Power
+                    </div>
+                    <div class="card-body">
+                        <p>Visualize seu nível de engajamento com a FURIA e esports em geral através de gráficos detalhados e métricas exclusivas.</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('fan_power' if 'user_id' in session else 'login') }}" class="btn btn-outline-primary btn-sm">Meu Fan Power</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature 7 -->
+            <div class="col-md-6 animate-on-scroll">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="fas fa-box-open me-2"></i> Lootbox Diária
+                    </div>
+                    <div class="card-body">
+                        <p>Abra uma lootbox diária e ganhe recompensas exclusivas como wallpapers, avatares e códigos de desconto para a loja oficial da FURIA.</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('lootbox' if 'user_id' in session else 'login') }}" class="btn btn-outline-primary btn-sm">Abrir Lootbox</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature 8 -->
+            <div class="col-md-6 animate-on-scroll">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="fas fa-question-circle me-2"></i> Quiz de Esports
+                    </div>
+                    <div class="card-body">
+                        <p>Teste seus conhecimentos sobre a FURIA e o cenário de esports com nosso quiz personalizado e receba uma classificação baseada em suas respostas.</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('quiz' if 'user_id' in session else 'login') }}" class="btn btn-outline-primary btn-sm">Iniciar Quiz</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-furia-black">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center animate-on-scroll">
+                <h2 class="mb-4">Comece Sua Jornada como Fã FURIA</h2>
+                <p class="lead mb-4">Cadastre-se agora para acessar todas as funcionalidades e receber recompensas exclusivas!</p>
+                
+                {% if 'user_id' not in session %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Criar Minha Conta</a>
+                {% else %}
+                <a href="{{ url_for('profile') }}" class="btn btn-primary btn-lg">Meu Perfil de Fã</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

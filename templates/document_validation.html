@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Validação de Documento - FURIA Know Your Fan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .document-image {
+        max-height: 300px;
+    }
+    
+    .unanswered-highlight {
+        animation: highlight-pulse 1s ease-in-out 3;
+    }
+    
+    @keyframes highlight-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 0, 87, 0.5); }
+        70% { box-shadow: 0 0 0 10px rgba(255, 0, 87, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 0, 87, 0); }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/document_validation.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="mb-4"><i class="fas fa-id-card me-2"></i> Validação de Documento</h1>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> Para validar sua identidade, faça o upload de um documento oficial com foto (RG, CNH ou Passaporte).
+            </div>
+            
+            <div id="document-alerts"></div>
+            
+            {% if document and document.validation_status %}
+            <div id="validation-result" data-status="{{ document.validation_status }}" data-details="{{ document.validation_data }}"></div>
+            <div id="validation-details" class="mb-4"></div>
+            {% endif %}
+            
+            <div id="document-form" class="card bg-furia-grey {% if document and document.validation_status %}d-none{% endif %}">
+                <div class="card-header">
+                    <h3 class="mb-0">Upload de Documento</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('document_validation') }}" enctype="multipart/form-data" id="document-form">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            <label for="document_type" class="form-label">{{ form.document_type.label }}</label>
+                            {{ form.document_type(class="form-select") }}
+                        </div>
+                        
+                        <div id="document-requirements" class="mb-4">
+                            <!-- Requirements will be inserted dynamically via JS -->
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="document" class="form-label">{{ form.document.label }}</label>
+                            <div class="input-group">
+                                {{ form.document(class="form-control", id="document", style="display: none;") }}
+                                <label for="document" class="form-control text-muted" id="file-name">Nenhum arquivo selecionado</label>
+                                <label for="document" class="btn btn-outline-primary">Selecionar Arquivo</label>
+                            </div>
+                            <div class="form-text">
+                                Formatos aceitos: JPG, JPEG, PNG, PDF. Tamanho máximo: 5MB
+                            </div>
+                            {% if form.document.errors %}
+                            <div class="alert alert-danger mt-1">
+                                {% for error in form.document.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div id="document-preview" class="d-none mb-4">
+                            <!-- Preview will be inserted here -->
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary", id="submit-button", disabled=True) }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card bg-furia-grey mt-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Sobre a Validação de Documentos</h3>
+                </div>
+                <div class="card-body">
+                    <h5 class="text-furia-secondary">Como funciona?</h5>
+                    <p>Nosso sistema utiliza tecnologia OCR (Reconhecimento Ótico de Caracteres) para extrair informações do seu documento e verificar se correspondem aos dados informados no seu cadastro.</p>
+                    
+                    <h5 class="text-furia-secondary">Por que validar?</h5>
+                    <ul>
+                        <li>Garantir que você é um fã único e autêntico</li>
+                        <li>Acesso a funcionalidades exclusivas para fãs verificados</li>
+                        <li>Possibilidade de participar de sorteios e eventos especiais</li>
+                        <li>Maior segurança na comunidade FURIA</li>
+                    </ul>
+                    
+                    <h5 class="text-furia-secondary">Segurança de dados</h5>
+                    <p>Sua privacidade é importante para nós. Seus documentos são processados de forma segura e as informações são utilizadas apenas para verificação de identidade.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

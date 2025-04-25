@@ -1,0 +1,112 @@
+[
+    {
+        "id": "blast_premier_fall",
+        "title": "BLAST Premier: Fall Finals 2023",
+        "date": "2023-11-22",
+        "end_date": "2023-11-26",
+        "location": "Copenhagen, Denmark",
+        "game": "CS:GO",
+        "teams": ["FURIA", "Team Liquid", "FaZe Clan", "G2 Esports", "Natus Vincere", "Vitality"],
+        "description": "The Fall Finals of the BLAST Premier circuit features six of the world's best CS:GO teams competing for a $425,000 prize pool and a spot in the World Final.",
+        "tags": ["cs", "international", "tier1"]
+    },
+    {
+        "id": "iem_katowice_2024",
+        "title": "IEM Katowice 2024",
+        "date": "2024-02-01",
+        "end_date": "2024-02-11",
+        "location": "Katowice, Poland",
+        "game": "CS:GO",
+        "teams": ["FURIA", "FaZe Clan", "Natus Vincere", "Astralis", "Team Vitality", "G2 Esports"],
+        "description": "One of CS:GO's most prestigious tournaments returns to the Spodek Arena in Katowice, featuring the world's best teams.",
+        "tags": ["cs", "international", "tier1"]
+    },
+    {
+        "id": "vct_americas_2024",
+        "title": "VCT Americas 2024",
+        "date": "2024-03-15",
+        "end_date": "2024-05-10",
+        "location": "Los Angeles, USA",
+        "game": "Valorant",
+        "teams": ["FURIA", "Sentinels", "100 Thieves", "Cloud9", "LOUD", "KRÜ Esports"],
+        "description": "The VCT Americas league features the best Valorant teams from North and South America competing in a regular season format.",
+        "tags": ["valorant", "international", "league"]
+    },
+    {
+        "id": "cbcs_elite_league",
+        "title": "CBCS Elite League 2024 - Season 1",
+        "date": "2024-02-15",
+        "end_date": "2024-04-20",
+        "location": "São Paulo, Brazil",
+        "game": "CS:GO",
+        "teams": ["FURIA", "MIBR", "paiN Gaming", "INTZ", "Flamengo Esports", "Sharks Esports"],
+        "description": "Brazil's premier CS:GO league returns for 2024, featuring the country's top teams competing for regional supremacy.",
+        "tags": ["cs", "brazil", "league"]
+    },
+    {
+        "id": "cblol_2024",
+        "title": "CBLOL 2024 - Split 1",
+        "date": "2024-01-20",
+        "end_date": "2024-04-15",
+        "location": "São Paulo, Brazil",
+        "game": "League of Legends",
+        "teams": ["paiN Gaming", "LOUD", "RED Canids", "FURIA", "Flamengo Esports", "KaBuM! e-Sports"],
+        "description": "The premier League of Legends competition in Brazil, featuring the country's eight best teams.",
+        "tags": ["lol", "brazil", "league"]
+    },
+    {
+        "id": "free_fire_world_series",
+        "title": "Free Fire World Series 2024",
+        "date": "2024-05-10",
+        "end_date": "2024-05-12",
+        "location": "Bangkok, Thailand",
+        "game": "Free Fire",
+        "teams": ["FURIA", "Corinthians FF", "Team Liquid", "Evos Esports", "Magic Squad", "Attack All Around"],
+        "description": "The biggest Free Fire tournament of the year, bringing together the best teams from around the world.",
+        "tags": ["freefire", "international", "tournament"]
+    },
+    {
+        "id": "esl_one_rio_2024",
+        "title": "ESL One Rio 2024",
+        "date": "2024-04-26",
+        "end_date": "2024-05-05",
+        "location": "Rio de Janeiro, Brazil",
+        "game": "CS:GO",
+        "teams": ["FURIA", "Team Liquid", "FaZe Clan", "NAVI", "G2 Esports", "Heroic"],
+        "description": "ESL One returns to Brazil with an elite CS:GO tournament featuring top international teams competing in front of one of the world's most passionate crowds.",
+        "tags": ["cs", "brazil", "international", "tier1"]
+    },
+    {
+        "id": "dreamhack_melbourne",
+        "title": "DreamHack Melbourne 2024",
+        "date": "2024-04-12",
+        "end_date": "2024-04-14",
+        "location": "Melbourne, Australia",
+        "game": "Multi-Game",
+        "teams": ["Various"],
+        "description": "Australia's biggest gaming festival returns with competitions across multiple esports titles, including CS:GO, Valorant, and fighting games.",
+        "tags": ["cs", "valorant", "fighting_games", "festival"]
+    },
+    {
+        "id": "gamecon_brasil_2024",
+        "title": "GameCon Brasil 2024",
+        "date": "2024-07-19",
+        "end_date": "2024-07-21",
+        "location": "São Paulo, Brazil",
+        "game": "Multi-Game",
+        "teams": ["Various"],
+        "description": "Brazil's largest gaming convention featuring exhibitions, tournaments, and special appearances by teams including FURIA.",
+        "tags": ["convention", "brazil", "multi_game"]
+    },
+    {
+        "id": "rainbow_six_major",
+        "title": "Rainbow Six Major - São Paulo 2024",
+        "date": "2024-05-15",
+        "end_date": "2024-05-21",
+        "location": "São Paulo, Brazil",
+        "game": "Rainbow Six Siege",
+        "teams": ["FURIA", "Team Liquid", "FaZe Clan", "Ninjas in Pyjamas", "Team oNe", "w7m esports"],
+        "description": "The Rainbow Six Major comes to Brazil, featuring the world's top R6 teams competing for a major title.",
+        "tags": ["rainbow6", "brazil", "international"]
+    }
+]

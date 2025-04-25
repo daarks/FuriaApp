@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Calendário de Eventos - FURIA Know Your Fan{% endblock %}
+
+{% block head_js %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="mb-4"><i class="fas fa-calendar me-2"></i> Calendário de Eventos</h1>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> Veja os próximos eventos de esports baseados nos seus interesses. Favorite eventos para receber lembretes.
+            </div>
+            
+            <div id="alert-container"></div>
+            
+            <div class="calendar-container bg-furia-grey p-4 mb-4">
+                <div class="calendar-filters mb-4">
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-primary btn-sm filter-btn active" data-filter="all">
+                            Todos os Eventos
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm filter-btn" data-filter="furia">
+                            <i class="fas fa-star me-1"></i> FURIA
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm filter-btn" data-filter="interests">
+                            <i class="fas fa-heart me-1"></i> Meus Interesses
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm filter-btn" data-filter="favorites">
+                            <i class="fas fa-bookmark me-1"></i> Favoritos
+                        </button>
+                        
+                        <div class="dropdown ms-auto">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="gamesDropdown" data-bs-toggle="dropdown">
+                                Filtrar por Jogo
+                            </button>
+                            <ul class="dropdown-menu bg-furia-dark-grey" aria-labelledby="gamesDropdown">
+                                <li><a class="dropdown-item text-white filter-btn" href="#" data-filter="cs">CS:GO</a></li>
+                                <li><a class="dropdown-item text-white filter-btn" href="#" data-filter="valorant">Valorant</a></li>
+                                <li><a class="dropdown-item text-white filter-btn" href="#" data-filter="lol">League of Legends</a></li>
+                                <li><a class="dropdown-item text-white filter-btn" href="#" data-filter="freefire">Free Fire</a></li>
+                                <li><a class="dropdown-item text-white filter-btn" href="#" data-filter="rainbow6">Rainbow Six</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="calendar" data-interests='{{ interests|tojson }}' data-favorites='{{ favorite_ids }}'></div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card bg-furia-grey mb-4">
+                        <div class="card-header">
+                            <h3 class="mb-0">Legenda</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="me-2" style="width: 20px; height: 20px; background-color: var(--furia-primary);"></div>
+                                <span>Evento com participação da FURIA</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="me-2" style="width: 20px; height: 20px; background-color: #333333;"></div>
+                                <span>Outros eventos de esports</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="me-2"><i class="fas fa-star text-warning"></i></div>
+                                <span>Evento favoritado</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="me-2"><i class="fas fa-heart text-furia-secondary"></i></div>
+                                <span>Evento compatível com seus interesses</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card bg-furia-grey mb-4">
+                        <div class="card-header">
+                            <h3 class="mb-0">Próximos Eventos FURIA</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush bg-transparent">
+                                <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge bg-furia-primary me-2">CS:GO</span>
+                                        BLAST Premier: Fall Finals 2023
+                                    </div>
+                                    <small>22/11/2023</small>
+                                </li>
+                                <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge bg-furia-primary me-2">CS:GO</span>
+                                        IEM Katowice 2024
+                                    </div>
+                                    <small>01/02/2024</small>
+                                </li>
+                                <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge bg-furia-primary me-2">Valorant</span>
+                                        VCT Americas 2024
+                                    </div>
+                                    <small>15/03/2024</small>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <a href="https://furia.gg/matches" target="_blank" class="btn btn-sm btn-outline-primary">Ver Todas as Partidas</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card bg-furia-grey">
+                <div class="card-header">
+                    <h3 class="mb-0">Sobre o Calendário</h3>
+                </div>
+                <div class="card-body">
+                    <p>O Calendário de Eventos da Know Your Fan FURIA é personalizado com base nos seus interesses e atividades na plataforma. Aqui você encontra:</p>
+                    
+                    <ul>
+                        <li>Eventos com participação das equipes FURIA</li>
+                        <li>Principais competições de esports</li>
+                        <li>Eventos filtrados por suas preferências de jogos</li>
+                        <li>Opção de favoritar eventos para lembretes</li>
+                    </ul>
+                    
+                    <p>Para uma experiência mais personalizada, complete seu perfil e conecte suas redes sociais.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Event Modal (will be created dynamically by JS) -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-furia-dark-grey text-white">
+            <div class="modal-header">
+                <h5 class="modal-title">Event Title</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Content will be filled dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-outline-warning toggle-favorite">
+                    <i class="fas fa-star"></i> Add to Favorites
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

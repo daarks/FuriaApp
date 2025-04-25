@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Validação de Conteúdo - FURIA Know Your Fan{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="mb-4"><i class="fas fa-link me-2"></i> Validação de Conteúdo</h1>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> Compartilhe links de conteúdo relacionado a esports para verificarmos a relevância para seu perfil de fã.
+            </div>
+            
+            <div class="card bg-furia-grey mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Validar Conteúdo</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('content_validation') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            <label for="content_url" class="form-label">{{ form.content_url.label }}</label>
+                            {{ form.content_url(class="form-control", id="content_url", placeholder="https://...") }}
+                            <div class="form-text">
+                                Cole links de artigos, vídeos, perfis ou páginas de esports que você deseja verificar.
+                            </div>
+                            {% if form.content_url.errors %}
+                            <div class="alert alert-danger mt-1">
+                                {% for error in form.content_url.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if content_links %}
+            <div class="card bg-furia-grey mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Histórico de Conteúdo Validado</h3>
+                </div>
+                <div class="card-body">
+                    {% for link in content_links %}
+                    <div class="content-validation-result mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="content-type-badge content-type-{{ link.content_type }}">{{ link.content_type }}</span>
+                            <small class="text-muted">{{ link.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </div>
+                        
+                        <a href="{{ link.url }}" target="_blank" class="content-link mb-2 d-block">
+                            {{ link.url }}
+                        </a>
+                        
+                        <div class="relevance-section mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label>Relevância para seu perfil:</label>
+                                <span class="relevance-score">{{ link.relevance_score|round|int }}%</span>
+                            </div>
+                            <div class="relevance-meter">
+                                <div class="relevance-meter-fill" style="width: {{ link.relevance_score }}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="content-keywords">
+                            {% for keyword in link.keywords|from_json %}
+                            <span class="content-keyword">{{ keyword }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    {% if not loop.last %}
+                    <hr class="my-4">
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card bg-furia-grey">
+                <div class="card-header">
+                    <h3 class="mb-0">Sobre a Validação de Conteúdo</h3>
+                </div>
+                <div class="card-body">
+                    <h5 class="text-furia-secondary">Como funciona?</h5>
+                    <p>Nossa tecnologia analisa o conteúdo do link que você compartilhou, identificando palavras-chave, temas e relevância para o universo de esports e FURIA.</p>
+                    
+                    <h5 class="text-furia-secondary">Benefícios</h5>
+                    <ul>
+                        <li>Descubra conteúdo mais relevante para seus interesses</li>
+                        <li>Contribua para sua pontuação de Fan Power</li>
+                        <li>Melhore sua experiência personalizada na plataforma</li>
+                        <li>Compartilhe conteúdo de qualidade com outros fãs</li>
+                    </ul>
+                    
+                    <h5 class="text-furia-secondary">Tipos de Conteúdo</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <div class="badge content-type-video w-100 p-2">Vídeos</div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="badge content-type-article w-100 p-2">Artigos</div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="badge content-type-social_post w-100 p-2">Posts</div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="badge content-type-stream w-100 p-2">Streams</div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="badge content-type-esports_wiki w-100 p-2">Wikis</div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="badge content-type-forum w-100 p-2">Fóruns</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

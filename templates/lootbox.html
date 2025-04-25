@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Lootbox - FURIA Know Your Fan{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/lootbox.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/lootbox.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="mb-4"><i class="fas fa-box-open me-2"></i> Lootbox Diária</h1>
+            
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i> Abra sua lootbox diária para ganhar recompensas exclusivas da FURIA!
+            </div>
+            
+            <div id="lootbox-alerts"></div>
+            
+            <div class="card bg-furia-grey mb-4">
+                <div class="card-body">
+                    <div class="lootbox-container">
+                        <div class="lootbox-info text-center mb-4">
+                            <h2 class="lootbox-title">FURIA Rewards</h2>
+                            <p class="lootbox-description">
+                                Clique na lootbox abaixo para abrir e receber uma recompensa exclusiva. 
+                                Volte todos os dias para coletar novas recompensas!
+                            </p>
+                            <div id="lootbox-status" class="lootbox-status">
+                                {% if can_open %}
+                                Lootbox disponível!
+                                {% else %}
+                                Próxima lootbox disponível em: 24h
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div id="lootbox" class="lootbox mx-auto {% if not can_open %}disabled{% endif %}" data-can-open="{{ can_open|lower }}"></div>
+                        
+                        <div id="reward-container" class="reward-container"></div>
+                        
+                        <div class="confetti-container"></div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if user.lootbox_rewards %}
+            <div class="card bg-furia-grey">
+                <div class="card-header">
+                    <h3 class="mb-0">Histórico de Recompensas</h3>
+                </div>
+                <div class="card-body">
+                    <div class="lootbox-history">
+                        <div class="row">
+                            {% for reward in user.lootbox_rewards|from_json %}
+                            <div class="col-md-6 mb-3">
+                                <div class="lootbox-history-item">
+                                    <div class="lootbox-history-image">
+                                        {% if reward.type == 'wallpaper' %}
+                                        <i class="fas fa-image text-furia-secondary"></i>
+                                        {% elif reward.type == 'avatar' %}
+                                        <i class="fas fa-user-circle text-furia-secondary"></i>
+                                        {% elif reward.type == 'gif' %}
+                                        <i class="fas fa-film text-furia-secondary"></i>
+                                        {% elif reward.type == 'discount' %}
+                                        <i class="fas fa-percent text-furia-secondary"></i>
+                                        {% elif reward.type == 'digital_item' %}
+                                        <i class="fas fa-gift text-furia-secondary"></i>
+                                        {% elif reward.type == 'exclusive' %}
+                                        <i class="fas fa-crown text-furia-primary"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="lootbox-history-info">
+                                        <h5 class="lootbox-history-title">{{ reward.name }}</h5>
+                                        <p class="lootbox-history-date">Obtido em {{ reward.obtained_at|truncate(10, true, '') }}</p>
+                                    </div>
+                                    <span class="lootbox-history-rarity reward-rarity-{{ reward.rarity }}">
+                                        {{ reward.rarity }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card bg-furia-grey mt-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Sobre as Lootboxes</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <h5 class="text-furia-secondary">Como funciona?</h5>
+                            <p>Você pode abrir uma lootbox a cada 24 horas. Cada lootbox contém uma recompensa aleatória que pode ser usada no seu perfil ou para obter descontos na loja oficial da FURIA.</p>
+                            
+                            <h5 class="text-furia-secondary mt-4">Tipos de Raridade</h5>
+                            <div class="d-flex flex-wrap gap-2 mb-4">
+                                <div class="badge reward-rarity-common p-2">Comum (60%)</div>
+                                <div class="badge reward-rarity-uncommon p-2">Incomum (25%)</div>
+                                <div class="badge reward-rarity-rare p-2">Raro (13%)</div>
+                                <div class="badge reward-rarity-legendary p-2">Lendário (2%)</div>
+                            </div>
+                            
+                            <p>Quanto maior seu Fan Power, maiores são suas chances de obter itens raros e lendários!</p>
+                        </div>
+                        
+                        <div class="col-md-5">
+                            <h5 class="text-furia-secondary">Possíveis Recompensas</h5>
+                            <ul class="list-group list-group-flush bg-transparent">
+                                <li class="list-group-item bg-transparent">
+                                    <i class="fas fa-image text-furia-secondary me-2"></i> Wallpapers exclusivos
+                                </li>
+                                <li class="list-group-item bg-transparent">
+                                    <i class="fas fa-user-circle text-furia-secondary me-2"></i> Avatares para perfil
+                                </li>
+                                <li class="list-group-item bg-transparent">
+                                    <i class="fas fa-film text-furia-secondary me-2"></i> GIFs animados
+                                </li>
+                                <li class="list-group-item bg-transparent">
+                                    <i class="fas fa-percent text-furia-secondary me-2"></i> Códigos de desconto
+                                </li>
+                                <li class="list-group-item bg-transparent">
+                                    <i class="fas fa-gift text-furia-secondary me-2"></i> Itens digitais colecionáveis
+                                </li>
+                                <li class="list-group-item bg-transparent">
+                                    <i class="fas fa-crown text-furia-primary me-2"></i> Itens exclusivos lendários
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

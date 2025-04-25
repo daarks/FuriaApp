@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Fan Power - FURIA Know Your Fan{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="mb-4"><i class="fas fa-chart-line me-2"></i> Fan Power</h1>
+            
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i> Seu Fan Power representa seu nível de engajamento com a FURIA e o cenário de esports em geral.
+            </div>
+            
+            <div class="row mb-5">
+                <div class="col-lg-5 col-md-6 mb-4 mb-md-0">
+                    <div class="card bg-furia-grey h-100">
+                        <div class="card-header">
+                            <h3 class="mb-0">Fan Power Score</h3>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="fan-power-gauge mb-4" id="fan-power-gauge" data-metrics='{{ fan_power|tojson }}'>
+                                <!-- Gauge chart will be inserted here via JS -->
+                            </div>
+                            
+                            <h4 class="mb-0">
+                                Categoria: 
+                                <span class="fan-badge fan-badge-{{ fan_power.fan_category|lower|replace(' ', '-')|replace('ã', 'a') }}">
+                                    {{ fan_power.fan_category }}
+                                </span>
+                            </h4>
+                            
+                            <p class="mt-3">{{ fan_power.overall_score|round|int }}% de engajamento global</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-7 col-md-6">
+                    <div class="card bg-furia-grey h-100">
+                        <div class="card-header">
+                            <h3 class="mb-0">Métricas Detalhadas</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="metrics-chart-container" style="height: 250px;">
+                                <canvas id="metrics-chart" data-metrics='{{ fan_power|tojson }}'></canvas>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-2">
+                                    <div class="fan-power-metric">
+                                        <h5 class="fan-power-metric-label">Engajamento Social</h5>
+                                        <div class="fan-power-metric-value">{{ fan_power.social_engagement|round|int }}%</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <div class="fan-power-metric">
+                                        <h5 class="fan-power-metric-label">Consumo de Conteúdo</h5>
+                                        <div class="fan-power-metric-value">{{ fan_power.content_consumption|round|int }}%</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <div class="fan-power-metric">
+                                        <h5 class="fan-power-metric-label">Participação em Eventos</h5>
+                                        <div class="fan-power-metric-value">{{ fan_power.event_participation|round|int }}%</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <div class="fan-power-metric">
+                                        <h5 class="fan-power-metric-label">Suporte com Merchandise</h5>
+                                        <div class="fan-power-metric-value">{{ fan_power.merchandise_support|round|int }}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card bg-furia-grey h-100">
+                        <div class="card-header">
+                            <h3 class="mb-0">Como Melhorar seu Fan Power</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="improvement-item mb-3">
+                                <h5 class="text-furia-secondary">
+                                    <i class="fas fa-hashtag me-2"></i> Engajamento nas Redes Sociais
+                                </h5>
+                                <p>Siga a FURIA e seus jogadores nas redes sociais. Interaja com postagens usando hashtags como #FURIA, #GoFURIA e #EsportsBR.</p>
+                                <div class="d-grid">
+                                    <a href="{{ url_for('social_media') }}" class="btn btn-sm btn-outline-primary">Conectar Redes Sociais</a>
+                                </div>
+                            </div>
+                            
+                            <div class="improvement-item mb-3">
+                                <h5 class="text-furia-secondary">
+                                    <i class="fas fa-link me-2"></i> Consumo de Conteúdo
+                                </h5>
+                                <p>Compartilhe links de notícias, vídeos e transmissões relacionadas a esports para validação na plataforma.</p>
+                                <div class="d-grid">
+                                    <a href="{{ url_for('content_validation') }}" class="btn btn-sm btn-outline-primary">Validar Conteúdo</a>
+                                </div>
+                            </div>
+                            
+                            <div class="improvement-item mb-3">
+                                <h5 class="text-furia-secondary">
+                                    <i class="fas fa-calendar me-2"></i> Participação em Eventos
+                                </h5>
+                                <p>Favorite e participe de eventos de esports. Acompanhe partidas da FURIA e outras competições do seu interesse.</p>
+                                <div class="d-grid">
+                                    <a href="{{ url_for('calendar') }}" class="btn btn-sm btn-outline-primary">Ver Calendário</a>
+                                </div>
+                            </div>
+                            
+                            <div class="improvement-item">
+                                <h5 class="text-furia-secondary">
+                                    <i class="fas fa-tshirt me-2"></i> Suporte com Merchandise
+                                </h5>
+                                <p>Adquira produtos oficiais da FURIA e outros itens relacionados a esports para aumentar seu score de suporte.</p>
+                                <div class="d-grid">
+                                    <a href="https://shop.furia.gg/" target="_blank" class="btn btn-sm btn-outline-primary">Visitar Loja FURIA</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4">
+                    <div class="card bg-furia-grey h-100">
+                        <div class="card-header">
+                            <h3 class="mb-0">Benefícios por Categoria</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="category-benefits mb-4">
+                                <h5 class="fan-badge fan-badge-super d-inline-block">Super Fã</h5>
+                                <p class="mt-2">Os fãs mais engajados e dedicados da comunidade FURIA.</p>
+                                <ul>
+                                    <li>Acesso prioritário a eventos exclusivos</li>
+                                    <li>Chances de ganhar experiências com jogadores</li>
+                                    <li>Lootboxes com itens de maior raridade</li>
+                                    <li>Medalha digital exclusiva para redes sociais</li>
+                                    <li>Descontos especiais na loja oficial</li>
+                                </ul>
+                                <div class="progress mb-2" style="height: 5px;">
+                                    <div class="progress-bar bg-furia-primary" role="progressbar" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="category-benefits mb-4">
+                                <h5 class="fan-badge fan-badge-dedicated d-inline-block">Intermediário</h5>
+                                <p class="mt-2">Fãs que demonstram engajamento regular com a FURIA.</p>
+                                <ul>
+                                    <li>Acesso a eventos digitais exclusivos</li>
+                                    <li>Conteúdo personalizado baseado nos interesses</li>
+                                    <li>Lootboxes com chances de itens raros</li>
+                                    <li>Calendário de eventos personalizado</li>
+                                </ul>
+                                <div class="progress mb-2" style="height: 5px;">
+                                    <div class="progress-bar bg-furia-secondary" role="progressbar" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="category-benefits">
+                                <h5 class="fan-badge fan-badge-casual d-inline-block">Novato</h5>
+                                <p class="mt-2">Fãs iniciando sua jornada na comunidade FURIA.</p>
+                                <ul>
+                                    <li>Lootboxes diárias</li>
+                                    <li>Recomendações de conteúdo</li>
+                                    <li>Acesso a recursos básicos da plataforma</li>
+                                </ul>
+                                <div class="progress mb-2" style="height: 5px;">
+                                    <div class="progress-bar bg-furia-accent" role="progressbar" style="width: 50%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card bg-furia-grey">
+                <div class="card-header">
+                    <h3 class="mb-0">Histórico de Engajamento</h3>
+                </div>
+                <div class="card-body">
+                    <!-- This would be a more advanced feature with historical data tracking -->
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-area fa-3x text-furia-secondary mb-3"></i>
+                        <h4>Histórico em construção</h4>
+                        <p>Continue interagindo com a plataforma para ver seu progresso de engajamento ao longo do tempo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

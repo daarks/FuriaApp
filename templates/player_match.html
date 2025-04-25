@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Match de Jogador - FURIA Know Your Fan{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="mb-4"><i class="fas fa-user me-2"></i> Match de Jogador</h1>
+            
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i> Descubra qual jogador da FURIA mais combina com seu perfil e interesses.
+            </div>
+            
+            {% if not user.player_match %}
+            <div class="card bg-furia-grey mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Complete seu Perfil</h3>
+                </div>
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-user-circle fa-5x text-furia-primary mb-4"></i>
+                    <h4>Ainda não temos informações suficientes para seu match!</h4>
+                    <p class="mb-4">Para descobrir com qual jogador da FURIA você mais se parece, complete seu perfil com:</p>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-furia-dark-grey">
+                                <div class="card-body text-center py-4">
+                                    <i class="fas fa-gamepad fa-2x text-furia-secondary mb-3"></i>
+                                    <h5>Seus Interesses</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-furia-dark-grey">
+                                <div class="card-body text-center py-4">
+                                    <i class="fas fa-hashtag fa-2x text-furia-secondary mb-3"></i>
+                                    <h5>Redes Sociais</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{{ url_for('social_media') }}" class="btn btn-primary me-2">Conectar Redes Sociais</a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="player-match-card animate-on-scroll">
+                <div class="row g-0">
+                    <div class="col-md-5">
+                        <img src="{{ user.player_image }}" alt="{{ user.player_match }}" class="player-match-image w-100">
+                    </div>
+                    <div class="col-md-7">
+                        <div class="player-match-info">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h2 class="player-match-name">{{ user.player_match }}</h2>
+                                <span class="badge bg-furia-primary">Seu Match!</span>
+                            </div>
+                            <p class="player-match-bio mb-4">{{ user.player_bio }}</p>
+                            
+                            <div class="player-match-details">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <h5 class="text-furia-secondary">Estilo de Jogo</h5>
+                                        <ul class="list-unstyled">
+                                            <li><i class="fas fa-circle text-furia-primary me-2 small"></i> Estratégico</li>
+                                            <li><i class="fas fa-circle text-furia-primary me-2 small"></i> Ágil</li>
+                                            <li><i class="fas fa-circle text-furia-primary me-2 small"></i> Focado</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h5 class="text-furia-secondary">Interesses em Comum</h5>
+                                        <ul class="list-unstyled">
+                                            {% for interest in interests %}
+                                            <li><i class="fas fa-circle text-furia-secondary me-2 small"></i> {{ interest.interest }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="player-match-social">
+                                <h5 class="text-furia-secondary mb-3">Siga {{ user.player_match }} nas Redes Sociais</h5>
+                                <div class="d-flex gap-3">
+                                    <a href="#" class="btn btn-outline-primary btn-sm">
+                                        <i class="fab fa-twitter me-1"></i> Twitter
+                                    </a>
+                                    <a href="#" class="btn btn-outline-primary btn-sm">
+                                        <i class="fab fa-instagram me-1"></i> Instagram
+                                    </a>
+                                    <a href="#" class="btn btn-outline-primary btn-sm">
+                                        <i class="fab fa-twitch me-1"></i> Twitch
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card bg-furia-grey mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Por que vocês combinam?</h3>
+                </div>
+                <div class="card-body">
+                    <p>Nosso algoritmo analisou seu perfil, interesses e comportamento nas redes sociais para encontrar o jogador da FURIA que mais se assemelha a você. Aqui estão alguns fatores que levamos em consideração:</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-furia-dark-grey h-100">
+                                <div class="card-body">
+                                    <h5 class="text-furia-secondary">Interesses em Jogos</h5>
+                                    <p>Vocês compartilham interesse nos mesmos jogos e categorias de esports.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-furia-dark-grey h-100">
+                                <div class="card-body">
+                                    <h5 class="text-furia-secondary">Estilo de Engajamento</h5>
+                                    <p>Seu comportamento nas redes sociais e forma de interagir com conteúdos é similar.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-furia-dark-grey h-100">
+                                <div class="card-body">
+                                    <h5 class="text-furia-secondary">Eventos e Competições</h5>
+                                    <p>Vocês se interessam pelos mesmos torneios e eventos competitivos.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-furia-dark-grey h-100">
+                                <div class="card-body">
+                                    <h5 class="text-furia-secondary">Personalidade</h5>
+                                    <p>Características de personalidade refletidas em suas escolhas e interações.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card bg-furia-grey">
+                <div class="card-header">
+                    <h3 class="mb-0">Conheça o Time FURIA</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- CS:GO -->
+                        <div class="col-md-6 mb-4">
+                            <h4 class="text-furia-primary mb-3">CS:GO</h4>
+                            <div class="row g-2">
+                                <div class="col-4 text-center">
+                                    <img src="https://liquipedia.net/commons/images/thumb/a/a6/FURIA_KSCERATO_2023_1.png/150px-FURIA_KSCERATO_2023_1.png" alt="KSCERATO" class="img-fluid rounded mb-2">
+                                    <p class="mb-0 small">KSCERATO</p>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <img src="https://liquipedia.net/commons/images/thumb/a/a1/FURIA_arT_2023_1.png/150px-FURIA_arT_2023_1.png" alt="arT" class="img-fluid rounded mb-2">
+                                    <p class="mb-0 small">arT</p>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <img src="https://liquipedia.net/commons/images/thumb/5/50/FURIA_yuurih_2023_1.png/150px-FURIA_yuurih_2023_1.png" alt="yuurih" class="img-fluid rounded mb-2">
+                                    <p class="mb-0 small">yuurih</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Valorant -->
+                        <div class="col-md-6 mb-4">
+                            <h4 class="text-furia-primary mb-3">Valorant</h4>
+                            <div class="row g-2">
+                                <div class="col-4 text-center">
+                                    <img src="https://liquipedia.net/commons/images/thumb/3/36/FURIA_qck_vct23.png/150px-FURIA_qck_vct23.png" alt="QckNTLS" class="img-fluid rounded mb-2">
+                                    <p class="mb-0 small">QckNTLS</p>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <img src="https://liquipedia.net/commons/images/thumb/9/9f/FURIA_mazin_vct23.png/150px-FURIA_mazin_vct23.png" alt="mazin" class="img-fluid rounded mb-2">
+                                    <p class="mb-0 small">mazin</p>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <div class="bg-furia-dark-grey rounded d-flex align-items-center justify-content-center" style="height: 100px;">
+                                        <i class="fas fa-gamepad fa-2x text-furia-secondary"></i>
+                                    </div>
+                                    <p class="mb-0 small">Khalil</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="https://furia.gg/teams" target="_blank" class="btn btn-outline-primary">Ver Todos os Times</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
