@@ -90,7 +90,7 @@
                             </div>
                             <div class="col-6">
                                 <div class="profile-stat">
-                                    <span class="profile-stat-value">{{ user.lootbox_rewards|default('[]')|length }}</span>
+                                    <span class="profile-stat-value">{{ user.lootbox_rewards|default('[]')|from_json|default([])|length }}</span>
                                     <span class="profile-stat-label">Recompensas</span>
                                 </div>
                             </div>

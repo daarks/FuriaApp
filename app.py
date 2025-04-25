@@ -435,9 +435,24 @@ def open_lootbox():
     
     # Update user's last lootbox date
     user.last_lootbox_date = today
-    user.lootbox_rewards = json.dumps(reward) if not user.lootbox_rewards else json.dumps(
-        json.loads(user.lootbox_rewards) + [reward]
-    )
+    
+    # Add reward to user's lootbox rewards
+    # Make sure we handle both None values and existing JSON strings
+    if not user.lootbox_rewards:
+        user.lootbox_rewards = json.dumps([reward])
+    else:
+        try:
+            current_rewards = json.loads(user.lootbox_rewards)
+            if isinstance(current_rewards, list):
+                current_rewards.append(reward)
+            else:
+                # If current_rewards is not a list, initialize a new list
+                current_rewards = [reward]
+            user.lootbox_rewards = json.dumps(current_rewards)
+        except json.JSONDecodeError:
+            # Handle case where lootbox_rewards exists but isn't valid JSON
+            user.lootbox_rewards = json.dumps([reward])
+    
     db.session.commit()
     
     return {"success": True, "reward": reward}

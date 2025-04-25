@@ -57,7 +57,7 @@
                 <div class="card-body">
                     <div class="lootbox-history">
                         <div class="row">
-                            {% for reward in user.lootbox_rewards|from_json %}
+                            {% for reward in user.lootbox_rewards|default('[]')|from_json|default([]) %}
                             <div class="col-md-6 mb-3">
                                 <div class="lootbox-history-item">
                                     <div class="lootbox-history-image">
