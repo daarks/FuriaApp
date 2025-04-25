@@ -126,14 +126,19 @@ def profile():
         flash('Please login to access your profile.', 'warning')
         return redirect(url_for('login'))
     
-    user = User.query.get(session['user_id'])
-    if not user:
-        session.pop('user_id', None)
-        flash('User not found. Please login again.', 'danger')
+    try:
+        user = User.query.get(session['user_id'])
+        if not user:
+            session.pop('user_id', None)
+            flash('User not found. Please login again.', 'danger')
+            return redirect(url_for('login'))
+        
+        # Get user interests
+        interests = UserInterest.query.filter_by(user_id=user.id).all()
+    except Exception as e:
+        app.logger.error(f"Error in profile route: {str(e)}")
+        flash('An error occurred while accessing your profile. Please try again.', 'danger')
         return redirect(url_for('login'))
-    
-    # Get user interests
-    interests = UserInterest.query.filter_by(user_id=user.id).all()
     
     # Get document verification status
     document = Document.query.filter_by(user_id=user.id).first()
