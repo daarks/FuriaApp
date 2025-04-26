@@ -1,0 +1,204 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Editar Interesses - FURIA Fan App{% endblock %}
+{% block header_title %}Editar Interesses{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-card">
+        <div class="app-card-header">
+            <h3>Seus Interesses em Esports</h3>
+        </div>
+        <div class="app-card-body">
+            <p class="app-text-light">Selecione os jogos e categorias de esports que você acompanha ou está interessado.</p>
+            
+            <form method="post" action="{{ url_for('edit_interests') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="app-section app-mb-3">
+                    <h4 class="app-section-title">Jogos</h4>
+                    <div class="app-checkbox-grid">
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="cs" value="cs" {% if 'cs' in current_interests %}checked{% endif %}>
+                            <label for="cs">Counter-Strike</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="valorant" value="valorant" {% if 'valorant' in current_interests %}checked{% endif %}>
+                            <label for="valorant">Valorant</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="lol" value="lol" {% if 'lol' in current_interests %}checked{% endif %}>
+                            <label for="lol">League of Legends</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="dota" value="dota" {% if 'dota' in current_interests %}checked{% endif %}>
+                            <label for="dota">Dota 2</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="fortnite" value="fortnite" {% if 'fortnite' in current_interests %}checked{% endif %}>
+                            <label for="fortnite">Fortnite</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="overwatch" value="overwatch" {% if 'overwatch' in current_interests %}checked{% endif %}>
+                            <label for="overwatch">Overwatch</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="apex" value="apex" {% if 'apex' in current_interests %}checked{% endif %}>
+                            <label for="apex">Apex Legends</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="rainbow6" value="rainbow6" {% if 'rainbow6' in current_interests %}checked{% endif %}>
+                            <label for="rainbow6">Rainbow Six Siege</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="freefire" value="freefire" {% if 'freefire' in current_interests %}checked{% endif %}>
+                            <label for="freefire">Free Fire</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="rocket_league" value="rocket_league" {% if 'rocket_league' in current_interests %}checked{% endif %}>
+                            <label for="rocket_league">Rocket League</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="app-section app-mb-3">
+                    <h4 class="app-section-title">Categorias</h4>
+                    <div class="app-checkbox-grid">
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="fps" value="fps" {% if 'fps' in current_interests %}checked{% endif %}>
+                            <label for="fps">FPS</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="moba" value="moba" {% if 'moba' in current_interests %}checked{% endif %}>
+                            <label for="moba">MOBA</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="battle_royale" value="battle_royale" {% if 'battle_royale' in current_interests %}checked{% endif %}>
+                            <label for="battle_royale">Battle Royale</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="strategy" value="strategy" {% if 'strategy' in current_interests %}checked{% endif %}>
+                            <label for="strategy">Estratégia</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="fighting" value="fighting" {% if 'fighting' in current_interests %}checked{% endif %}>
+                            <label for="fighting">Luta</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="mobile" value="mobile" {% if 'mobile' in current_interests %}checked{% endif %}>
+                            <label for="mobile">Mobile</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="app-section app-mb-3">
+                    <h4 class="app-section-title">Campeonatos & Eventos</h4>
+                    <div class="app-checkbox-grid">
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="major" value="major" {% if 'major' in current_interests %}checked{% endif %}>
+                            <label for="major">CS:GO Major</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="blast" value="blast" {% if 'blast' in current_interests %}checked{% endif %}>
+                            <label for="blast">BLAST Premier</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="esl" value="esl" {% if 'esl' in current_interests %}checked{% endif %}>
+                            <label for="esl">ESL/IEM</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="vct" value="vct" {% if 'vct' in current_interests %}checked{% endif %}>
+                            <label for="vct">Valorant Champions Tour</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="worlds" value="worlds" {% if 'worlds' in current_interests %}checked{% endif %}>
+                            <label for="worlds">Worlds (LoL)</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="ti" value="ti" {% if 'ti' in current_interests %}checked{% endif %}>
+                            <label for="ti">The International</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="cblol" value="cblol" {% if 'cblol' in current_interests %}checked{% endif %}>
+                            <label for="cblol">CBLOL</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="interests[]" id="cbcs" value="cbcs" {% if 'cbcs' in current_interests %}checked{% endif %}>
+                            <label for="cbcs">CBCS</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="app-form-group app-text-center">
+                    <button type="submit" class="app-btn app-btn-primary app-btn-block">Salvar Interesses</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.app-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.app-section-title {
+    font-size: 1.1rem;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.app-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.app-checkbox-item {
+    display: flex;
+    align-items: center;
+}
+
+.app-checkbox-item input[type="checkbox"] {
+    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary-color);
+}
+
+.app-checkbox-item label {
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+@media (min-width: 768px) {
+    .app-checkbox-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+</style>
+{% endblock %}

@@ -517,59 +517,112 @@ def get_fan_power(user, social_media, content_links):
         content_links: User's validated content links
     
     Returns:
-        dict: Fan power metrics
+        dict: Fan power metrics with scores and percentages
     """
     logger.debug("Calculating fan power metrics")
     
-    # Base metrics
-    metrics = {
-        "social_engagement": 0,
-        "content_consumption": 0,
-        "event_participation": 0,
-        "merchandise_support": 0,
-        "overall_score": 0
+    # Initialize result dictionary with default values
+    result = {
+        "social_score": 0,
+        "content_score": 0,
+        "engagement_score": 0,
+        "fan_score": 0
     }
     
-    # Calculate social engagement
+    # Calculate social media score (0-100)
     if social_media:
-        metrics["social_engagement"] = social_media.engagement_score
+        # Base score for having social media connected
+        connected_count = 0
+        if social_media.twitter:
+            connected_count += 1
+        if social_media.instagram:
+            connected_count += 1
+        if social_media.twitch:
+            connected_count += 1
+        if social_media.youtube:
+            connected_count += 1
+        if social_media.facebook:
+            connected_count += 1
+            
+        base_social_score = min(60, connected_count * 15)
+        
+        # Add engagement bonus if available
+        engagement_bonus = social_media.engagement_score * 0.4 if hasattr(social_media, 'engagement_score') else 0
+        
+        result["social_score"] = base_social_score + engagement_bonus
     
-    # Calculate content consumption
-    if content_links:
-        relevance_scores = [link.relevance_score for link in content_links]
-        if relevance_scores:
-            metrics["content_consumption"] = sum(relevance_scores) / len(relevance_scores)
+    # Calculate content score (0-100)
+    if content_links and len(content_links) > 0:
+        # Each relevant content link adds to the score
+        content_count = len(content_links)
+        relevance_total = 0
+        
+        for link in content_links:
+            if hasattr(link, 'relevance_score') and link.relevance_score:
+                relevance_total += link.relevance_score
+        
+        if content_count > 0 and relevance_total > 0:
+            avg_relevance = relevance_total / content_count
+            result["content_score"] = min(100, content_count * 15 + avg_relevance * 10)
+        else:
+            result["content_score"] = min(100, content_count * 20)
     
-    # Calculate event participation
+    # Calculate engagement score (0-100)
+    # This combines quiz results, document verification, and participation
+    engagement_factors = 0
+    engagement_score = 0
+    
+    # Quiz contribution
+    if user.quiz_score:
+        quiz_contribution = (user.quiz_score / 5) * 30  # Max 30% from quiz
+        engagement_score += quiz_contribution
+        engagement_factors += 1
+    
+    # Events contribution (if available)
     if user.events_attended:
-        events = json.loads(user.events_attended)
-        metrics["event_participation"] = min(100, len(events) * 20)
+        try:
+            events = json.loads(user.events_attended) if isinstance(user.events_attended, str) else user.events_attended
+            if isinstance(events, list) and len(events) > 0:
+                events_contribution = min(30, len(events) * 10)  # Max 30% from events
+                engagement_score += events_contribution
+                engagement_factors += 1
+        except:
+            pass
     
-    # Calculate merchandise support
-    if user.purchases:
-        purchases = json.loads(user.purchases)
-        metrics["merchandise_support"] = min(100, len(purchases) * 15)
+    # Document verification contribution
+    if hasattr(user, 'documents') and user.documents:
+        for doc in user.documents:
+            if doc.validation_status == 'verified':
+                engagement_score += 20  # Verified document adds 20%
+                engagement_factors += 1
+                break
     
-    # Calculate overall score
+    # Normalize engagement score
+    if engagement_factors > 0:
+        result["engagement_score"] = engagement_score / engagement_factors
+    else:
+        # Basic engagement score even with no factors
+        result["engagement_score"] = 10
+    
+    # Calculate overall fan score (0-100)
     weights = {
-        "social_engagement": 0.35,
-        "content_consumption": 0.25,
-        "event_participation": 0.25,
-        "merchandise_support": 0.15
+        "social_score": 0.4,
+        "content_score": 0.3,
+        "engagement_score": 0.3
     }
     
-    overall_score = sum(metrics[key] * weights[key] for key in weights.keys())
-    metrics["overall_score"] = overall_score
+    result["fan_score"] = (
+        result["social_score"] * weights["social_score"] +
+        result["content_score"] * weights["content_score"] +
+        result["engagement_score"] * weights["engagement_score"]
+    )
     
-    # Determine fan category
-    if overall_score >= 70:
-        metrics["fan_category"] = "Super Fã"
-    elif overall_score >= 40:
-        metrics["fan_category"] = "Intermediário"
-    else:
-        metrics["fan_category"] = "Novato"
+    # Ensure all scores are at least minimally present (minimum 5%)
+    for key in ["social_score", "content_score", "engagement_score", "fan_score"]:
+        if result[key] < 5:
+            result[key] = 5
     
-    return metrics
+    return result
 
 def get_lootbox_reward():
     """
