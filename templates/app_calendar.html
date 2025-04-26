@@ -1,0 +1,340 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Calendário - FURIA Fan App{% endblock %}
+{% block header_title %}Calendário{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <!-- Filters -->
+    <div class="app-filter-container app-mb-3">
+        <div class="app-filter-scroll">
+            <button class="app-filter-btn active" data-filter="all">Todos</button>
+            <button class="app-filter-btn" data-filter="cs">CS:GO</button>
+            <button class="app-filter-btn" data-filter="valorant">Valorant</button>
+            <button class="app-filter-btn" data-filter="lol">LoL</button>
+            <button class="app-filter-btn" data-filter="freefire">Free Fire</button>
+            <button class="app-filter-btn" data-filter="rainbow6">R6</button>
+            <button class="app-filter-btn" data-filter="favorites">Favoritos</button>
+        </div>
+    </div>
+    
+    <!-- Esports Events Section -->
+    <div id="app-events-container">
+        <div class="app-loading-indicator">
+            <div class="app-spinner"></div>
+            <p>Carregando eventos...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load initial data
+    loadEvents('all');
+    
+    // Filter buttons
+    const filterButtons = document.querySelectorAll('.app-filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Toggle active class
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Load filtered events
+            const filter = this.dataset.filter;
+            loadEvents(filter);
+        });
+    });
+    
+    // Function to load events
+    function loadEvents(filter) {
+        const container = document.getElementById('app-events-container');
+        container.innerHTML = `
+            <div class="app-loading-indicator">
+                <div class="app-spinner"></div>
+                <p>Carregando eventos...</p>
+            </div>
+        `;
+        
+        // Load events from JSON file
+        fetch('{{ url_for('static', filename='js/events.json') }}')
+            .then(response => response.json())
+            .then(events => {
+                // Filter events
+                const filteredEvents = filterEvents(events, filter);
+                displayEvents(filteredEvents, container);
+            })
+            .catch(error => {
+                console.error('Error loading events:', error);
+                container.innerHTML = `
+                    <div class="app-error-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Erro ao carregar eventos. Tente novamente.</p>
+                        <button class="app-btn app-btn-primary" onclick="loadEvents('${filter}')">Tentar novamente</button>
+                    </div>
+                `;
+            });
+    }
+    
+    // Function to filter events
+    function filterEvents(events, filter) {
+        const favoriteIds = {{ favorite_ids|safe }};
+        
+        if (filter === 'all') {
+            return events;
+        } else if (filter === 'favorites') {
+            return events.filter(event => favoriteIds.includes(event.id));
+        } else {
+            return events.filter(event => event.tags.includes(filter));
+        }
+    }
+    
+    // Function to display events
+    function displayEvents(events, container) {
+        const favoriteIds = {{ favorite_ids|safe }};
+        
+        if (events.length === 0) {
+            container.innerHTML = `
+                <div class="app-empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>Nenhum evento encontrado para este filtro.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Group events by month
+        const groupedEvents = groupEventsByMonth(events);
+        
+        // Clear container
+        container.innerHTML = '';
+        
+        // Create HTML for each month
+        for (const month in groupedEvents) {
+            const monthContainer = document.createElement('div');
+            monthContainer.className = 'app-month-container';
+            
+            // Month header
+            const monthHeader = document.createElement('h3');
+            monthHeader.className = 'app-month-header';
+            monthHeader.textContent = month;
+            monthContainer.appendChild(monthHeader);
+            
+            // Events list
+            const eventsList = document.createElement('div');
+            eventsList.className = 'app-events-list';
+            
+            // Add each event
+            groupedEvents[month].forEach(event => {
+                const isFavorite = favoriteIds.includes(event.id);
+                
+                const eventCard = document.createElement('div');
+                eventCard.className = `app-event-card ${isFavorite ? 'app-event-favorite' : ''}`;
+                eventCard.dataset.eventId = event.id;
+                
+                // Format date
+                const startDate = new Date(event.date);
+                const endDate = new Date(event.end_date);
+                const dateOptions = { day: 'numeric', month: 'short' };
+                const dateString = startDate.toLocaleDateString('pt-BR', dateOptions);
+                const endDateString = endDate.toLocaleDateString('pt-BR', dateOptions);
+                
+                // Add event content
+                eventCard.innerHTML = `
+                    <div class="app-event-date">
+                        <div class="app-event-day">${startDate.getDate()}</div>
+                        <div class="app-event-month">${startDate.toLocaleDateString('pt-BR', { month: 'short' }).toUpperCase()}</div>
+                    </div>
+                    <div class="app-event-info">
+                        <h4 class="app-event-title">${event.title}</h4>
+                        <div class="app-event-meta">
+                            <span class="app-event-game"><i class="fas fa-gamepad"></i> ${event.game}</span>
+                            <span class="app-event-location"><i class="fas fa-map-marker-alt"></i> ${event.location}</span>
+                        </div>
+                        ${event.teams.includes("FURIA") ? '<span class="app-badge app-badge-furia">FURIA</span>' : ''}
+                    </div>
+                    <div class="app-event-actions">
+                        <button class="app-btn app-event-favorite-btn ${isFavorite ? 'app-favorite-active' : ''}" onclick="toggleFavorite('${event.id}')">
+                            <i class="fas ${isFavorite ? 'fa-star' : 'fa-star'}"></i>
+                        </button>
+                        <button class="app-btn app-event-details-btn" onclick="showEventDetails('${event.id}')">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
+                `;
+                
+                eventsList.appendChild(eventCard);
+            });
+            
+            monthContainer.appendChild(eventsList);
+            container.appendChild(monthContainer);
+        }
+    }
+    
+    // Function to group events by month
+    function groupEventsByMonth(events) {
+        const grouped = {};
+        
+        // Sort events by date
+        events.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        events.forEach(event => {
+            const date = new Date(event.date);
+            const month = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            
+            if (!grouped[month]) {
+                grouped[month] = [];
+            }
+            
+            grouped[month].push(event);
+        });
+        
+        return grouped;
+    }
+    
+    // Function to show event details
+    window.showEventDetails = function(eventId) {
+        fetch('{{ url_for('static', filename='js/events.json') }}')
+            .then(response => response.json())
+            .then(events => {
+                const event = events.find(e => e.id === eventId);
+                if (event) {
+                    // Format dates
+                    const startDate = new Date(event.date);
+                    const endDate = new Date(event.end_date);
+                    const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+                    const dateString = formatDateRange(startDate, endDate, dateOptions);
+                    
+                    // Create modal
+                    const modal = document.createElement('div');
+                    modal.className = 'app-modal';
+                    modal.innerHTML = `
+                        <div class="app-modal-content">
+                            <div class="app-modal-header">
+                                <h3>${event.title}</h3>
+                                <button class="app-modal-close" onclick="closeModal()">&times;</button>
+                            </div>
+                            <div class="app-modal-body">
+                                <div class="app-event-detail-meta">
+                                    <p><i class="far fa-calendar-alt"></i> ${dateString}</p>
+                                    <p><i class="fas fa-map-marker-alt"></i> ${event.location}</p>
+                                    <p><i class="fas fa-gamepad"></i> ${event.game}</p>
+                                </div>
+                                
+                                <div class="app-divider"></div>
+                                
+                                <p class="app-event-description">${event.description}</p>
+                                
+                                <div class="app-divider"></div>
+                                
+                                <h4>Times Participantes</h4>
+                                <div class="app-teams-list">
+                                    ${event.teams.map(team => `
+                                        <span class="app-team-badge ${team === 'FURIA' ? 'app-team-furia' : ''}">${team}</span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div class="app-modal-footer">
+                                <button class="app-btn app-btn-outline" onclick="closeModal()">Fechar</button>
+                                <button class="app-btn app-btn-primary" onclick="toggleFavorite('${event.id}')">
+                                    <i class="fas fa-star"></i> Favoritar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    
+                    // Prevent scrolling
+                    document.body.style.overflow = 'hidden';
+                    
+                    // Add animation
+                    setTimeout(() => {
+                        modal.querySelector('.app-modal-content').classList.add('show');
+                    }, 10);
+                }
+            });
+    };
+    
+    // Function to close modal
+    window.closeModal = function() {
+        const modal = document.querySelector('.app-modal');
+        if (modal) {
+            modal.querySelector('.app-modal-content').classList.remove('show');
+            
+            setTimeout(() => {
+                modal.remove();
+                document.body.style.overflow = '';
+            }, 300);
+        }
+    };
+    
+    // Function to toggle favorite
+    window.toggleFavorite = function(eventId) {
+        fetch('{{ url_for('toggle_favorite') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ event_id: eventId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update UI
+                const eventCards = document.querySelectorAll(`.app-event-card[data-event-id="${eventId}"]`);
+                eventCards.forEach(card => {
+                    card.classList.toggle('app-event-favorite', data.is_favorite);
+                    
+                    const favBtn = card.querySelector('.app-event-favorite-btn');
+                    if (favBtn) {
+                        favBtn.classList.toggle('app-favorite-active', data.is_favorite);
+                    }
+                });
+                
+                // Show toast
+                const toast = document.createElement('div');
+                toast.className = 'app-toast';
+                toast.innerHTML = `
+                    <div class="app-toast-content">
+                        ${data.is_favorite ? 'Evento adicionado aos favoritos' : 'Evento removido dos favoritos'}
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 10);
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        });
+    };
+    
+    // Helper to format date range
+    function formatDateRange(start, end, options) {
+        if (start.getFullYear() === end.getFullYear() && 
+            start.getMonth() === end.getMonth() && 
+            start.getDate() === end.getDate()) {
+            // Same day
+            return start.toLocaleDateString('pt-BR', options);
+        } else if (start.getFullYear() === end.getFullYear() && 
+                  start.getMonth() === end.getMonth()) {
+            // Same month and year
+            return `${start.getDate()} a ${end.toLocaleDateString('pt-BR', options)}`;
+        } else if (start.getFullYear() === end.getFullYear()) {
+            // Same year
+            return `${start.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })} a ${end.toLocaleDateString('pt-BR', options)}`;
+        } else {
+            // Different years
+            return `${start.toLocaleDateString('pt-BR', options)} a ${end.toLocaleDateString('pt-BR', options)}`;
+        }
+    }
+});
+</script>
+{% endblock %}

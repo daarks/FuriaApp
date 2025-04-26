@@ -1,0 +1,553 @@
+/**
+ * FURIA Know Your Fan - App Version
+ * Dark theme with black & white color scheme
+ */
+
+:root {
+  /* App colors */
+  --app-black: #000000;
+  --app-dark-gray: #121212;
+  --app-gray: #232323;
+  --app-light-gray: #333333;
+  --app-white: #FFFFFF;
+  --app-accent: #CCCCCC;
+  
+  /* Functional colors */
+  --app-success: #66BB6A;
+  --app-warning: #FFA726;
+  --app-danger: #EF5350;
+  --app-info: #42A5F5;
+  
+  /* FURIA colors - only used for the logo and minimal highlights */
+  --furia-primary: #ff0057;
+  --furia-secondary: #1e90ff;
+  
+  /* Font families */
+  --font-primary: 'Roboto', sans-serif;
+  --font-secondary: 'Montserrat', sans-serif;
+  --font-tertiary: 'Play', sans-serif;
+}
+
+body {
+  background-color: var(--app-black);
+  color: var(--app-white);
+  font-family: var(--font-primary);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main content area */
+#app-content {
+  flex: 1;
+  padding-bottom: 65px; /* Space for the footer */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* App header */
+.app-header {
+  background-color: var(--app-black);
+  border-bottom: 1px solid var(--app-light-gray);
+  padding: 15px 0;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.app-header h1 {
+  font-family: var(--font-tertiary);
+  font-size: 1.5rem;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* App footer navigation */
+.app-footer {
+  background-color: var(--app-dark-gray);
+  border-top: 1px solid var(--app-light-gray);
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+
+.footer-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--app-accent);
+  text-decoration: none;
+  font-size: 0.7rem;
+  transition: color 0.2s;
+  padding: 10px 0;
+  width: 20%;
+}
+
+.footer-nav-item i {
+  font-size: 1.3rem;
+  margin-bottom: 4px;
+}
+
+.footer-nav-item.active {
+  color: var(--app-white);
+}
+
+.footer-nav-item:hover {
+  color: var(--app-white);
+}
+
+/* Card Styles */
+.app-card {
+  background-color: var(--app-gray);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid var(--app-light-gray);
+}
+
+.app-card-header {
+  background-color: var(--app-dark-gray);
+  padding: 15px;
+  border-bottom: 1px solid var(--app-light-gray);
+}
+
+.app-card-header h2, .app-card-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.app-card-body {
+  padding: 15px;
+}
+
+.app-card-footer {
+  padding: 15px;
+  border-top: 1px solid var(--app-light-gray);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Button Styles */
+.app-btn {
+  background-color: var(--app-light-gray);
+  color: var(--app-white);
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.app-btn:hover {
+  background-color: var(--app-accent);
+  color: var(--app-black);
+}
+
+.app-btn-primary {
+  background-color: var(--app-white);
+  color: var(--app-black);
+}
+
+.app-btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--app-accent);
+}
+
+.app-btn-block {
+  display: block;
+  width: 100%;
+}
+
+/* Form Styles */
+.app-form-group {
+  margin-bottom: 20px;
+}
+
+.app-form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--app-accent);
+}
+
+.app-form-control {
+  width: 100%;
+  background-color: var(--app-dark-gray);
+  border: 1px solid var(--app-light-gray);
+  border-radius: 4px;
+  padding: 10px;
+  color: var(--app-white);
+  font-family: var(--font-primary);
+}
+
+.app-form-control:focus {
+  outline: none;
+  border-color: var(--app-white);
+}
+
+/* Splash Screen */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--app-black);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.splash-logo {
+  width: 180px;
+  height: 180px;
+  animation: pulse 2s infinite alternate;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Login Form */
+.login-container {
+  max-width: 350px;
+  margin: 0 auto;
+  padding: 20px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stats and Badges */
+.app-stat {
+  text-align: center;
+  background-color: var(--app-dark-gray);
+  padding: 15px 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.app-stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.app-stat-label {
+  font-size: 0.9rem;
+  color: var(--app-accent);
+}
+
+.app-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: var(--app-light-gray);
+  color: var(--app-white);
+  font-size: 0.8rem;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.app-badge-super {
+  background-color: var(--furia-primary);
+}
+
+.app-badge-dedicated {
+  background-color: var(--app-info);
+}
+
+.app-badge-casual {
+  background-color: var(--app-accent);
+  color: var(--app-black);
+}
+
+/* Alerts and Notifications */
+.app-alert {
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+.app-alert-info {
+  background-color: rgba(66, 165, 245, 0.2);
+  border: 1px solid var(--app-info);
+}
+
+.app-alert-success {
+  background-color: rgba(102, 187, 106, 0.2);
+  border: 1px solid var(--app-success);
+}
+
+.app-alert-warning {
+  background-color: rgba(255, 167, 38, 0.2);
+  border: 1px solid var(--app-warning);
+}
+
+.app-alert-danger {
+  background-color: rgba(239, 83, 80, 0.2);
+  border: 1px solid var(--app-danger);
+}
+
+/* Utilities */
+.app-text-center {
+  text-align: center;
+}
+
+.app-mt-1 { margin-top: 10px; }
+.app-mt-2 { margin-top: 20px; }
+.app-mt-3 { margin-top: 30px; }
+.app-mb-1 { margin-bottom: 10px; }
+.app-mb-2 { margin-bottom: 20px; }
+.app-mb-3 { margin-bottom: 30px; }
+
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.app-divider {
+  height: 1px;
+  background-color: var(--app-light-gray);
+  margin: 20px 0;
+}
+
+/* Special Elements */
+.lootbox-container {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.lootbox {
+  width: 120px;
+  height: 120px;
+  background-image: url('../img/lootbox.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.lootbox:hover {
+  transform: scale(1.05);
+}
+
+.lootbox.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Fan Power Page */
+.fan-power-gauge {
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fan-power-metric {
+  background-color: var(--app-dark-gray);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.fan-power-metric-label {
+  font-size: 0.9rem;
+  color: var(--app-accent);
+  margin-bottom: 5px;
+}
+
+.fan-power-metric-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* Calendar & Events */
+.event-card {
+  border-left: 3px solid var(--app-light-gray);
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  background-color: var(--app-dark-gray);
+  border-radius: 0 4px 4px 0;
+}
+
+.event-favorite {
+  border-left-color: var(--furia-primary);
+}
+
+.event-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.event-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--app-accent);
+}
+
+.event-actions {
+  margin-top: 10px;
+}
+
+/* Player Match */
+.player-card {
+  text-align: center;
+  padding: 20px;
+}
+
+.player-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--app-light-gray);
+  margin-bottom: 15px;
+}
+
+.player-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.player-bio {
+  font-size: 0.9rem;
+  color: var(--app-accent);
+}
+
+/* Quiz Styles */
+.quiz-option {
+  padding: 15px;
+  background-color: var(--app-dark-gray);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.quiz-option:hover {
+  background-color: var(--app-light-gray);
+}
+
+.quiz-option.selected {
+  background-color: var(--app-white);
+  color: var(--app-black);
+}
+
+.quiz-progress {
+  margin-bottom: 20px;
+}
+
+.quiz-progress-bar {
+  height: 6px;
+  background-color: var(--app-light-gray);
+  border-radius: 3px;
+  margin-top: 5px;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background-color: var(--app-white);
+  width: 0;
+  transition: width 0.3s;
+}
+
+/* Social Media Connect */
+.social-connect-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.social-connect-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid var(--app-light-gray);
+}
+
+.social-connect-item:last-child {
+  border-bottom: none;
+}
+
+.social-connect-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.social-connect-twitter { background-color: #1DA1F2; }
+.social-connect-instagram { background-color: #C13584; }
+.social-connect-twitch { background-color: #6441A4; }
+.social-connect-youtube { background-color: #FF0000; }
+.social-connect-facebook { background-color: #4267B2; }
+
+.social-connect-info {
+  flex: 1;
+}
+
+.social-connect-name {
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.social-connect-status {
+  font-size: 0.8rem;
+  color: var(--app-accent);
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .app-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+  
+  .app-card-header h2, .app-card-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .app-stat-value {
+    font-size: 1.5rem;
+  }
+}

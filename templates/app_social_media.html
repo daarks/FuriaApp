@@ -1,0 +1,176 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Redes Sociais - FURIA Fan App{% endblock %}
+{% block header_title %}Conectar Redes Sociais{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-card app-mb-3">
+        <div class="app-card-header">
+            <h3>Conecte Suas Redes</h3>
+        </div>
+        <div class="app-card-body">
+            <p>Conecte suas redes sociais para aumentar seu Fan Power e desbloquear conteúdos exclusivos.</p>
+            
+            <ul class="social-connect-list">
+                <li class="social-connect-item">
+                    <div class="social-connect-icon social-connect-twitter">
+                        <i class="fab fa-twitter"></i>
+                    </div>
+                    <div class="social-connect-info">
+                        <div class="social-connect-name">Twitter</div>
+                        <div class="social-connect-status {% if social_media and social_media.twitter %}connected{% endif %}">
+                            {% if social_media and social_media.twitter %}Conectado{% else %}Não conectado{% endif %}
+                        </div>
+                    </div>
+                    <button class="app-btn {% if social_media and social_media.twitter %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
+                            onclick="connectSocialMedia('twitter')">
+                        {% if social_media and social_media.twitter %}Desconectar{% else %}Conectar{% endif %}
+                    </button>
+                </li>
+                
+                <li class="social-connect-item">
+                    <div class="social-connect-icon social-connect-instagram">
+                        <i class="fab fa-instagram"></i>
+                    </div>
+                    <div class="social-connect-info">
+                        <div class="social-connect-name">Instagram</div>
+                        <div class="social-connect-status {% if social_media and social_media.instagram %}connected{% endif %}">
+                            {% if social_media and social_media.instagram %}Conectado{% else %}Não conectado{% endif %}
+                        </div>
+                    </div>
+                    <button class="app-btn {% if social_media and social_media.instagram %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
+                            onclick="connectSocialMedia('instagram')">
+                        {% if social_media and social_media.instagram %}Desconectar{% else %}Conectar{% endif %}
+                    </button>
+                </li>
+                
+                <li class="social-connect-item">
+                    <div class="social-connect-icon social-connect-twitch">
+                        <i class="fab fa-twitch"></i>
+                    </div>
+                    <div class="social-connect-info">
+                        <div class="social-connect-name">Twitch</div>
+                        <div class="social-connect-status {% if social_media and social_media.twitch %}connected{% endif %}">
+                            {% if social_media and social_media.twitch %}Conectado{% else %}Não conectado{% endif %}
+                        </div>
+                    </div>
+                    <button class="app-btn {% if social_media and social_media.twitch %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
+                            onclick="connectSocialMedia('twitch')">
+                        {% if social_media and social_media.twitch %}Desconectar{% else %}Conectar{% endif %}
+                    </button>
+                </li>
+                
+                <li class="social-connect-item">
+                    <div class="social-connect-icon social-connect-youtube">
+                        <i class="fab fa-youtube"></i>
+                    </div>
+                    <div class="social-connect-info">
+                        <div class="social-connect-name">YouTube</div>
+                        <div class="social-connect-status {% if social_media and social_media.youtube %}connected{% endif %}">
+                            {% if social_media and social_media.youtube %}Conectado{% else %}Não conectado{% endif %}
+                        </div>
+                    </div>
+                    <button class="app-btn {% if social_media and social_media.youtube %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
+                            onclick="connectSocialMedia('youtube')">
+                        {% if social_media and social_media.youtube %}Desconectar{% else %}Conectar{% endif %}
+                    </button>
+                </li>
+                
+                <li class="social-connect-item">
+                    <div class="social-connect-icon social-connect-facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </div>
+                    <div class="social-connect-info">
+                        <div class="social-connect-name">Facebook</div>
+                        <div class="social-connect-status {% if social_media and social_media.facebook %}connected{% endif %}">
+                            {% if social_media and social_media.facebook %}Conectado{% else %}Não conectado{% endif %}
+                        </div>
+                    </div>
+                    <button class="app-btn {% if social_media and social_media.facebook %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
+                            onclick="connectSocialMedia('facebook')">
+                        {% if social_media and social_media.facebook %}Desconectar{% else %}Conectar{% endif %}
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    {% if social_media and social_media.engagement_score %}
+    <div class="app-card">
+        <div class="app-card-header">
+            <h3>Análise de Engajamento</h3>
+        </div>
+        <div class="app-card-body">
+            <div class="app-engagement-summary">
+                <div class="app-engagement-score">
+                    <span class="app-score-value">{{ social_media.engagement_score|round|int }}%</span>
+                    <span class="app-score-label">Engajamento</span>
+                </div>
+                <div class="app-engagement-category">
+                    <span class="app-badge app-badge-{{ user.fan_badge|lower|replace(' ', '-')|replace('ã', 'a') }}">
+                        {{ user.fan_badge }}
+                    </span>
+                </div>
+            </div>
+            
+            {% if social_media.hashtags %}
+            <h4 class="app-mt-3">Hashtags populares</h4>
+            <div class="app-hashtag-cloud">
+                {% set hashtags = social_media.hashtags|from_json if social_media.hashtags else [] %}
+                {% for tag in hashtags %}
+                <span class="app-hashtag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Por que conectar suas redes?</h3>
+        </div>
+        <div class="app-card-body">
+            <ul class="app-benefits-list">
+                <li class="app-benefit-item">
+                    <i class="fas fa-chart-line app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Aumente seu Fan Power</div>
+                        <div class="app-benefit-desc">Quanto mais redes conectadas, maior sua pontuação</div>
+                    </div>
+                </li>
+                <li class="app-benefit-item">
+                    <i class="fas fa-gift app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Melhores recompensas</div>
+                        <div class="app-benefit-desc">Aumenta suas chances de itens raros nas lootboxes</div>
+                    </div>
+                </li>
+                <li class="app-benefit-item">
+                    <i class="fas fa-users app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Match de jogador personalizado</div>
+                        <div class="app-benefit-desc">Descubra qual jogador da FURIA mais combina com você</div>
+                    </div>
+                </li>
+                <li class="app-benefit-item">
+                    <i class="fas fa-calendar-check app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Eventos personalizados</div>
+                        <div class="app-benefit-desc">Receba recomendações de eventos baseadas no seu perfil</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="app-privacy-note app-mt-3 app-mb-3">
+        <p class="app-text-light app-text-center">
+            <i class="fas fa-lock app-icon-small"></i>
+            Seus dados são tratados com segurança e privacidade.
+            <a href="#" class="app-link">Política de Privacidade</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

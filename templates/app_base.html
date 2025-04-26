@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="FURIA Know Your Fan - App Version">
+    
+    <title>{% block title %}FURIA App{% endblock %}</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@500;600;700&family=Play:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app-style.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if not session.get('user_id') and request.endpoint == 'login' %}
+    <!-- Splash Screen (only on login page) -->
+    <div id="splash-screen" class="splash-screen">
+        <img src="{{ url_for('static', filename='img/furia-logo-white.png') }}" alt="FURIA Logo" class="splash-logo">
+    </div>
+    {% endif %}
+    
+    <!-- App Header -->
+    <header class="app-header">
+        <h1>{% block header_title %}FURIA Fan App{% endblock %}</h1>
+    </header>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="app-flash-container">
+                {% for category, message in messages %}
+                <div class="app-alert app-alert-{{ category }}">
+                    <button type="button" class="close">&times;</button>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Main Content Area -->
+    <div id="app-content">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- App Footer Navigation (only when logged in) -->
+    {% if session.get('user_id') %}
+    <footer class="app-footer">
+        <a href="{{ url_for('profile') }}" class="footer-nav-item {% if request.endpoint == 'profile' %}active{% endif %}">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </a>
+        <a href="{{ url_for('player_match') }}" class="footer-nav-item {% if request.endpoint == 'player_match' %}active{% endif %}">
+            <i class="fas fa-users"></i>
+            <span>Match</span>
+        </a>
+        <a href="{{ url_for('calendar') }}" class="footer-nav-item {% if request.endpoint == 'calendar' %}active{% endif %}">
+            <i class="fas fa-calendar"></i>
+            <span>Eventos</span>
+        </a>
+        <a href="{{ url_for('lootbox') }}" class="footer-nav-item {% if request.endpoint == 'lootbox' %}active{% endif %}">
+            <i class="fas fa-box-open"></i>
+            <span>Lootbox</span>
+        </a>
+        <a href="{{ url_for('fan_power') }}" class="footer-nav-item {% if request.endpoint == 'fan_power' %}active{% endif %}">
+            <i class="fas fa-chart-line"></i>
+            <span>Fan Power</span>
+        </a>
+    </footer>
+    {% endif %}
+    
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
