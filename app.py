@@ -439,7 +439,7 @@ def fan_power():
     # Calculate fan power metrics
     fan_power_data = get_fan_power(user, social_media, content_links)
     
-    return render_template('app_stats.html', 
+    return render_template('app_fan_power.html', 
                           user=user, 
                           fan_power=fan_power_data, 
                           social_media=social_media,
