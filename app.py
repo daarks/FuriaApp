@@ -1,14 +1,13 @@
 import os
 import logging
 from datetime import datetime
-from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify
+from flask import Flask, render_template, redirect, url_for, flash, request, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
 import json
-from api_routes import api_blueprint
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -39,9 +38,6 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 # Initialize extensions
 db.init_app(app)
 
-# Register API blueprint
-app.register_blueprint(api_blueprint)
-
 # Import models and forms
 with app.app_context():
     from models import User, UserInterest, Document, SocialMedia, ContentLink, Quiz, Calendar
@@ -59,9 +55,7 @@ with app.app_context():
 # Routes
 @app.route('/')
 def home():
-    if 'user_id' in session:
-        return redirect(url_for('profile'))
-    return redirect(url_for('login'))
+    return render_template('home.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -103,7 +97,7 @@ def register():
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('login'))
     
-    return render_template('app_register.html', form=form)
+    return render_template('register.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -113,14 +107,12 @@ def login():
         
         if user and check_password_hash(user.password_hash, form.password.data):
             session['user_id'] = user.id
-            user.last_login = datetime.utcnow()
-            db.session.commit()
             flash('Login successful!', 'success')
             return redirect(url_for('profile'))
         else:
             flash('Invalid email or password', 'danger')
     
-    return render_template('app_login.html', form=form)
+    return render_template('login.html', form=form)
 
 @app.route('/logout')
 def logout():
@@ -160,18 +152,14 @@ def profile():
     # Get player match
     player_match = user.player_match
     
-    # Get current date for template (used in lootbox logic)
-    now = datetime.now
-    
     return render_template(
-        'app_profile.html', 
+        'profile.html', 
         user=user, 
         interests=interests,
         document=document,
         social_media=social_media,
         fan_badge=fan_badge,
-        player_match=player_match,
-        now=now
+        player_match=player_match
     )
 
 @app.route('/document_validation', methods=['GET', 'POST'])
@@ -220,7 +208,7 @@ def document_validation():
         return redirect(url_for('profile'))
     
     document = Document.query.filter_by(user_id=user.id).first()
-    return render_template('app_document_validation.html', form=form, document=document)
+    return render_template('document_validation.html', form=form, document=document)
 
 @app.route('/social_media', methods=['GET', 'POST'])
 def social_media():
@@ -286,7 +274,7 @@ def social_media():
         form.youtube.data = social_media.youtube
         form.facebook.data = social_media.facebook
     
-    return render_template('app_social_media.html', form=form, social_media=social_media)
+    return render_template('social_media.html', form=form, social_media=social_media)
 
 @app.route('/content_validation', methods=['GET', 'POST'])
 def content_validation():
@@ -318,7 +306,7 @@ def content_validation():
     # Get user's content links
     content_links = ContentLink.query.filter_by(user_id=user.id).order_by(ContentLink.created_at.desc()).all()
     
-    return render_template('app_content_validation.html', form=form, content_links=content_links)
+    return render_template('content_validation.html', form=form, content_links=content_links)
 
 @app.route('/player_match')
 def player_match():
@@ -345,7 +333,7 @@ def player_match():
         user.player_image = player_data['image']
         db.session.commit()
     
-    return render_template('app_player_match.html', user=user, interests=interests, social_media=social_media)
+    return render_template('player_match.html', user=user)
 
 @app.route('/calendar')
 def calendar():
@@ -363,7 +351,7 @@ def calendar():
     favorites = Calendar.query.filter_by(user_id=user.id, is_favorite=True).all()
     favorite_ids = [favorite.event_id for favorite in favorites]
     
-    return render_template('app_calendar.html', 
+    return render_template('calendar.html', 
                            user=user, 
                            interests=interest_list,
                            favorite_ids=json.dumps(favorite_ids))
@@ -413,7 +401,7 @@ def fan_power():
     # Calculate fan power metrics
     fan_power_data = get_fan_power(user, social_media, content_links)
     
-    return render_template('app_fan_power.html', user=user, fan_power=fan_power_data, social_media=social_media)
+    return render_template('fan_power.html', user=user, fan_power=fan_power_data)
 
 @app.route('/lootbox')
 def lootbox():
@@ -431,7 +419,7 @@ def lootbox():
     if last_lootbox and last_lootbox == today:
         can_open = False
     
-    return render_template('app_lootbox.html', user=user, can_open=can_open)
+    return render_template('lootbox.html', user=user, can_open=can_open)
 
 @app.route('/open_lootbox', methods=['POST'])
 def open_lootbox():
@@ -522,106 +510,7 @@ def quiz():
     # Get user's previous quiz results
     quiz_results = Quiz.query.filter_by(user_id=user.id).order_by(Quiz.created_at.desc()).all()
     
-    return render_template('app_quiz.html', form=form, user=user, quiz_results=quiz_results)
-
-@app.route('/connect_social/<platform>', methods=['POST'])
-def connect_social(platform):
-    if 'user_id' not in session:
-        flash('Please login first.', 'warning')
-        return redirect(url_for('login'))
-    
-    user = User.query.get(session['user_id'])
-    
-    # Get social media record or create new one
-    social_media = SocialMedia.query.filter_by(user_id=user.id).first()
-    if not social_media:
-        social_media = SocialMedia(user_id=user.id)
-        db.session.add(social_media)
-    
-    # Handle the specific platform connection (simulated)
-    if platform == 'twitter':
-        social_media.twitter = 'https://twitter.com/user'
-    elif platform == 'instagram':
-        social_media.instagram = 'https://instagram.com/user'
-    elif platform == 'twitch':
-        social_media.twitch = 'https://twitch.tv/user'
-    elif platform == 'youtube':
-        social_media.youtube = 'https://youtube.com/channel/user'
-    elif platform == 'facebook':
-        social_media.facebook = 'https://facebook.com/user'
-    
-    # Simulate social media analysis
-    social_media_data = {
-        'twitter': social_media.twitter,
-        'instagram': social_media.instagram,
-        'twitch': social_media.twitch,
-        'youtube': social_media.youtube,
-        'facebook': social_media.facebook
-    }
-    analysis_result = analyze_social_media(social_media_data)
-    
-    # Update social media record with analysis results
-    social_media.engagement_score = analysis_result['engagement_score']
-    social_media.hashtags = json.dumps(analysis_result['hashtags'])
-    social_media.interactions = json.dumps(analysis_result['interactions'])
-    
-    # Update user fan badge
-    user.fan_badge = analysis_result['fan_badge']
-    
-    db.session.commit()
-    
-    flash(f'{platform.capitalize()} connected successfully!', 'success')
-    return redirect(url_for('social_media'))
-
-@app.route('/edit_interests', methods=['GET', 'POST'])
-def edit_interests():
-    if 'user_id' not in session:
-        flash('Please login first.', 'warning')
-        return redirect(url_for('login'))
-    
-    user = User.query.get(session['user_id'])
-    
-    # Get current interests
-    current_interests = UserInterest.query.filter_by(user_id=user.id).all()
-    current_interest_values = [interest.interest for interest in current_interests]
-    
-    if request.method == 'POST':
-        # Remove old interests
-        for interest in current_interests:
-            db.session.delete(interest)
-        
-        # Add new interests
-        new_interests = request.form.getlist('interests')
-        for interest in new_interests:
-            user_interest = UserInterest(user_id=user.id, interest=interest)
-            db.session.add(user_interest)
-        
-        # Update events attended
-        events = request.form.getlist('events')
-        user.events_attended = json.dumps(events)
-        
-        # Update purchases
-        purchases = request.form.getlist('purchases')
-        user.purchases = json.dumps(purchases)
-        
-        db.session.commit()
-        
-        flash('Interests updated successfully!', 'success')
-        return redirect(url_for('profile'))
-    
-    # Get form for rendering
-    form = RegistrationForm()
-    
-    # Get current events and purchases
-    user_events = json.loads(user.events_attended) if user.events_attended else []
-    user_purchases = json.loads(user.purchases) if user.purchases else []
-    
-    return render_template('app_edit_interests.html', 
-                          user=user, 
-                          form=form, 
-                          current_interests=current_interest_values,
-                          user_events=user_events,
-                          user_purchases=user_purchases)
+    return render_template('quiz.html', form=form, user=user, quiz_results=quiz_results)
 
 
 if __name__ == '__main__':

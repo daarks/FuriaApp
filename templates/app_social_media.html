@@ -23,12 +23,10 @@
                             {% if social_media and social_media.twitter %}Conectado{% else %}Não conectado{% endif %}
                         </div>
                     </div>
-                    <form method="POST" action="{{ url_for('connect_social', platform='twitter') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <button type="submit" class="app-btn {% if social_media and social_media.twitter %}app-btn-outline{% else %}app-btn-primary{% endif %}">
-                            {% if social_media and social_media.twitter %}Desconectar{% else %}Conectar{% endif %}
-                        </button>
-                    </form>
+                    <button class="app-btn {% if social_media and social_media.twitter %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
+                            onclick="connectSocialMedia('twitter')">
+                        {% if social_media and social_media.twitter %}Desconectar{% else %}Conectar{% endif %}
+                    </button>
                 </li>
                 
                 <li class="social-connect-item">
@@ -41,12 +39,10 @@
                             {% if social_media and social_media.instagram %}Conectado{% else %}Não conectado{% endif %}
                         </div>
                     </div>
-                    <form method="POST" action="{{ url_for('connect_social', platform='instagram') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <button type="submit" class="app-btn {% if social_media and social_media.instagram %}app-btn-outline{% else %}app-btn-primary{% endif %}">
-                            {% if social_media and social_media.instagram %}Desconectar{% else %}Conectar{% endif %}
-                        </button>
-                    </form>
+                    <button class="app-btn {% if social_media and social_media.instagram %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
+                            onclick="connectSocialMedia('instagram')">
+                        {% if social_media and social_media.instagram %}Desconectar{% else %}Conectar{% endif %}
+                    </button>
                 </li>
                 
                 <li class="social-connect-item">
@@ -59,12 +55,10 @@
                             {% if social_media and social_media.twitch %}Conectado{% else %}Não conectado{% endif %}
                         </div>
                     </div>
-                    <form method="POST" action="{{ url_for('connect_social', platform='twitch') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <button type="submit" class="app-btn {% if social_media and social_media.twitch %}app-btn-outline{% else %}app-btn-primary{% endif %}">
-                            {% if social_media and social_media.twitch %}Desconectar{% else %}Conectar{% endif %}
-                        </button>
-                    </form>
+                    <button class="app-btn {% if social_media and social_media.twitch %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
+                            onclick="connectSocialMedia('twitch')">
+                        {% if social_media and social_media.twitch %}Desconectar{% else %}Conectar{% endif %}
+                    </button>
                 </li>
                 
                 <li class="social-connect-item">
@@ -77,12 +71,10 @@
                             {% if social_media and social_media.youtube %}Conectado{% else %}Não conectado{% endif %}
                         </div>
                     </div>
-                    <form method="POST" action="{{ url_for('connect_social', platform='youtube') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <button type="submit" class="app-btn {% if social_media and social_media.youtube %}app-btn-outline{% else %}app-btn-primary{% endif %}">
-                            {% if social_media and social_media.youtube %}Desconectar{% else %}Conectar{% endif %}
-                        </button>
-                    </form>
+                    <button class="app-btn {% if social_media and social_media.youtube %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
+                            onclick="connectSocialMedia('youtube')">
+                        {% if social_media and social_media.youtube %}Desconectar{% else %}Conectar{% endif %}
+                    </button>
                 </li>
                 
                 <li class="social-connect-item">
@@ -95,12 +87,10 @@
                             {% if social_media and social_media.facebook %}Conectado{% else %}Não conectado{% endif %}
                         </div>
                     </div>
-                    <form method="POST" action="{{ url_for('connect_social', platform='facebook') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <button type="submit" class="app-btn {% if social_media and social_media.facebook %}app-btn-outline{% else %}app-btn-primary{% endif %}">
-                            {% if social_media and social_media.facebook %}Desconectar{% else %}Conectar{% endif %}
-                        </button>
-                    </form>
+                    <button class="app-btn {% if social_media and social_media.facebook %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
+                            onclick="connectSocialMedia('facebook')">
+                        {% if social_media and social_media.facebook %}Desconectar{% else %}Conectar{% endif %}
+                    </button>
                 </li>
             </ul>
         </div>
