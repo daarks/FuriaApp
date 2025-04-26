@@ -1,0 +1,145 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Fan Power - FURIA Fan App{% endblock %}
+{% block header_title %}Fan Power{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-fan-power-container">
+        <!-- Power Meter -->
+        <div class="app-power-meter">
+            <svg viewBox="0 0 100 100" class="app-power-meter-svg">
+                <path d="M 50,50 L 50,5 A 45,45 0 0,1 95,50 Z" fill="rgba(255, 0, 87, 0.7)" transform="rotate({{ fan_power.engagement_score|default(0) * 1.8 }} 50 50)"></path>
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#333" stroke-width="2"></circle>
+                <circle cx="50" cy="50" r="35" fill="rgba(0,0,0,0.6)" stroke="#222" stroke-width="1"></circle>
+                <line x1="50" y1="50" x2="50" y2="10" stroke="#FFF" stroke-width="2"></line>
+            </svg>
+            <div class="app-power-label">{{ fan_power.engagement_score|default(0)|round|int }}%</div>
+        </div>
+        
+        <!-- Power Metrics -->
+        <div class="app-power-metrics">
+            <div class="app-power-metric">
+                <div class="app-power-metric-value">{{ fan_power.social_score|default(0)|round|int }}%</div>
+                <div class="app-power-metric-label">Social</div>
+            </div>
+            <div class="app-power-metric">
+                <div class="app-power-metric-value">{{ fan_power.events_score|default(0)|round|int }}%</div>
+                <div class="app-power-metric-label">Eventos</div>
+            </div>
+            <div class="app-power-metric">
+                <div class="app-power-metric-value">{{ fan_power.content_score|default(0)|round|int }}%</div>
+                <div class="app-power-metric-label">Conteúdo</div>
+            </div>
+            <div class="app-power-metric">
+                <div class="app-power-metric-value">{{ fan_power.quiz_score|default(0)|round|int }}%</div>
+                <div class="app-power-metric-label">Conhecimento</div>
+            </div>
+        </div>
+        
+        <!-- Fan Badge -->
+        <div class="app-card app-mt-3">
+            <div class="app-card-header">
+                <h3>Sua Categoria de Fã</h3>
+            </div>
+            <div class="app-card-body app-text-center">
+                <div class="app-badge {% if user.fan_badge == 'Super Fã' %}app-badge-super{% elif user.fan_badge == 'Dedicado' %}app-badge-dedicated{% else %}app-badge-casual{% endif %} app-badge-large">
+                    {{ user.fan_badge|default('Fã Casual') }}
+                </div>
+                
+                <p class="app-text-light app-mt-2">{{ fan_power.badge_description|default('Continue interagindo com a comunidade FURIA para melhorar sua classificação.') }}</p>
+            </div>
+        </div>
+        
+        <!-- Social Media Status -->
+        <div class="app-card app-mt-3">
+            <div class="app-card-header">
+                <h3>Redes Sociais</h3>
+            </div>
+            <div class="app-card-body">
+                {% if social_media %}
+                    <div class="app-social-status">
+                        <div class="app-social-platforms">
+                            {% set platforms = {'twitter': social_media.twitter, 'instagram': social_media.instagram, 'twitch': social_media.twitch, 'youtube': social_media.youtube, 'facebook': social_media.facebook} %}
+                            
+                            {% for platform, url in platforms.items() %}
+                                <div class="app-social-platform {% if url %}connected{% endif %}">
+                                    <i class="fab fa-{{ platform }}"></i>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="app-social-engagement app-mt-2">
+                            <div class="app-progress">
+                                <div class="app-progress-bar" style="width: {{ social_media.engagement_score|default(0) }}%"></div>
+                            </div>
+                            <div class="app-text-center app-mt-1">
+                                <strong>{{ social_media.engagement_score|default(0)|round|int }}%</strong> Engajamento
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="app-empty-state">
+                        <i class="fas fa-share-alt app-icon-large"></i>
+                        <p>Conecte suas redes sociais para aumentar seu Fan Power</p>
+                        <a href="{{ url_for('social_media') }}" class="app-btn app-btn-primary app-mt-2">Conectar Redes</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Power Tips -->
+        <div class="app-card app-mt-3">
+            <div class="app-card-header">
+                <h3>Como Aumentar seu Fan Power</h3>
+            </div>
+            <div class="app-card-body">
+                <ul class="app-power-tips">
+                    <li class="app-tip-item">
+                        <i class="fas fa-check app-tip-icon"></i>
+                        <div class="app-tip-content">
+                            <strong>Conecte suas redes sociais</strong>
+                            <p>Siga a FURIA e compartilhe conteúdo.</p>
+                        </div>
+                    </li>
+                    <li class="app-tip-item">
+                        <i class="fas fa-check app-tip-icon"></i>
+                        <div class="app-tip-content">
+                            <strong>Favorite eventos no calendário</strong>
+                            <p>Adicione eventos da FURIA aos seus favoritos.</p>
+                        </div>
+                    </li>
+                    <li class="app-tip-item">
+                        <i class="fas fa-check app-tip-icon"></i>
+                        <div class="app-tip-content">
+                            <strong>Complete o quiz</strong>
+                            <p>Mostre seu conhecimento sobre a FURIA.</p>
+                        </div>
+                    </li>
+                    <li class="app-tip-item">
+                        <i class="fas fa-check app-tip-icon"></i>
+                        <div class="app-tip-content">
+                            <strong>Abra sua lootbox diária</strong>
+                            <p>Não perca suas recompensas exclusivas.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação do medidor de poder
+    const needle = document.querySelector('.app-power-meter path');
+    if (needle) {
+        setTimeout(() => {
+            needle.style.transition = 'transform 1.5s ease-in-out';
+        }, 100);
+    }
+});
+</script>
+{% endblock %}
