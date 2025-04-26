@@ -23,10 +23,12 @@
                             {% if social_media and social_media.twitter %}Conectado{% else %}Não conectado{% endif %}
                         </div>
                     </div>
-                    <button class="app-btn {% if social_media and social_media.twitter %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
-                            onclick="connectSocialMedia('twitter')">
-                        {% if social_media and social_media.twitter %}Desconectar{% else %}Conectar{% endif %}
-                    </button>
+                    <form method="POST" action="{{ url_for('connect_social', platform='twitter') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit" class="app-btn {% if social_media and social_media.twitter %}app-btn-outline{% else %}app-btn-primary{% endif %}">
+                            {% if social_media and social_media.twitter %}Desconectar{% else %}Conectar{% endif %}
+                        </button>
+                    </form>
                 </li>
                 
                 <li class="social-connect-item">
