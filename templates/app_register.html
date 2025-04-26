@@ -1,0 +1,280 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Cadastro - FURIA Fan App{% endblock %}
+{% block header_title %}Cadastro{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-card">
+        <div class="app-card-header">
+            <h3>Crie sua conta</h3>
+        </div>
+        <div class="app-card-body">
+            <form method="POST" action="{{ url_for('register') }}" class="app-form" id="register-form">
+                {{ form.hidden_tag() }}
+                
+                <div class="app-form-group">
+                    <label for="name" class="app-form-label">{{ form.name.label }}</label>
+                    {{ form.name(class="app-form-control", id="name", placeholder="Seu nome completo") }}
+                    {% if form.name.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.name.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
+                    <label for="email" class="app-form-label">{{ form.email.label }}</label>
+                    {{ form.email(class="app-form-control", id="email", placeholder="seu@email.com") }}
+                    {% if form.email.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.email.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
+                    <label for="password" class="app-form-label">{{ form.password.label }}</label>
+                    <div class="app-form-password">
+                        {{ form.password(class="app-form-control", id="password") }}
+                        <button type="button" class="app-password-toggle" data-target="#password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.password.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
+                    <label for="confirm_password" class="app-form-label">{{ form.confirm_password.label }}</label>
+                    <div class="app-form-password">
+                        {{ form.confirm_password(class="app-form-control", id="confirm_password") }}
+                        <button type="button" class="app-password-toggle" data-target="#confirm_password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.confirm_password.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.confirm_password.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
+                    <label for="address" class="app-form-label">{{ form.address.label }}</label>
+                    {{ form.address(class="app-form-control", id="address", rows="3", placeholder="Seu endereço completo") }}
+                    {% if form.address.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.address.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
+                    <label for="cpf" class="app-form-label">{{ form.cpf.label }}</label>
+                    {{ form.cpf(class="app-form-control", id="cpf", placeholder="123.456.789-00") }}
+                    {% if form.cpf.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.cpf.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
+                    <label for="birth_date" class="app-form-label">{{ form.birth_date.label }}</label>
+                    {{ form.birth_date(class="app-form-control", id="birth_date", type="date") }}
+                    {% if form.birth_date.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.birth_date.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
+                    <label class="app-form-label">Interesses em esports</label>
+                    <div class="app-interests-selector">
+                        {% for choice in form.esports_interests.choices %}
+                        <div class="app-interest-option">
+                            <input type="checkbox" name="interests" id="interest_{{ choice[0] }}" value="{{ choice[0] }}">
+                            <label for="interest_{{ choice[0] }}">{{ choice[1] }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="app-form-group">
+                    <label class="app-form-label">Eventos que você participou</label>
+                    <div class="app-interests-selector">
+                        {% for choice in form.events_attended.choices %}
+                        <div class="app-interest-option">
+                            <input type="checkbox" name="events" id="event_{{ choice[0] }}" value="{{ choice[0] }}">
+                            <label for="event_{{ choice[0] }}">{{ choice[1] }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="app-form-group">
+                    <label class="app-form-label">Compras relacionadas a esports</label>
+                    <div class="app-interests-selector">
+                        {% for choice in form.purchases.choices %}
+                        <div class="app-interest-option">
+                            <input type="checkbox" name="purchases" id="purchase_{{ choice[0] }}" value="{{ choice[0] }}">
+                            <label for="purchase_{{ choice[0] }}">{{ choice[1] }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="app-form-group app-mt-3">
+                    {{ form.submit(class="app-btn app-btn-primary app-btn-block") }}
+                </div>
+            </form>
+            
+            <div class="app-divider"></div>
+            
+            <div class="app-text-center app-mt-2">
+                <p class="app-text-light">Já tem uma conta?</p>
+                <a href="{{ url_for('login') }}" class="app-btn app-btn-outline app-btn-block">Fazer Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle password visibility
+    const toggleButtons = document.querySelectorAll('.app-password-toggle');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const target = document.querySelector(this.dataset.target);
+            if (target.type === 'password') {
+                target.type = 'text';
+                this.querySelector('i').classList.remove('fa-eye');
+                this.querySelector('i').classList.add('fa-eye-slash');
+            } else {
+                target.type = 'password';
+                this.querySelector('i').classList.remove('fa-eye-slash');
+                this.querySelector('i').classList.add('fa-eye');
+            }
+        });
+    });
+    
+    // Format CPF as user types
+    const cpfInput = document.getElementById('cpf');
+    if (cpfInput) {
+        cpfInput.addEventListener('input', function(e) {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 11) {
+                value = value.slice(0, 11);
+            }
+            
+            if (value.length > 9) {
+                this.value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2}).*/, '$1.$2.$3-$4');
+            } else if (value.length > 6) {
+                this.value = value.replace(/^(\d{3})(\d{3})(\d{0,3}).*/, '$1.$2.$3');
+            } else if (value.length > 3) {
+                this.value = value.replace(/^(\d{3})(\d{0,3}).*/, '$1.$2');
+            } else {
+                this.value = value;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.app-interests-selector {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+}
+
+.app-interest-option {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-xs);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-xs);
+    transition: background-color 0.2s;
+}
+
+.app-interest-option:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.app-interest-option input[type="checkbox"] {
+    margin-right: var(--spacing-xs);
+}
+
+.app-interest-option label {
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* Custom styling for date input on mobile */
+input[type="date"] {
+    appearance: none;
+    -webkit-appearance: none;
+    color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--input-border-color);
+    display: block;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm);
+}
+
+/* Custom styling for checkboxes */
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.05);
+    position: relative;
+    cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #FFFFFF;
+}
+
+input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: #000000;
+    font-size: 14px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+</style>
+{% endblock %}

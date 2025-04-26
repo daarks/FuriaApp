@@ -52,25 +52,21 @@
     <!-- App Footer Navigation (only when logged in) -->
     {% if session.get('user_id') %}
     <footer class="app-footer">
-        <a href="{{ url_for('profile') }}" class="footer-nav-item {% if request.endpoint == 'profile' %}active{% endif %}">
-            <i class="fas fa-user"></i>
-            <span>Perfil</span>
-        </a>
-        <a href="{{ url_for('player_match') }}" class="footer-nav-item {% if request.endpoint == 'player_match' %}active{% endif %}">
-            <i class="fas fa-users"></i>
-            <span>Match</span>
+        <a href="{{ url_for('home_dashboard') }}" class="footer-nav-item {% if request.endpoint == 'home_dashboard' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
         </a>
         <a href="{{ url_for('calendar') }}" class="footer-nav-item {% if request.endpoint == 'calendar' %}active{% endif %}">
             <i class="fas fa-calendar"></i>
             <span>Eventos</span>
         </a>
-        <a href="{{ url_for('lootbox') }}" class="footer-nav-item {% if request.endpoint == 'lootbox' %}active{% endif %}">
-            <i class="fas fa-box-open"></i>
-            <span>Lootbox</span>
-        </a>
         <a href="{{ url_for('fan_power') }}" class="footer-nav-item {% if request.endpoint == 'fan_power' %}active{% endif %}">
             <i class="fas fa-chart-line"></i>
-            <span>Fan Power</span>
+            <span>Estatísticas</span>
+        </a>
+        <a href="{{ url_for('profile') }}" class="footer-nav-item {% if request.endpoint == 'profile' %}active{% endif %}">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
         </a>
     </footer>
     {% endif %}

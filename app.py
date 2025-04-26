@@ -99,7 +99,7 @@ def register():
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('login'))
     
-    return render_template('register.html', form=form)
+    return render_template('app_register.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -123,6 +123,25 @@ def logout():
     session.pop('user_id', None)
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
+
+@app.route('/home')
+def home_dashboard():
+    if 'user_id' not in session:
+        flash('Por favor, faça login primeiro.', 'warning')
+        return redirect(url_for('login'))
+    
+    try:
+        user = User.query.get(session['user_id'])
+        if not user:
+            session.pop('user_id', None)
+            flash('Usuário não encontrado. Faça login novamente.', 'danger')
+            return redirect(url_for('login'))
+    except Exception as e:
+        app.logger.error(f"Erro na página inicial: {str(e)}")
+        flash('Ocorreu um erro ao acessar sua página inicial. Tente novamente.', 'danger')
+        return redirect(url_for('login'))
+    
+    return render_template('app_home.html', user=user, now=lambda: datetime.now())
 
 @app.route('/profile')
 def profile():
@@ -216,7 +235,7 @@ def document_validation():
         return redirect(url_for('profile'))
     
     document = Document.query.filter_by(user_id=user.id).first()
-    return render_template('document_validation.html', form=form, document=document)
+    return render_template('app_document_validation.html', form=form, document=document)
 
 @app.route('/social_media', methods=['GET', 'POST'])
 def social_media():
@@ -415,11 +434,17 @@ def fan_power():
     # Get all user data for fan power analysis
     social_media = SocialMedia.query.filter_by(user_id=user.id).first()
     content_links = ContentLink.query.filter_by(user_id=user.id).all()
+    document = Document.query.filter_by(user_id=user.id).first()
     
     # Calculate fan power metrics
     fan_power_data = get_fan_power(user, social_media, content_links)
     
-    return render_template('app_fan_power.html', user=user, fan_power=fan_power_data)
+    return render_template('app_stats.html', 
+                          user=user, 
+                          fan_power=fan_power_data, 
+                          social_media=social_media,
+                          content_links=content_links,
+                          document=document)
 
 @app.route('/lootbox')
 def lootbox():

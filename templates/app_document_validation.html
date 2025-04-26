@@ -1,0 +1,176 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Validação de Documento - FURIA Fan App{% endblock %}
+{% block header_title %}Validação de Documento{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-card">
+        <div class="app-card-header">
+            <h3>Valide seus Documentos</h3>
+        </div>
+        <div class="app-card-body">
+            <p class="app-text-light">Para garantir a segurança de todos os fãs e desbloquear benefícios exclusivos, precisamos validar sua identidade.</p>
+            
+            {% if document and document.validation_status == 'verified' %}
+            <div class="app-document-status app-status-verified">
+                <div class="app-icon-large">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="app-document-info">
+                    <div class="app-document-title">Documento Verificado!</div>
+                    <div class="app-document-type">{{ document.document_type }}</div>
+                    <div class="app-document-message">Sua identidade foi confirmada com sucesso.</div>
+                </div>
+            </div>
+            {% elif document and document.validation_status == 'rejected' %}
+            <div class="app-document-status app-status-rejected">
+                <div class="app-icon-large">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="app-document-info">
+                    <div class="app-document-title">Documento Rejeitado</div>
+                    <div class="app-document-type">{{ document.document_type }}</div>
+                    <div class="app-document-message">{{ document.validation_data|from_json|safe and document.validation_data|from_json|safe.message or 'Não foi possível validar o documento enviado. Por favor, tente novamente.' }}</div>
+                </div>
+            </div>
+            <div class="app-mt-3">
+                <p>Por favor, tente enviar outro documento:</p>
+            </div>
+            {% elif document and document.validation_status == 'pending' %}
+            <div class="app-document-status app-status-pending">
+                <div class="app-icon-large">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="app-document-info">
+                    <div class="app-document-title">Documento em Análise</div>
+                    <div class="app-document-type">{{ document.document_type }}</div>
+                    <div class="app-document-message">Seu documento está sendo analisado. Isso pode levar alguns instantes.</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="app-document-status app-status-none">
+                <div class="app-icon-large">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div class="app-document-info">
+                    <div class="app-document-title">Nenhum Documento Enviado</div>
+                    <div class="app-document-message">Envie um documento válido para verificação.</div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if not document or document.validation_status != 'verified' %}
+            <form method="POST" action="{{ url_for('document_validation') }}" class="app-form" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                
+                <div class="app-form-group">
+                    <label for="document_type" class="app-form-label">{{ form.document_type.label }}</label>
+                    {{ form.document_type(class="app-form-control", id="document_type") }}
+                    {% if form.document_type.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.document_type.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
+                    <label for="document" class="app-form-label">{{ form.document.label }}</label>
+                    <div class="app-file-input-wrapper">
+                        <button type="button" class="app-file-btn app-btn app-btn-outline">
+                            <i class="fas fa-upload"></i> Selecionar Arquivo
+                        </button>
+                        <span class="app-file-name">Nenhum arquivo selecionado</span>
+                        {{ form.document(class="app-file-input", id="document", accept=".jpg,.jpeg,.png,.pdf") }}
+                    </div>
+                    {% if form.document.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.document.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group app-mt-3">
+                    {{ form.submit(class="app-btn app-btn-primary app-btn-block") }}
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Benefícios da Verificação</h3>
+        </div>
+        <div class="app-card-body">
+            <ul class="app-benefits-list">
+                <li class="app-benefit-item">
+                    <i class="fas fa-lock app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Segurança</div>
+                        <div class="app-benefit-desc">Ambiente seguro e exclusivo para fãs verificados</div>
+                    </div>
+                </li>
+                <li class="app-benefit-item">
+                    <i class="fas fa-ticket-alt app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Prioridade em Eventos</div>
+                        <div class="app-benefit-desc">Acesso prioritário para compra de ingressos</div>
+                    </div>
+                </li>
+                <li class="app-benefit-item">
+                    <i class="fas fa-gift app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Lootbox Premium</div>
+                        <div class="app-benefit-desc">Itens e recompensas exclusivas nas lootboxes</div>
+                    </div>
+                </li>
+                <li class="app-benefit-item">
+                    <i class="fas fa-star app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Fan Power Boost</div>
+                        <div class="app-benefit-desc">Bônus na sua pontuação de Fan Power</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="app-privacy-note app-mt-3 app-mb-3">
+        <p class="app-text-light app-text-center">
+            <i class="fas fa-shield-alt app-icon-small"></i>
+            Seus documentos são tratados com segurança e confidencialidade.
+            <a href="#" class="app-link">Política de Privacidade</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // File input handling
+    const fileInput = document.querySelector('.app-file-input');
+    const fileName = document.querySelector('.app-file-name');
+    const fileBtn = document.querySelector('.app-file-btn');
+    
+    if (fileInput && fileName && fileBtn) {
+        fileBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+            } else {
+                fileName.textContent = 'Nenhum arquivo selecionado';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

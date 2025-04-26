@@ -1,0 +1,332 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Estatísticas - FURIA Fan App{% endblock %}
+{% block header_title %}Estatísticas{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-card">
+        <div class="app-card-header">
+            <h3>Seus Dados</h3>
+        </div>
+        <div class="app-card-body">
+            <div class="app-stats-summary">
+                <div class="app-stat">
+                    <div class="app-stat-value">{{ fan_power.fan_score|round|int }}%</div>
+                    <div class="app-stat-label">Fan Power</div>
+                </div>
+                
+                <div class="app-stat">
+                    <div class="app-stat-value">{{ user.quiz_score if user.quiz_score else 0 }}/5</div>
+                    <div class="app-stat-label">Quiz</div>
+                </div>
+                
+                <div class="app-stat">
+                    <div class="app-stat-value">{{ fan_power.social_score|round|int }}%</div>
+                    <div class="app-stat-label">Social</div>
+                </div>
+                
+                <div class="app-stat">
+                    <div class="app-stat-value">{{ fan_power.content_score|round|int }}%</div>
+                    <div class="app-stat-label">Conteúdo</div>
+                </div>
+            </div>
+            
+            <div class="app-mt-3">
+                <div class="app-fan-level-indicator">
+                    <div class="app-fan-level-label">Nível de Fã</div>
+                    <div class="app-fan-level-badge app-badge app-badge-{{ user.fan_badge|lower|replace(' ', '-')|replace('ã', 'a') if user.fan_badge else 'new' }}">
+                        {{ user.fan_badge if user.fan_badge else "Novo Fã" }}
+                    </div>
+                </div>
+                
+                <div class="app-progress app-mt-1 app-mb-2">
+                    <div class="app-progress-bar" style="width: {{ fan_power.fan_score }}%"></div>
+                </div>
+                
+                <p class="app-text-light app-text-center">Continue interagindo com a FURIA para aumentar seu nível!</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Recompensas</h3>
+        </div>
+        <div class="app-card-body">
+            {% if user.lootbox_rewards %}
+                {% set rewards = user.lootbox_rewards|from_json|safe %}
+                <div class="app-rewards-grid">
+                    {% for reward in rewards %}
+                    <div class="app-reward-item">
+                        <div class="app-reward-icon">
+                            <i class="{{ reward.icon }}"></i>
+                        </div>
+                        <div class="app-reward-info">
+                            <div class="app-reward-name">{{ reward.name }}</div>
+                            <div class="app-reward-desc">{{ reward.description }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="app-empty-state">
+                    <i class="fas fa-box-open app-icon-large"></i>
+                    <p>Você ainda não possui recompensas. Abra lootboxes diárias para ganhar!</p>
+                    <a href="{{ url_for('lootbox') }}" class="app-btn app-btn-primary app-mt-2">Abrir Lootbox</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Atividades Recentes</h3>
+        </div>
+        <div class="app-card-body">
+            <ul class="app-activity-list">
+                {% if user.last_login %}
+                <li class="app-activity-item">
+                    <div class="app-activity-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <div class="app-activity-info">
+                        <div class="app-activity-title">Login realizado</div>
+                        <div class="app-activity-time">{{ user.last_login.strftime('%d/%m/%Y %H:%M') }}</div>
+                    </div>
+                </li>
+                {% endif %}
+                
+                {% if user.last_lootbox_date %}
+                <li class="app-activity-item">
+                    <div class="app-activity-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="app-activity-info">
+                        <div class="app-activity-title">Lootbox aberta</div>
+                        <div class="app-activity-time">{{ user.last_lootbox_date.strftime('%d/%m/%Y') }}</div>
+                    </div>
+                </li>
+                {% endif %}
+                
+                {% if user.quiz_score %}
+                <li class="app-activity-item">
+                    <div class="app-activity-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="app-activity-info">
+                        <div class="app-activity-title">Quiz realizado</div>
+                        <div class="app-activity-time">Pontuação: {{ user.quiz_score }}/5</div>
+                    </div>
+                </li>
+                {% endif %}
+                
+                {% if social_media %}
+                <li class="app-activity-item">
+                    <div class="app-activity-icon">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    <div class="app-activity-info">
+                        <div class="app-activity-title">Redes sociais conectadas</div>
+                        <div class="app-activity-time">{{ social_media.updated_at.strftime('%d/%m/%Y') if social_media.updated_at else '' }}</div>
+                    </div>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Como Melhorar seu Fan Power</h3>
+        </div>
+        <div class="app-card-body">
+            <ul class="app-tips-list">
+                <li class="app-tip-item">
+                    <i class="fas fa-check-circle app-tip-icon {% if social_media %}app-tip-completed{% endif %}"></i>
+                    <span>Conecte suas redes sociais</span>
+                </li>
+                <li class="app-tip-item">
+                    <i class="fas fa-check-circle app-tip-icon {% if user.quiz_score %}app-tip-completed{% endif %}"></i>
+                    <span>Complete o quiz sobre a FURIA</span>
+                </li>
+                <li class="app-tip-item">
+                    <i class="fas fa-check-circle app-tip-icon {% if document and document.validation_status == 'verified' %}app-tip-completed{% endif %}"></i>
+                    <span>Valide seu documento</span>
+                </li>
+                <li class="app-tip-item">
+                    <i class="fas fa-check-circle app-tip-icon {% if content_links and content_links|length > 0 %}app-tip-completed{% endif %}"></i>
+                    <span>Compartilhe conteúdos da FURIA</span>
+                </li>
+                <li class="app-tip-item">
+                    <i class="fas fa-check-circle app-tip-icon {% if user.player_match %}app-tip-completed{% endif %}"></i>
+                    <span>Descubra seu match com jogador</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.app-stats-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.app-stat {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    text-align: center;
+}
+
+.app-stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+    font-family: var(--font-special);
+}
+
+.app-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.app-fan-level-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+}
+
+.app-fan-level-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.app-fan-level-badge {
+    font-size: 0.8rem;
+}
+
+.app-rewards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+}
+
+.app-reward-item {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+}
+
+.app-reward-icon {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--spacing-md);
+    font-size: 1.2rem;
+}
+
+.app-reward-info {
+    flex: 1;
+}
+
+.app-reward-name {
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.app-reward-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.app-activity-list {
+    list-style: none;
+}
+
+.app-activity-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.app-activity-item:last-child {
+    border-bottom: none;
+}
+
+.app-activity-icon {
+    width: 36px;
+    height: 36px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--spacing-md);
+}
+
+.app-activity-info {
+    flex: 1;
+}
+
+.app-activity-title {
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.app-activity-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.app-tips-list {
+    list-style: none;
+}
+
+.app-tip-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-xs) 0;
+}
+
+.app-tip-icon {
+    margin-right: var(--spacing-sm);
+    color: var(--text-muted);
+}
+
+.app-tip-completed {
+    color: var(--success-color);
+}
+
+.app-empty-state {
+    text-align: center;
+    padding: var(--spacing-md) 0;
+}
+
+.app-empty-state .app-icon-large {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-muted);
+}
+
+.app-empty-state p {
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-md);
+}
+</style>
+{% endblock %}
