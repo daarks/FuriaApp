@@ -1,0 +1,310 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Home - FURIA Fan App{% endblock %}
+{% block header_title %}FURIA Fan App{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-welcome">
+        <h2>Olá, {{ user.name.split()[0] }}!</h2>
+        <p class="app-fan-level">{{ user.fan_badge }}</p>
+    </div>
+    
+    <div class="app-home-grid">
+        <a href="{{ url_for('player_match') }}" class="app-feature-card">
+            <div class="app-feature-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="app-feature-info">
+                <h3>Player Match</h3>
+                <p>Descubra qual jogador da FURIA combina mais com você</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('lootbox') }}" class="app-feature-card">
+            <div class="app-feature-icon">
+                <i class="fas fa-box-open"></i>
+            </div>
+            <div class="app-feature-info">
+                <h3>Lootbox</h3>
+                <p>Abra caixas para ganhar recompensas exclusivas</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('fan_power') }}" class="app-feature-card">
+            <div class="app-feature-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="app-feature-info">
+                <h3>Fan Power</h3>
+                <p>Veja e aumente sua pontuação de fã</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('quiz') }}" class="app-feature-card">
+            <div class="app-feature-icon">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <div class="app-feature-info">
+                <h3>Quiz</h3>
+                <p>Teste seus conhecimentos sobre a FURIA</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('social_media') }}" class="app-feature-card">
+            <div class="app-feature-icon">
+                <i class="fas fa-hashtag"></i>
+            </div>
+            <div class="app-feature-info">
+                <h3>Redes Sociais</h3>
+                <p>Conecte suas redes para aumentar seu Fan Power</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('document_validation') }}" class="app-feature-card">
+            <div class="app-feature-icon">
+                <i class="fas fa-id-card"></i>
+            </div>
+            <div class="app-feature-info">
+                <h3>Validação</h3>
+                <p>Valide seus documentos e desbloqueie recursos premium</p>
+            </div>
+        </a>
+    </div>
+    
+    {% if user.last_lootbox_date and (now().date() - user.last_lootbox_date).days == 0 %}
+    <div class="app-card app-mt-3">
+        <div class="app-card-body">
+            <div class="app-lootbox-reminder">
+                <div class="app-lootbox-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="app-lootbox-message">
+                    <h4>Lootbox já aberta hoje!</h4>
+                    <p>Volte amanhã para abrir uma nova Lootbox e ganhar mais recompensas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="app-card app-mt-3">
+        <div class="app-card-body">
+            <div class="app-lootbox-reminder">
+                <div class="app-lootbox-icon pulse">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="app-lootbox-message">
+                    <h4>Lootbox Disponível!</h4>
+                    <p>Você tem uma nova Lootbox esperando para ser aberta!</p>
+                    <a href="{{ url_for('lootbox') }}" class="app-btn app-btn-primary app-mt-1">Abrir Agora</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Próximos Eventos</h3>
+        </div>
+        <div class="app-card-body">
+            <div class="app-upcoming-events">
+                <!-- Você pode listar os próximos eventos aqui -->
+                <div class="app-event-item">
+                    <div class="app-event-date">28 ABR</div>
+                    <div class="app-event-info">
+                        <div class="app-event-title">FURIA vs NiP</div>
+                        <div class="app-event-subtitle">ESL Pro League Season 19</div>
+                    </div>
+                    <div class="app-event-game">CS2</div>
+                </div>
+                
+                <div class="app-event-item">
+                    <div class="app-event-date">30 ABR</div>
+                    <div class="app-event-info">
+                        <div class="app-event-title">FURIA vs MIBR</div>
+                        <div class="app-event-subtitle">BLAST Premier Spring</div>
+                    </div>
+                    <div class="app-event-game">CS2</div>
+                </div>
+                
+                <div class="app-event-item">
+                    <div class="app-event-date">02 MAI</div>
+                    <div class="app-event-info">
+                        <div class="app-event-title">FURIA vs Sentinels</div>
+                        <div class="app-event-subtitle">VCT Americas</div>
+                    </div>
+                    <div class="app-event-game">Valorant</div>
+                </div>
+                
+                <div class="app-event-more">
+                    <a href="{{ url_for('calendar') }}">Ver todos eventos <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.app-welcome {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.app-welcome h2 {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.app-fan-level {
+    display: inline-block;
+    padding: 0.3em 1em;
+    font-size: 0.9rem;
+    color: #000;
+    background-color: #ffffff;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.app-home-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+}
+
+.app-feature-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    transition: transform 0.2s, background-color 0.2s;
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+.app-feature-card:hover {
+    transform: translateY(-5px);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.app-feature-icon {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-sm);
+    color: #ffffff;
+}
+
+.app-feature-info h3 {
+    font-size: 1.1rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.app-feature-info p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.app-lootbox-reminder {
+    display: flex;
+    align-items: center;
+}
+
+.app-lootbox-icon {
+    font-size: 2rem;
+    margin-right: var(--spacing-md);
+}
+
+.app-lootbox-icon.pulse {
+    animation: pulse 2s infinite;
+    color: #f8d568;
+}
+
+.app-lootbox-message h4 {
+    margin-bottom: var(--spacing-xs);
+}
+
+.app-lootbox-message p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.app-upcoming-events {
+    display: flex;
+    flex-direction: column;
+}
+
+.app-event-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.app-event-date {
+    font-weight: 600;
+    min-width: 60px;
+    font-size: 0.9rem;
+    color: #ffffff;
+}
+
+.app-event-info {
+    flex: 1;
+}
+
+.app-event-title {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.app-event-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.app-event-game {
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.app-event-more {
+    text-align: center;
+    padding: var(--spacing-sm) 0;
+}
+
+.app-event-more a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.app-event-more a i {
+    margin-left: var(--spacing-xs);
+    transition: transform 0.2s;
+}
+
+.app-event-more a:hover i {
+    transform: translateX(3px);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+</style>
+{% endblock %}

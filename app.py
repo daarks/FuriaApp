@@ -112,7 +112,7 @@ def login():
             user.last_login = datetime.now()
             db.session.commit()
             flash('Login successful!', 'success')
-            return redirect(url_for('profile'))
+            return redirect(url_for('home_dashboard'))
         else:
             flash('Invalid email or password', 'danger')
     
