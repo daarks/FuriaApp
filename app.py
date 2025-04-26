@@ -1,7 +1,8 @@
 import os
 import logging
+import random
 from datetime import datetime
-from flask import Flask, render_template, redirect, url_for, flash, request, session
+from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -107,12 +108,14 @@ def login():
         
         if user and check_password_hash(user.password_hash, form.password.data):
             session['user_id'] = user.id
+            user.last_login = datetime.now()
+            db.session.commit()
             flash('Login successful!', 'success')
             return redirect(url_for('profile'))
         else:
             flash('Invalid email or password', 'danger')
     
-    return render_template('login.html', form=form)
+    return render_template('app_login.html', form=form)
 
 @app.route('/logout')
 def logout():
@@ -152,14 +155,18 @@ def profile():
     # Get player match
     player_match = user.player_match
     
+    # Current date for lootbox check
+    today = datetime.now().date()
+    
     return render_template(
-        'profile.html', 
+        'app_profile.html', 
         user=user, 
         interests=interests,
         document=document,
         social_media=social_media,
         fan_badge=fan_badge,
-        player_match=player_match
+        player_match=player_match,
+        now=lambda: datetime.now()
     )
 
 @app.route('/document_validation', methods=['GET', 'POST'])
@@ -274,7 +281,7 @@ def social_media():
         form.youtube.data = social_media.youtube
         form.facebook.data = social_media.facebook
     
-    return render_template('social_media.html', form=form, social_media=social_media)
+    return render_template('app_social_media.html', form=form, social_media=social_media)
 
 @app.route('/content_validation', methods=['GET', 'POST'])
 def content_validation():
@@ -333,7 +340,17 @@ def player_match():
         user.player_image = player_data['image']
         db.session.commit()
     
-    return render_template('player_match.html', user=user)
+    # Calculate match percentage (for display purposes)
+    match_percentage = {
+        'overall': random.randint(85, 99),
+        'playstyle': random.randint(75, 98),
+        'interests': random.randint(80, 95),
+        'personality': random.randint(70, 99)
+    }
+    
+    return render_template('app_player_match.html', 
+                          user=user, 
+                          match_percentage=match_percentage)
 
 @app.route('/calendar')
 def calendar():
@@ -351,7 +368,7 @@ def calendar():
     favorites = Calendar.query.filter_by(user_id=user.id, is_favorite=True).all()
     favorite_ids = [favorite.event_id for favorite in favorites]
     
-    return render_template('calendar.html', 
+    return render_template('app_calendar.html', 
                            user=user, 
                            interests=interest_list,
                            favorite_ids=json.dumps(favorite_ids))
@@ -401,7 +418,7 @@ def fan_power():
     # Calculate fan power metrics
     fan_power_data = get_fan_power(user, social_media, content_links)
     
-    return render_template('fan_power.html', user=user, fan_power=fan_power_data)
+    return render_template('app_fan_power.html', user=user, fan_power=fan_power_data)
 
 @app.route('/lootbox')
 def lootbox():
@@ -419,7 +436,7 @@ def lootbox():
     if last_lootbox and last_lootbox == today:
         can_open = False
     
-    return render_template('lootbox.html', user=user, can_open=can_open)
+    return render_template('app_lootbox.html', user=user, can_open=can_open)
 
 @app.route('/open_lootbox', methods=['POST'])
 def open_lootbox():
@@ -510,7 +527,7 @@ def quiz():
     # Get user's previous quiz results
     quiz_results = Quiz.query.filter_by(user_id=user.id).order_by(Quiz.created_at.desc()).all()
     
-    return render_template('quiz.html', form=form, user=user, quiz_results=quiz_results)
+    return render_template('app_quiz.html', form=form, user=user, quiz_results=quiz_results)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,116 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Player Match - FURIA Fan App{% endblock %}
+{% block header_title %}Seu Match{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-player-match-container">
+        <!-- Match Percentage -->
+        <div class="app-match-percentage">
+            <svg viewBox="0 0 100 100" class="app-match-percentage-circle">
+                <circle cx="50" cy="50" r="46" />
+                <circle cx="50" cy="50" r="46" class="app-match-percentage-progress" 
+                     style="stroke-dashoffset: {{ 292 - (292 * match_percentage.overall / 100) }};" />
+            </svg>
+            <div class="app-match-percentage-text">{{ match_percentage.overall }}%</div>
+        </div>
+        
+        <!-- Player Portrait -->
+        <div class="app-player-portrait">
+            {% if user.player_image %}
+                <img src="{{ user.player_image }}" alt="{{ user.player_match }}">
+            {% else %}
+                <i class="fas fa-user"></i>
+            {% endif %}
+        </div>
+        
+        <!-- Player Info -->
+        <h2 class="app-player-name">{{ user.player_match }}</h2>
+        <p class="app-player-role">Jogador Profissional</p>
+        
+        <!-- Player Bio -->
+        <div class="app-card app-mt-2">
+            <div class="app-card-header">
+                <h3>Sobre {{ user.player_match.split()[0] }}</h3>
+            </div>
+            <div class="app-card-body">
+                <p class="app-player-bio">{{ user.player_bio }}</p>
+            </div>
+        </div>
+        
+        <!-- Match Stats -->
+        <div class="app-card app-mt-3">
+            <div class="app-card-header">
+                <h3>Detalhes do Match</h3>
+            </div>
+            <div class="app-card-body">
+                <div class="app-player-stats">
+                    <div class="app-player-stat">
+                        <div class="app-player-stat-value">{{ match_percentage.overall }}%</div>
+                        <div class="app-player-stat-label">Geral</div>
+                    </div>
+                    <div class="app-player-stat">
+                        <div class="app-player-stat-value">{{ match_percentage.playstyle }}%</div>
+                        <div class="app-player-stat-label">Estilo</div>
+                    </div>
+                    <div class="app-player-stat">
+                        <div class="app-player-stat-value">{{ match_percentage.interests }}%</div>
+                        <div class="app-player-stat-label">Interesses</div>
+                    </div>
+                </div>
+                
+                <div class="app-match-reason app-mt-2">
+                    <div class="app-match-reason-title">Por que vocês combinam?</div>
+                    <p>Com base em seus interesses em 
+                    {% for interest in user.interests[:3] %}{{ interest.interest }}{% if not loop.last %}, {% endif %}{% endfor %} 
+                    e sua atividade nas redes sociais, encontramos semelhanças com o perfil de {{ user.player_match }}.</p>
+                </div>
+                
+                <div class="app-match-tags">
+                    {% set interests = user.interests[:5]|map(attribute='interest')|list %}
+                    {% for interest in interests %}
+                        <span class="app-match-tag">{{ interest }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Share Match -->
+        <div class="app-card app-mt-3">
+            <div class="app-card-header">
+                <h3>Compartilhe seu Match</h3>
+            </div>
+            <div class="app-card-body app-text-center">
+                <p>Mostre a todos qual jogador da FURIA mais combina com você!</p>
+                
+                <div class="app-share-buttons app-mt-2">
+                    <button class="app-btn app-btn-twitter">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </button>
+                    <button class="app-btn app-btn-instagram">
+                        <i class="fab fa-instagram"></i> Instagram
+                    </button>
+                    <button class="app-btn app-btn-whatsapp">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação do percentual de match
+    setTimeout(function() {
+        const circles = document.querySelectorAll('.app-match-percentage-progress');
+        circles.forEach(circle => {
+            circle.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
+        });
+    }, 500);
+});
+</script>
+{% endblock %}
