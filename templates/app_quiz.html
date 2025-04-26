@@ -1,0 +1,213 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Quiz - FURIA Fan App{% endblock %}
+{% block header_title %}Quiz FURIA{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-quiz-container">
+        <!-- Quiz Instructions -->
+        {% if not user.quiz_score %}
+        <div class="app-card app-mb-3">
+            <div class="app-card-body app-text-center">
+                <h3 class="app-mb-1">Teste seus conhecimentos sobre a FURIA!</h3>
+                <p>Este quiz contém 5 perguntas sobre a FURIA e o cenário de esports.</p>
+                <p>Responda corretamente para ganhar o status de especialista!</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Quiz Form -->
+        {% if not user.quiz_score %}
+        <form method="POST" action="{{ url_for('quiz') }}" class="app-form" id="quiz-form">
+            {{ form.hidden_tag() }}
+            
+            <!-- Quiz Progress -->
+            <div class="app-quiz-progress">
+                <div class="app-quiz-progress-text" id="quiz-progress-text">0 de 5 perguntas respondidas</div>
+                <div class="app-quiz-progress-bar">
+                    <div class="app-quiz-progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <!-- Question 1 -->
+            <div class="app-quiz-question">
+                <h4 class="app-quiz-question-text">{{ form.question_1.label }}</h4>
+                <div class="app-quiz-options">
+                    {% for option in form.question_1 %}
+                    <div class="app-quiz-option" data-question="1">
+                        {{ option }}
+                        <div class="app-quiz-option-indicator"></div>
+                        <div class="app-quiz-option-text">{{ option.label.text }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Question 2 -->
+            <div class="app-quiz-question">
+                <h4 class="app-quiz-question-text">{{ form.question_2.label }}</h4>
+                <div class="app-quiz-options">
+                    {% for option in form.question_2 %}
+                    <div class="app-quiz-option" data-question="2">
+                        {{ option }}
+                        <div class="app-quiz-option-indicator"></div>
+                        <div class="app-quiz-option-text">{{ option.label.text }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Question 3 -->
+            <div class="app-quiz-question">
+                <h4 class="app-quiz-question-text">{{ form.question_3.label }}</h4>
+                <div class="app-quiz-options">
+                    {% for option in form.question_3 %}
+                    <div class="app-quiz-option" data-question="3">
+                        {{ option }}
+                        <div class="app-quiz-option-indicator"></div>
+                        <div class="app-quiz-option-text">{{ option.label.text }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Question 4 -->
+            <div class="app-quiz-question">
+                <h4 class="app-quiz-question-text">{{ form.question_4.label }}</h4>
+                <div class="app-quiz-options">
+                    {% for option in form.question_4 %}
+                    <div class="app-quiz-option" data-question="4">
+                        {{ option }}
+                        <div class="app-quiz-option-indicator"></div>
+                        <div class="app-quiz-option-text">{{ option.label.text }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Question 5 -->
+            <div class="app-quiz-question">
+                <h4 class="app-quiz-question-text">{{ form.question_5.label }}</h4>
+                <div class="app-quiz-options">
+                    {% for option in form.question_5 %}
+                    <div class="app-quiz-option" data-question="5">
+                        {{ option }}
+                        <div class="app-quiz-option-indicator"></div>
+                        <div class="app-quiz-option-text">{{ option.label.text }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Hidden Correct Values -->
+            {{ form.correct_1 }}
+            {{ form.correct_2 }}
+            {{ form.correct_3 }}
+            {{ form.correct_4 }}
+            {{ form.correct_5 }}
+            
+            <!-- Submit Button -->
+            <div class="app-mt-3 app-mb-3 app-text-center">
+                {{ form.submit(class="app-btn app-btn-primary", id="quiz-submit", disabled="disabled") }}
+            </div>
+        </form>
+        {% else %}
+        <!-- Quiz Results -->
+        <div class="app-quiz-results">
+            <div class="app-quiz-results-score">{{ user.quiz_score }}/5</div>
+            
+            <div class="app-quiz-results-level {% if user.quiz_level == 'Expert' %}app-level-expert{% elif user.quiz_level == 'Intermediate' %}app-level-intermediate{% else %}app-level-casual{% endif %}">
+                {{ user.quiz_level }}
+            </div>
+            
+            <p class="app-quiz-results-message">
+                {% if user.quiz_level == 'Expert' %}
+                Parabéns! Você é um verdadeiro conhecedor da FURIA e do cenário de esports!
+                {% elif user.quiz_level == 'Intermediate' %}
+                Bom trabalho! Você tem um bom conhecimento sobre a FURIA!
+                {% else %}
+                Você está começando sua jornada como fã da FURIA. Continue aprendendo!
+                {% endif %}
+            </p>
+            
+            <a href="{{ url_for('quiz') }}" class="app-btn app-btn-primary">Tentar Novamente</a>
+        </div>
+        
+        <!-- Share Results -->
+        <div class="app-card app-mt-3">
+            <div class="app-card-header">
+                <h3>Compartilhe seus resultados</h3>
+            </div>
+            <div class="app-card-body app-text-center">
+                <p>Mostre para seus amigos o quanto você conhece a FURIA!</p>
+                <div class="app-mt-2">
+                    <button class="app-btn app-btn-outline app-mr-1">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </button>
+                    <button class="app-btn app-btn-outline">
+                        <i class="fab fa-instagram"></i> Instagram
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize quiz interactions
+    initializeQuiz();
+});
+
+function initializeQuiz() {
+    const quizOptions = document.querySelectorAll('.app-quiz-option');
+    const submitButton = document.getElementById('quiz-submit');
+    
+    quizOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove the selection of other options in the same question
+            const questionId = this.dataset.question;
+            document.querySelectorAll(`.app-quiz-option[data-question="${questionId}"]`)
+                .forEach(opt => opt.classList.remove('selected'));
+            
+            // Select this option
+            this.classList.add('selected');
+            
+            // Select the radio input
+            const radioInput = this.querySelector('input[type="radio"]');
+            if (radioInput) {
+                radioInput.checked = true;
+            }
+            
+            // Update progress
+            updateQuizProgress();
+        });
+    });
+    
+    // Function to update quiz progress
+    function updateQuizProgress() {
+        const totalQuestions = document.querySelectorAll('.app-quiz-question').length;
+        const answeredQuestions = document.querySelectorAll('.app-quiz-option.selected').length;
+        
+        const progressText = document.getElementById('quiz-progress-text');
+        const progressBar = document.querySelector('.app-quiz-progress-fill');
+        
+        if (progressText) {
+            progressText.textContent = `${answeredQuestions} de ${totalQuestions} perguntas respondidas`;
+        }
+        
+        if (progressBar) {
+            progressBar.style.width = `${(answeredQuestions / totalQuestions) * 100}%`;
+        }
+        
+        if (submitButton) {
+            submitButton.disabled = (answeredQuestions < totalQuestions);
+        }
+    }
+}
+</script>
+{% endblock %}

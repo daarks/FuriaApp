@@ -1,0 +1,135 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Lootbox - FURIA Fan App{% endblock %}
+{% block header_title %}Lootbox Diária{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-lootbox-container">
+        <!-- Lootbox Info -->
+        <div class="app-lootbox-info">
+            <h2 class="app-lootbox-title">FURIA Lootbox</h2>
+            <p class="app-lootbox-desc">Abra sua lootbox diária para ganhar recompensas exclusivas!</p>
+        </div>
+        
+        <!-- Lootbox Image -->
+        {% if can_open %}
+        <div id="lootbox" class="app-lootbox" onclick="openLootbox()"></div>
+        <p>Toque para abrir sua lootbox!</p>
+        {% else %}
+        <div id="lootbox" class="app-lootbox opened disabled"></div>
+        <div class="app-lootbox-countdown">
+            <p>Você já abriu sua lootbox hoje. Volte em: </p>
+            <span id="countdown-timer" class="app-countdown-timer">24:00:00</span>
+        </div>
+        {% endif %}
+        
+        <!-- Reward Container (Hidden at first) -->
+        <div id="reward-container" class="app-reward-container"></div>
+        
+        <!-- Confetti Container -->
+        <div class="confetti-container"></div>
+    </div>
+    
+    <!-- Past Rewards -->
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Minhas Recompensas</h3>
+        </div>
+        <div class="app-card-body">
+            {% if user.lootbox_rewards and user.lootbox_rewards|length > 2 %}
+                {% set rewards_json = user.lootbox_rewards|from_json if user.lootbox_rewards else [] %}
+                {% if rewards_json|length > 0 %}
+                    <div class="app-rewards-list">
+                        {% for reward in rewards_json %}
+                        <div class="app-reward-item reward-{{ reward.rarity }}">
+                            <div class="app-reward-icon">
+                                {% if reward.type == 'wallpaper' %}
+                                    <i class="fas fa-image"></i>
+                                {% elif reward.type == 'avatar' %}
+                                    <i class="fas fa-user-circle"></i>
+                                {% elif reward.type == 'gif' %}
+                                    <i class="fas fa-film"></i>
+                                {% elif reward.type == 'discount' %}
+                                    <i class="fas fa-percent"></i>
+                                {% elif reward.type == 'digital_item' %}
+                                    <i class="fas fa-gift"></i>
+                                {% elif reward.type == 'exclusive' %}
+                                    <i class="fas fa-crown"></i>
+                                {% else %}
+                                    <i class="fas fa-question"></i>
+                                {% endif %}
+                            </div>
+                            <div class="app-reward-info">
+                                <h3 class="app-reward-name">{{ reward.name }}</h3>
+                                <div class="app-reward-rarity rarity-{{ reward.rarity }}">
+                                    {{ reward.rarity|capitalize }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="app-empty-state">
+                        <i class="fas fa-box-open app-icon-large"></i>
+                        <p>Você ainda não tem recompensas</p>
+                        <p class="app-text-light">Abra sua primeira lootbox para começar sua coleção</p>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="app-empty-state">
+                    <i class="fas fa-box-open app-icon-large"></i>
+                    <p>Você ainda não tem recompensas</p>
+                    <p class="app-text-light">Abra sua primeira lootbox para começar sua coleção</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update countdown if lootbox already opened
+    if (!{{ can_open|tojson }}) {
+        showNextLootboxCountdown();
+    }
+});
+
+// Updates the countdown timer
+function showNextLootboxCountdown() {
+    const now = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    const timeRemaining = tomorrow - now;
+    
+    // Update countdown display
+    const updateCountdown = () => {
+        const currentTime = new Date();
+        const newTimeRemaining = tomorrow - currentTime;
+        
+        if (newTimeRemaining <= 0) {
+            // Reset at midnight
+            location.reload();
+            return;
+        }
+        
+        const hours = Math.floor(newTimeRemaining / (1000 * 60 * 60));
+        const minutes = Math.floor((newTimeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((newTimeRemaining % (1000 * 60)) / 1000);
+        
+        const countdownTimer = document.getElementById('countdown-timer');
+        if (countdownTimer) {
+            countdownTimer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+    };
+    
+    // Update immediately and then every second
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+}
+</script>
+{% endblock %}

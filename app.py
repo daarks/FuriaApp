@@ -107,12 +107,14 @@ def login():
         
         if user and check_password_hash(user.password_hash, form.password.data):
             session['user_id'] = user.id
+            user.last_login = datetime.utcnow()
+            db.session.commit()
             flash('Login successful!', 'success')
             return redirect(url_for('profile'))
         else:
             flash('Invalid email or password', 'danger')
     
-    return render_template('login.html', form=form)
+    return render_template('app_login.html', form=form)
 
 @app.route('/logout')
 def logout():
@@ -152,14 +154,18 @@ def profile():
     # Get player match
     player_match = user.player_match
     
+    # Get current date for template (used in lootbox logic)
+    now = datetime.now
+    
     return render_template(
-        'profile.html', 
+        'app_profile.html', 
         user=user, 
         interests=interests,
         document=document,
         social_media=social_media,
         fan_badge=fan_badge,
-        player_match=player_match
+        player_match=player_match,
+        now=now
     )
 
 @app.route('/document_validation', methods=['GET', 'POST'])
@@ -274,7 +280,7 @@ def social_media():
         form.youtube.data = social_media.youtube
         form.facebook.data = social_media.facebook
     
-    return render_template('social_media.html', form=form, social_media=social_media)
+    return render_template('app_social_media.html', form=form, social_media=social_media)
 
 @app.route('/content_validation', methods=['GET', 'POST'])
 def content_validation():
@@ -333,7 +339,7 @@ def player_match():
         user.player_image = player_data['image']
         db.session.commit()
     
-    return render_template('player_match.html', user=user)
+    return render_template('app_player_match.html', user=user, interests=interests, social_media=social_media)
 
 @app.route('/calendar')
 def calendar():
@@ -351,7 +357,7 @@ def calendar():
     favorites = Calendar.query.filter_by(user_id=user.id, is_favorite=True).all()
     favorite_ids = [favorite.event_id for favorite in favorites]
     
-    return render_template('calendar.html', 
+    return render_template('app_calendar.html', 
                            user=user, 
                            interests=interest_list,
                            favorite_ids=json.dumps(favorite_ids))
