@@ -3,12 +3,12 @@
  */
 
 :root {
-  /* Colors */
-  --primary-color: #ff0057;
-  --primary-light: #ff4081;
-  --primary-dark: #c5004a;
-  --secondary-color: #1e90ff;
-  --tertiary-color: #51a351;
+  /* Colors - Black & White theme */
+  --primary-color: #ffffff;
+  --primary-light: #ffffff;
+  --primary-dark: #e0e0e0;
+  --secondary-color: #ffffff;
+  --tertiary-color: #ffffff;
   
   --background-color: #000000;
   --card-bg-color: #111111;
@@ -18,10 +18,10 @@
   --text-muted: #a0a0a0;
   --text-subtle: #707070;
   
-  --success-color: #51a351;
-  --warning-color: #f6c342;
-  --danger-color: #bd362f;
-  --info-color: #2f96b4;
+  --success-color: #ffffff;
+  --warning-color: #ffffff;
+  --danger-color: #ffffff;
+  --info-color: #ffffff;
   
   --border-color: #333333;
   --divider-color: #222222;
@@ -102,11 +102,13 @@ p {
   align-items: center;
   z-index: 9999;
   transition: opacity 0.5s ease;
+  opacity: 1;
 }
 
 .splash-logo {
   width: 160px;
   animation: pulse 2s infinite;
+  transition: all 1s ease;
 }
 
 @keyframes pulse {
@@ -186,6 +188,7 @@ p {
   flex: 1;
   text-align: center;
   transition: color 0.2s ease;
+  text-decoration: none;
 }
 
 .footer-nav-item i {
@@ -205,6 +208,7 @@ p {
 
 .footer-nav-item:hover {
   color: var(--text-color);
+  text-decoration: none;
 }
 
 /* Container */
