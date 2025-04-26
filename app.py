@@ -439,12 +439,53 @@ def fan_power():
     # Calculate fan power metrics
     fan_power_data = get_fan_power(user, social_media, content_links)
     
+    # Convert social_media.hashtags to Python list if it exists as JSON string
+    if social_media and social_media.hashtags:
+        try:
+            hashtags = json.loads(social_media.hashtags)
+            social_media.hashtags = hashtags
+        except:
+            social_media.hashtags = []
+    
     return render_template('app_fan_power.html', 
                           user=user, 
                           fan_power=fan_power_data, 
                           social_media=social_media,
                           content_links=content_links,
                           document=document)
+
+@app.route('/edit_interests', methods=['GET', 'POST'])
+def edit_interests():
+    if 'user_id' not in session:
+        flash('Please login first.', 'warning')
+        return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    
+    # Get user's current interests
+    interests = UserInterest.query.filter_by(user_id=user.id).all()
+    current_interests = [interest.interest for interest in interests]
+    
+    if request.method == 'POST':
+        # Clear existing interests
+        UserInterest.query.filter_by(user_id=user.id).delete()
+        
+        # Get new interests from form
+        new_interests = request.form.getlist('interests[]')
+        
+        # Add new interests
+        for interest in new_interests:
+            user_interest = UserInterest(
+                user_id=user.id,
+                interest=interest
+            )
+            db.session.add(user_interest)
+        
+        db.session.commit()
+        flash('Seus interesses foram atualizados com sucesso!', 'success')
+        return redirect(url_for('profile'))
+    
+    return render_template('app_edit_interests.html', user=user, current_interests=current_interests)
 
 @app.route('/lootbox')
 def lootbox():
