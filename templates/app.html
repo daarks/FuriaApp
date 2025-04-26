@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FURIA Know Your Fan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #000000;
+            --secondary-color: #ffffff;
+            --text-color: #ffffff;
+            --background-color: #000000;
+            --accent-color: #444444;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .container-fluid {
+            padding: 0;
+        }
+        
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--background-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .splash-logo {
+            width: 200px;
+            height: 200px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.9);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.9);
+                opacity: 0.7;
+            }
+        }
+        
+        .login-container, .register-container {
+            max-width: 450px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid var(--secondary-color);
+            background-color: var(--background-color);
+        }
+        
+        .card {
+            background-color: var(--background-color);
+            border: 1px solid var(--secondary-color);
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: var(--accent-color);
+            border-bottom: 1px solid var(--secondary-color);
+            padding: 1rem;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            background-color: var(--accent-color);
+            border: 1px solid var(--secondary-color);
+            color: var(--text-color);
+        }
+        
+        .form-control:focus {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--accent-color);
+            border-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+        
+        .app-navbar {
+            background-color: var(--background-color);
+            border-bottom: 1px solid var(--secondary-color);
+        }
+        
+        .navbar-brand img {
+            height: 40px;
+        }
+        
+        .navbar-dark .navbar-nav .nav-link {
+            color: var(--text-color);
+        }
+        
+        .navbar-dark .navbar-nav .nav-link:hover {
+            color: var(--secondary-color);
+        }
+        
+        .fan-badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            font-weight: bold;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/FURIA_logo.svg/1200px-FURIA_logo.svg.png" alt="FURIA Logo" class="splash-logo">
+    </div>
+    
+    <!-- The rest of the app content will be rendered here -->
+    <div id="app" class="d-none">
+        <!-- Navigation will be shown after login -->
+        <nav id="main-nav" class="navbar navbar-expand-lg navbar-dark app-navbar d-none">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/FURIA_logo.svg/1200px-FURIA_logo.svg.png" alt="FURIA Logo">
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-page="profile">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-page="tournaments">Tournaments</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-page="document">Document</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-page="social">Social Media</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-page="content">Content</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center">
+                        <span id="user-badge" class="fan-badge me-3"></span>
+                        <a href="#" id="logout-btn" class="btn btn-outline-light btn-sm">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="container mt-4">
+            <!-- Login Screen -->
+            <div id="login-page" class="page">
+                <div class="login-container">
+                    <h2 class="text-center mb-4">Login</h2>
+                    <div id="login-alert" class="alert d-none" role="alert"></div>
+                    
+                    <form id="login-form">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="login-email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="login-password" required>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember-me">
+                            <label class="form-check-label" for="remember-me">Remember Me</label>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <p>Don't have an account? <a href="#" id="register-link" class="text-white">Register Now</a></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Registration Screen -->
+            <div id="register-page" class="page d-none">
+                <div class="register-container">
+                    <h2 class="text-center mb-4">Create an Account</h2>
+                    <div id="register-alert" class="alert d-none" role="alert"></div>
+                    
+                    <form id="register-form">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="register-name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="register-email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="register-password" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirm-password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="register-confirm-password" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="register-address" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="cpf" class="form-label">CPF</label>
+                            <input type="text" class="form-control" id="register-cpf" placeholder="123.456.789-00" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="birth-date" class="form-label">Birth Date</label>
+                            <input type="date" class="form-control" id="register-birth-date" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Esports Interests</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input interest-check" type="checkbox" value="cs" id="interest-cs">
+                                        <label class="form-check-label" for="interest-cs">Counter-Strike</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input interest-check" type="checkbox" value="valorant" id="interest-valorant">
+                                        <label class="form-check-label" for="interest-valorant">Valorant</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input interest-check" type="checkbox" value="lol" id="interest-lol">
+                                        <label class="form-check-label" for="interest-lol">League of Legends</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input interest-check" type="checkbox" value="dota" id="interest-dota">
+                                        <label class="form-check-label" for="interest-dota">Dota 2</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input interest-check" type="checkbox" value="fortnite" id="interest-fortnite">
+                                        <label class="form-check-label" for="interest-fortnite">Fortnite</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input interest-check" type="checkbox" value="overwatch" id="interest-overwatch">
+                                        <label class="form-check-label" for="interest-overwatch">Overwatch</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input interest-check" type="checkbox" value="apex" id="interest-apex">
+                                        <label class="form-check-label" for="interest-apex">Apex Legends</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input interest-check" type="checkbox" value="rainbow6" id="interest-rainbow6">
+                                        <label class="form-check-label" for="interest-rainbow6">Rainbow Six Siege</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input interest-check" type="checkbox" value="freefire" id="interest-freefire">
+                                        <label class="form-check-label" for="interest-freefire">Free Fire</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input interest-check" type="checkbox" value="rocket_league" id="interest-rocket">
+                                        <label class="form-check-label" for="interest-rocket">Rocket League</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Events Attended</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input event-check" type="checkbox" value="major_rio" id="event-major-rio">
+                                        <label class="form-check-label" for="event-major-rio">CS:GO Major Rio</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input event-check" type="checkbox" value="esl_one" id="event-esl-one">
+                                        <label class="form-check-label" for="event-esl-one">ESL One</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input event-check" type="checkbox" value="blast_premier" id="event-blast">
+                                        <label class="form-check-label" for="event-blast">BLAST Premier</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input event-check" type="checkbox" value="dreamhack" id="event-dreamhack">
+                                        <label class="form-check-label" for="event-dreamhack">DreamHack</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input event-check" type="checkbox" value="copa_brasil" id="event-copa">
+                                        <label class="form-check-label" for="event-copa">Copa Brasil</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input event-check" type="checkbox" value="vct_americas" id="event-vct">
+                                        <label class="form-check-label" for="event-vct">VCT Americas</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input event-check" type="checkbox" value="cbcs" id="event-cbcs">
+                                        <label class="form-check-label" for="event-cbcs">CBCS</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input event-check" type="checkbox" value="cblol" id="event-cblol">
+                                        <label class="form-check-label" for="event-cblol">CBLOL</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input event-check" type="checkbox" value="gamecon" id="event-gamecon">
+                                        <label class="form-check-label" for="event-gamecon">GameCon Brasil</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input event-check" type="checkbox" value="bgc" id="event-bgc">
+                                        <label class="form-check-label" for="event-bgc">Brasil Game Cup</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary">Register</button>
+                        </div>
+                        
+                        <div class="text-center">
+                            <p>Already have an account? <a href="#" id="login-link" class="text-white">Login</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Profile Page -->
+            <div id="profile-page" class="page d-none">
+                <div class="row">
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-user me-2"></i> Profile Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="profile-info">
+                                    <!-- Content will be inserted by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-8">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5><i class="fas fa-chart-line me-2"></i> Fan Power</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="fan-power-info">
+                                    <!-- Content will be inserted by JS -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-id-card me-2"></i> Document Validation</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="document-status">
+                                            <!-- Content will be inserted by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-hashtag me-2"></i> Social Media</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="social-media-status">
+                                            <!-- Content will be inserted by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tournament Page -->
+            <div id="tournaments-page" class="page d-none">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-trophy me-2"></i> Recent Tournaments</h5>
+                        <button id="refresh-tournaments" class="btn btn-primary btn-sm">
+                            <i class="fas fa-sync-alt me-1"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="tournaments-loading" class="text-center py-5 d-none">
+                            <div class="spinner-border text-light" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Fetching tournaments data...</p>
+                        </div>
+                        <div id="tournaments-container">
+                            <!-- Content will be inserted by JS -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-gamepad me-2"></i> Recent Matches</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="matches-container">
+                            <!-- Content will be inserted by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Document Validation Page -->
+            <div id="document-page" class="page d-none">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-id-card me-2"></i> Document Validation</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="document-upload-form">
+                            <p class="mb-4">Upload a personal identity document for AI verification.</p>
+                            
+                            <div id="document-alert" class="alert d-none mb-4" role="alert"></div>
+                            
+                            <form id="upload-document-form">
+                                <div class="mb-3">
+                                    <label for="document-type" class="form-label">Document Type</label>
+                                    <select class="form-select" id="document-type" required>
+                                        <option value="">Select document type</option>
+                                        <option value="rg">RG - Identity Card</option>
+                                        <option value="cnh">CNH - Driver's License</option>
+                                        <option value="passport">Passport</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="document-file" class="form-label">Document File</label>
+                                    <input class="form-control" type="file" id="document-file" accept=".jpg,.jpeg,.png,.pdf" required>
+                                    <div class="form-text text-light">Supported formats: JPG, PNG, PDF. Max size: 5MB</div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <div id="document-preview" class="d-none">
+                                        <h6>Preview:</h6>
+                                        <img id="document-image-preview" class="img-fluid mt-2 mb-3" style="max-height: 200px; border: 1px solid #ccc;">
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-upload me-2"></i> Upload and Validate
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div id="document-results" class="d-none">
+                            <!-- Document validation results will be shown here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Social Media Page -->
+            <div id="social-page" class="page d-none">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-hashtag me-2"></i> Social Media Integration</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-4">Link your social media accounts to analyze your esports engagement.</p>
+                        
+                        <div id="social-alert" class="alert d-none mb-4" role="alert"></div>
+                        
+                        <form id="social-media-form">
+                            <div class="mb-3">
+                                <label for="twitter-link" class="form-label">
+                                    <i class="fab fa-twitter me-2"></i> Twitter/X Profile
+                                </label>
+                                <input type="url" class="form-control" id="twitter-link" placeholder="https://twitter.com/username">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="instagram-link" class="form-label">
+                                    <i class="fab fa-instagram me-2"></i> Instagram Profile
+                                </label>
+                                <input type="url" class="form-control" id="instagram-link" placeholder="https://instagram.com/username">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="twitch-link" class="form-label">
+                                    <i class="fab fa-twitch me-2"></i> Twitch Channel
+                                </label>
+                                <input type="url" class="form-control" id="twitch-link" placeholder="https://twitch.tv/username">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="youtube-link" class="form-label">
+                                    <i class="fab fa-youtube me-2"></i> YouTube Channel
+                                </label>
+                                <input type="url" class="form-control" id="youtube-link" placeholder="https://youtube.com/c/username">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="facebook-link" class="form-label">
+                                    <i class="fab fa-facebook me-2"></i> Facebook Profile
+                                </label>
+                                <input type="url" class="form-control" id="facebook-link" placeholder="https://facebook.com/username">
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-link me-2"></i> Connect and Analyze
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div id="social-results" class="mt-4 d-none">
+                            <!-- Social media analysis results will be shown here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content Validation Page -->
+            <div id="content-page" class="page d-none">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-link me-2"></i> Content Validation</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-4">Share links to esports content for AI relevance analysis.</p>
+                        
+                        <div id="content-alert" class="alert d-none mb-4" role="alert"></div>
+                        
+                        <form id="content-validation-form">
+                            <div class="mb-4">
+                                <label for="content-url" class="form-label">Content URL</label>
+                                <input type="url" class="form-control" id="content-url" placeholder="https://example.com/esports-article" required>
+                                <div class="form-text text-light">Share links to articles, videos, or social media posts about esports.</div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-check-circle me-2"></i> Validate Content
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div id="content-results" class="mt-4 d-none">
+                            <!-- Content validation results will be shown here -->
+                        </div>
+                        
+                        <div id="content-history" class="mt-5 d-none">
+                            <h5>Content History</h5>
+                            <div class="table-responsive">
+                                <table class="table table-dark">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>URL</th>
+                                            <th>Type</th>
+                                            <th>Relevance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="content-history-tbody">
+                                        <!-- Content history will be inserted by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // App state
+        let userData = null;
+        let tournaments = [];
+        let matches = [];
+        
+        // Wait for the document to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show splash screen for 2 seconds
+            setTimeout(function() {
+                document.getElementById('splash-screen').style.opacity = '0';
+                setTimeout(function() {
+                    document.getElementById('splash-screen').style.display = 'none';
+                    document.getElementById('app').classList.remove('d-none');
+                    
+                    // Check if user is already logged in
+                    checkAuth();
+                    
+                }, 500); // Wait for fade out animation
+            }, 2000); // Show splash for 2 seconds
+            
+            // Setup event listeners
+            setupEventListeners();
+        });
+        
+        function setupEventListeners() {
+            // Login form submission
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                login();
+            });
+            
+            // Register form submission
+            document.getElementById('register-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                register();
+            });
+            
+            // Navigation between login and register
+            document.getElementById('register-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('login-page').classList.add('d-none');
+                document.getElementById('register-page').classList.remove('d-none');
+            });
+            
+            document.getElementById('login-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('register-page').classList.add('d-none');
+                document.getElementById('login-page').classList.remove('d-none');
+            });
+            
+            // Logout button
+            document.getElementById('logout-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+            
+            // Navigation
+            document.querySelectorAll('[data-page]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navigateTo(this.getAttribute('data-page'));
+                });
+            });
+            
+            // Document preview
+            document.getElementById('document-file').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        document.getElementById('document-image-preview').src = event.target.result;
+                        document.getElementById('document-preview').classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Document upload form
+            document.getElementById('upload-document-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                uploadDocument();
+            });
+            
+            // Social media form
+            document.getElementById('social-media-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitSocialMedia();
+            });
+            
+            // Content validation form
+            document.getElementById('content-validation-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                validateContent();
+            });
+            
+            // Refresh tournaments
+            document.getElementById('refresh-tournaments').addEventListener('click', function(e) {
+                e.preventDefault();
+                fetchTournamentData(true);
+            });
+        }
+        
+        function checkAuth() {
+            // Check if user is logged in via an API call
+            fetch('/api/user_profile')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        userData = data.user;
+                        showApp();
+                    } else {
+                        showLogin();
+                    }
+                })
+                .catch(error => {
+                    console.error('Auth check error:', error);
+                    showLogin();
+                });
+        }
+        
+        function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            // Reset alert
+            const alert = document.getElementById('login-alert');
+            alert.classList.add('d-none');
+            
+            // Validate inputs
+            if (!email || !password) {
+                showAlert(alert, 'Please fill in all fields', 'danger');
+                return;
+            }
+            
+            // Submit login request
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    userData = data.user;
+                    showApp();
+                } else {
+                    showAlert(alert, data.message || 'Login failed', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                showAlert(alert, 'An error occurred during login', 'danger');
+            });
+        }
+        
+        function register() {
+            // Get form data
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+            const address = document.getElementById('register-address').value;
+            const cpf = document.getElementById('register-cpf').value;
+            const birthDate = document.getElementById('register-birth-date').value;
+            
+            // Get interests
+            const interests = [];
+            document.querySelectorAll('.interest-check:checked').forEach(checkbox => {
+                interests.push(checkbox.value);
+            });
+            
+            // Get events attended
+            const eventsAttended = [];
+            document.querySelectorAll('.event-check:checked').forEach(checkbox => {
+                eventsAttended.push(checkbox.value);
+            });
+            
+            // Reset alert
+            const alert = document.getElementById('register-alert');
+            alert.classList.add('d-none');
+            
+            // Validate inputs
+            if (!name || !email || !password || !address || !cpf || !birthDate) {
+                showAlert(alert, 'Please fill in all required fields', 'danger');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showAlert(alert, 'Passwords do not match', 'danger');
+                return;
+            }
+            
+            // Validate CPF format using a simple regex
+            const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$|^\d{11}$/;
+            if (!cpfRegex.test(cpf)) {
+                showAlert(alert, 'Please enter a valid CPF format (123.456.789-00 or 12345678900)', 'danger');
+                return;
+            }
+            
+            // Submit registration request
+            fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    password,
+                    address,
+                    cpf,
+                    birth_date: birthDate,
+                    interests,
+                    events_attended: eventsAttended,
+                    purchases: [] // No purchases selected at registration
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(alert, 'Registration successful! Please login.', 'success');
+                    setTimeout(() => {
+                        document.getElementById('register-page').classList.add('d-none');
+                        document.getElementById('login-page').classList.remove('d-none');
+                    }, 2000);
+                } else {
+                    showAlert(alert, data.message || 'Registration failed', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Registration error:', error);
+                showAlert(alert, 'An error occurred during registration', 'danger');
+            });
+        }
+        
+        function logout() {
+            // Reset user data
+            userData = null;
+            
+            // Show login page
+            showLogin();
+        }
+        
+        function showLogin() {
+            // Hide navbar and main content
+            document.getElementById('main-nav').classList.add('d-none');
+            
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('d-none');
+            });
+            
+            // Show login page
+            document.getElementById('login-page').classList.remove('d-none');
+        }
+        
+        function showApp() {
+            // Show navbar
+            document.getElementById('main-nav').classList.remove('d-none');
+            
+            // Update user badge
+            document.getElementById('user-badge').textContent = userData.fan_badge || 'New Fan';
+            
+            // Navigate to profile by default
+            navigateTo('profile');
+        }
+        
+        function navigateTo(page) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.add('d-none');
+            });
+            
+            // Show the selected page
+            document.getElementById(`${page}-page`).classList.remove('d-none');
+            
+            // Execute page-specific loading logic
+            if (page === 'profile') {
+                loadProfilePage();
+            } else if (page === 'tournaments') {
+                loadTournamentsPage();
+            } else if (page === 'document') {
+                loadDocumentPage();
+            } else if (page === 'social') {
+                loadSocialPage();
+            } else if (page === 'content') {
+                loadContentPage();
+            }
+        }
+        
+        function loadProfilePage() {
+            // Get the latest user data
+            fetch('/api/user_profile')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        userData = data.user;
+                        
+                        // Update profile info
+                        const profileInfo = document.getElementById('profile-info');
+                        profileInfo.innerHTML = `
+                            <div class="text-center mb-4">
+                                <div class="profile-avatar mb-3">
+                                    <i class="fas fa-user-circle fa-5x"></i>
+                                </div>
+                                <h4>${userData.name}</h4>
+                                <span class="fan-badge mb-2">${userData.fan_badge}</span>
+                                <p class="mb-1"><i class="fas fa-envelope me-2"></i> ${userData.email}</p>
+                                <p class="mb-1"><i class="fas fa-calendar me-2"></i> Member since ${new Date(userData.registration_date).toLocaleDateString()}</p>
+                            </div>
+                            
+                            <h5 class="border-bottom pb-2 mb-3">Personal Information</h5>
+                            <p><strong>Address:</strong> ${userData.address}</p>
+                            <p><strong>CPF:</strong> ${userData.cpf}</p>
+                            <p><strong>Birth Date:</strong> ${new Date(userData.birth_date).toLocaleDateString()}</p>
+                            
+                            <h5 class="border-bottom pb-2 mb-3 mt-4">Interests</h5>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                ${userData.interests.map(interest => `
+                                    <span class="badge bg-secondary">${interest}</span>
+                                `).join('')}
+                            </div>
+                        `;
+                        
+                        // Update fan power info
+                        const fanPowerInfo = document.getElementById('fan-power-info');
+                        let fanPowerPercentage = 0;
+                        
+                        if (userData.social_media && userData.social_media.engagement_score) {
+                            fanPowerPercentage = userData.social_media.engagement_score;
+                        }
+                        
+                        fanPowerInfo.innerHTML = `
+                            <div class="row align-items-center">
+                                <div class="col-md-4 text-center">
+                                    <div class="display-1 text-white mb-2">${Math.round(fanPowerPercentage)}%</div>
+                                    <h4 class="text-white">${userData.fan_badge}</h4>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="progress mb-3" style="height: 20px;">
+                                        <div class="progress-bar bg-light" role="progressbar" 
+                                             style="width: ${fanPowerPercentage}%" 
+                                             aria-valuenow="${fanPowerPercentage}" aria-valuemin="0" aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <p>Your fan power represents your level of engagement with FURIA and the esports scene.</p>
+                                    <div class="row text-center">
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <div class="h4 mb-0">${userData.interests.length}</div>
+                                            <small>Interests</small>
+                                        </div>
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <div class="h4 mb-0">${userData.events_attended.length}</div>
+                                            <small>Events</small>
+                                        </div>
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <div class="h4 mb-0">${userData.quiz_score || 0}</div>
+                                            <small>Quiz Score</small>
+                                        </div>
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <div class="h4 mb-0">${userData.purchases ? userData.purchases.length : 0}</div>
+                                            <small>Purchases</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Update document status
+                        const documentStatus = document.getElementById('document-status');
+                        if (userData.document && userData.document.has_document) {
+                            const statusClass = userData.document.status === 'verified' ? 'success' : 
+                                              (userData.document.status === 'rejected' ? 'danger' : 'warning');
+                            const statusIcon = userData.document.status === 'verified' ? 'check-circle' : 
+                                             (userData.document.status === 'rejected' ? 'times-circle' : 'clock');
+                            
+                            documentStatus.innerHTML = `
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-${statusIcon} fa-3x text-${statusClass}"></i>
+                                </div>
+                                <h5 class="text-center text-${statusClass} mb-3">
+                                    ${userData.document.status === 'verified' ? 'Document Verified' : 
+                                    (userData.document.status === 'rejected' ? 'Verification Failed' : 'Verification Pending')}
+                                </h5>
+                                <p class="mb-0">Status: <strong>${userData.document.status}</strong></p>
+                            `;
+                        } else {
+                            documentStatus.innerHTML = `
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-exclamation-circle fa-3x"></i>
+                                </div>
+                                <h5 class="text-center mb-3">No Document Submitted</h5>
+                                <p>Upload a valid identification document to verify your account.</p>
+                                <div class="d-grid">
+                                    <button class="btn btn-primary btn-sm" id="goto-document-btn">
+                                        <i class="fas fa-upload me-1"></i> Upload Document
+                                    </button>
+                                </div>
+                            `;
+                            
+                            // Add event listener to the document button
+                            document.getElementById('goto-document-btn').addEventListener('click', function() {
+                                navigateTo('document');
+                            });
+                        }
+                        
+                        // Update social media status
+                        const socialMediaStatus = document.getElementById('social-media-status');
+                        if (userData.social_media) {
+                            socialMediaStatus.innerHTML = `
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-check-circle fa-3x text-success"></i>
+                                </div>
+                                <h5 class="text-center mb-3">Social Media Connected</h5>
+                                <div class="d-flex justify-content-center gap-3 mb-3">
+                                    ${userData.social_media.twitter ? `<i class="fab fa-twitter fa-lg"></i>` : ''}
+                                    ${userData.social_media.instagram ? `<i class="fab fa-instagram fa-lg"></i>` : ''}
+                                    ${userData.social_media.twitch ? `<i class="fab fa-twitch fa-lg"></i>` : ''}
+                                    ${userData.social_media.youtube ? `<i class="fab fa-youtube fa-lg"></i>` : ''}
+                                    ${userData.social_media.facebook ? `<i class="fab fa-facebook fa-lg"></i>` : ''}
+                                </div>
+                                <p class="text-center mb-0">Engagement Score: <strong>${Math.round(userData.social_media.engagement_score)}%</strong></p>
+                            `;
+                        } else {
+                            socialMediaStatus.innerHTML = `
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-exclamation-circle fa-3x"></i>
+                                </div>
+                                <h5 class="text-center mb-3">No Social Media Connected</h5>
+                                <p>Connect your social media accounts to analyze your esports engagement.</p>
+                                <div class="d-grid">
+                                    <button class="btn btn-primary btn-sm" id="goto-social-btn">
+                                        <i class="fas fa-link me-1"></i> Connect Social Media
+                                    </button>
+                                </div>
+                            `;
+                            
+                            // Add event listener to the social media button
+                            document.getElementById('goto-social-btn').addEventListener('click', function() {
+                                navigateTo('social');
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Profile load error:', error);
+                });
+        }
+        
+        function loadTournamentsPage() {
+            fetchTournamentData();
+        }
+        
+        function fetchTournamentData(forceRefresh = false) {
+            // Show loading
+            document.getElementById('tournaments-loading').classList.remove('d-none');
+            document.getElementById('tournaments-container').innerHTML = '';
+            document.getElementById('matches-container').innerHTML = '';
+            
+            // If we need to refresh the data from HLTV
+            if (forceRefresh) {
+                fetch('/api/update_data')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Now fetch the updated tournament data
+                            fetchTournaments();
+                        } else {
+                            document.getElementById('tournaments-loading').classList.add('d-none');
+                            document.getElementById('tournaments-container').innerHTML = `
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-circle me-2"></i> Failed to update tournament data
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Update data error:', error);
+                        document.getElementById('tournaments-loading').classList.add('d-none');
+                        document.getElementById('tournaments-container').innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i> Error updating tournament data
+                            </div>
+                        `;
+                    });
+            } else {
+                // Just fetch the existing data
+                fetchTournaments();
+            }
+        }
+        
+        function fetchTournaments() {
+            // Fetch tournaments
+            fetch('/api/tournaments')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        tournaments = data.tournaments;
+                        displayTournaments();
+                        
+                        // Also fetch matches
+                        fetch('/api/matches')
+                            .then(response => response.json())
+                            .then(matchData => {
+                                document.getElementById('tournaments-loading').classList.add('d-none');
+                                if (matchData.success) {
+                                    matches = matchData.matches;
+                                    displayMatches();
+                                }
+                            })
+                            .catch(error => {
+                                document.getElementById('tournaments-loading').classList.add('d-none');
+                                console.error('Matches fetch error:', error);
+                            });
+                    } else {
+                        document.getElementById('tournaments-loading').classList.add('d-none');
+                        document.getElementById('tournaments-container').innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i> Failed to load tournament data
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('tournaments-loading').classList.add('d-none');
+                    console.error('Tournaments fetch error:', error);
+                    document.getElementById('tournaments-container').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i> Error loading tournament data
+                        </div>
+                    `;
+                });
+        }
+        
+        function displayTournaments() {
+            const container = document.getElementById('tournaments-container');
+            
+            if (tournaments.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i> No tournament data available
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tournament</th>
+                                <th>Date</th>
+                                <th>Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            tournaments.forEach(tournament => {
+                html += `
+                    <tr>
+                        <td>${tournament.name}</td>
+                        <td>${tournament.date || 'N/A'}</td>
+                        <td>${tournament.location || 'N/A'}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function displayMatches() {
+            const container = document.getElementById('matches-container');
+            
+            if (matches.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i> No match data available
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped">
+                        <thead>
+                            <tr>
+                                <th>Teams</th>
+                                <th>Score</th>
+                                <th>Tournament</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            matches.forEach(match => {
+                html += `
+                    <tr>
+                        <td>${match.team1} vs ${match.team2}</td>
+                        <td>${match.score1} - ${match.score2}</td>
+                        <td>${match.tournament}</td>
+                        <td>${match.date || 'N/A'}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function loadDocumentPage() {
+            // Check if user already has a document
+            if (userData && userData.document && userData.document.has_document) {
+                const status = userData.document.status;
+                const statusClass = status === 'verified' ? 'success' : 
+                                  (status === 'rejected' ? 'danger' : 'warning');
+                const statusIcon = status === 'verified' ? 'check-circle' : 
+                                 (status === 'rejected' ? 'times-circle' : 'clock');
+                
+                document.getElementById('document-upload-form').classList.add('d-none');
+                document.getElementById('document-results').classList.remove('d-none');
+                
+                document.getElementById('document-results').innerHTML = `
+                    <div class="text-center mb-4">
+                        <i class="fas fa-${statusIcon} fa-4x text-${statusClass} mb-3"></i>
+                        <h4>Document ${status === 'verified' ? 'Verified' : 
+                               (status === 'rejected' ? 'Rejected' : 'Pending Verification')}</h4>
+                    </div>
+                    
+                    <div class="alert alert-${statusClass}">
+                        <i class="fas fa-info-circle me-2"></i>
+                        ${status === 'verified' ? 'Your document has been successfully verified. Your identity is confirmed.' : 
+                         (status === 'rejected' ? 'Your document verification failed. Please upload a new document.' : 
+                          'Your document is being processed. Please check back later.')}
+                    </div>
+                    
+                    <div class="d-grid gap-2 col-6 mx-auto mt-4">
+                        ${status === 'rejected' ? `
+                            <button class="btn btn-primary" id="upload-new-document-btn">
+                                <i class="fas fa-upload me-2"></i> Upload New Document
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-secondary" id="back-to-profile-btn">
+                            <i class="fas fa-arrow-left me-2"></i> Back to Profile
+                        </button>
+                    </div>
+                `;
+                
+                // Add event listeners
+                document.getElementById('back-to-profile-btn').addEventListener('click', function() {
+                    navigateTo('profile');
+                });
+                
+                if (status === 'rejected') {
+                    document.getElementById('upload-new-document-btn').addEventListener('click', function() {
+                        document.getElementById('document-upload-form').classList.remove('d-none');
+                        document.getElementById('document-results').classList.add('d-none');
+                    });
+                }
+            } else {
+                document.getElementById('document-upload-form').classList.remove('d-none');
+                document.getElementById('document-results').classList.add('d-none');
+            }
+        }
+        
+        function uploadDocument() {
+            const documentType = document.getElementById('document-type').value;
+            const documentFile = document.getElementById('document-file').files[0];
+            
+            // Reset alert
+            const alert = document.getElementById('document-alert');
+            alert.classList.add('d-none');
+            
+            // Validate inputs
+            if (!documentType || !documentFile) {
+                showAlert(alert, 'Please select a document type and upload a file', 'danger');
+                return;
+            }
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('document_type', documentType);
+            formData.append('document', documentFile);
+            
+            // Show loading state
+            const submitBtn = document.querySelector('#upload-document-form button[type="submit"]');
+            const originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Uploading...';
+            
+            // Submit document
+            fetch('/api/validate_document', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+                
+                if (data.success) {
+                    showAlert(alert, 'Document uploaded and validated successfully!', 'success');
+                    
+                    // Update user data and reload document page after 2 seconds
+                    setTimeout(() => {
+                        fetchUserProfile(() => {
+                            loadDocumentPage();
+                        });
+                    }, 2000);
+                } else {
+                    showAlert(alert, data.message || 'Document validation failed', 'danger');
+                }
+            })
+            .catch(error => {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+                
+                console.error('Document upload error:', error);
+                showAlert(alert, 'An error occurred during document upload', 'danger');
+            });
+        }
+        
+        function loadSocialPage() {
+            // Pre-fill form if user has social media data
+            if (userData && userData.social_media) {
+                document.getElementById('twitter-link').value = userData.social_media.twitter || '';
+                document.getElementById('instagram-link').value = userData.social_media.instagram || '';
+                document.getElementById('twitch-link').value = userData.social_media.twitch || '';
+                document.getElementById('youtube-link').value = userData.social_media.youtube || '';
+                document.getElementById('facebook-link').value = userData.social_media.facebook || '';
+                
+                // Show results if available
+                if (userData.social_media.engagement_score) {
+                    displaySocialResults({
+                        fan_badge: userData.fan_badge,
+                        engagement_score: userData.social_media.engagement_score
+                    });
+                }
+            }
+        }
+        
+        function submitSocialMedia() {
+            const twitter = document.getElementById('twitter-link').value;
+            const instagram = document.getElementById('instagram-link').value;
+            const twitch = document.getElementById('twitch-link').value;
+            const youtube = document.getElementById('youtube-link').value;
+            const facebook = document.getElementById('facebook-link').value;
+            
+            // Reset alert
+            const alert = document.getElementById('social-alert');
+            alert.classList.add('d-none');
+            
+            // Validate that at least one field is filled
+            if (!twitter && !instagram && !twitch && !youtube && !facebook) {
+                showAlert(alert, 'Please provide at least one social media link', 'danger');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.querySelector('#social-media-form button[type="submit"]');
+            const originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Analyzing...';
+            
+            // Submit social media links
+            fetch('/api/social_media', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    twitter,
+                    instagram,
+                    twitch,
+                    youtube,
+                    facebook
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+                
+                if (data.success) {
+                    showAlert(alert, 'Social media profiles analyzed successfully!', 'success');
+                    
+                    // Display results
+                    displaySocialResults(data);
+                    
+                    // Update user data
+                    fetchUserProfile();
+                } else {
+                    showAlert(alert, data.message || 'Social media analysis failed', 'danger');
+                }
+            })
+            .catch(error => {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+                
+                console.error('Social media analysis error:', error);
+                showAlert(alert, 'An error occurred during social media analysis', 'danger');
+            });
+        }
+        
+        function displaySocialResults(data) {
+            const resultsContainer = document.getElementById('social-results');
+            resultsContainer.classList.remove('d-none');
+            
+            resultsContainer.innerHTML = `
+                <div class="card bg-dark text-white">
+                    <div class="card-header bg-dark text-white">
+                        <h5>Analysis Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <div class="h5 text-white">Fan Category</div>
+                            <div class="fan-badge d-inline-block mb-3">${data.fan_badge}</div>
+                            <div class="h5 text-white">Engagement Score</div>
+                            <div class="progress mb-2" style="height: 20px;">
+                                <div class="progress-bar bg-light" role="progressbar" 
+                                     style="width: ${data.engagement_score}%" 
+                                     aria-valuenow="${data.engagement_score}" aria-valuemin="0" aria-valuemax="100">
+                                    ${Math.round(data.engagement_score)}%
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${data.hashtags ? `
+                            <h6>Detected Hashtags</h6>
+                            <div class="d-flex flex-wrap gap-1 mb-3">
+                                ${data.hashtags.map(tag => `
+                                    <span class="badge bg-secondary">#${tag}</span>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${data.interactions ? `
+                            <h6>Social Media Interactions</h6>
+                            <div class="row text-center">
+                                <div class="col-4 mb-2">
+                                    <div class="h5 mb-0">${data.interactions.likes || 0}</div>
+                                    <small>Likes</small>
+                                </div>
+                                <div class="col-4 mb-2">
+                                    <div class="h5 mb-0">${data.interactions.comments || 0}</div>
+                                    <small>Comments</small>
+                                </div>
+                                <div class="col-4 mb-2">
+                                    <div class="h5 mb-0">${data.interactions.shares || 0}</div>
+                                    <small>Shares</small>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function loadContentPage() {
+            // Nothing special to initialize
+        }
+        
+        function validateContent() {
+            const contentUrl = document.getElementById('content-url').value;
+            
+            // Reset alert
+            const alert = document.getElementById('content-alert');
+            alert.classList.add('d-none');
+            
+            // Validate URL
+            if (!contentUrl) {
+                showAlert(alert, 'Please enter a content URL', 'danger');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.querySelector('#content-validation-form button[type="submit"]');
+            const originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Validating...';
+            
+            // Submit content for validation
+            fetch('/api/content_validation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    content_url: contentUrl
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+                
+                if (data.success) {
+                    showAlert(alert, 'Content validated successfully!', 'success');
+                    document.getElementById('content-url').value = ''; // Clear the input
+                    
+                    // Display results
+                    const resultsContainer = document.getElementById('content-results');
+                    resultsContainer.classList.remove('d-none');
+                    
+                    resultsContainer.innerHTML = `
+                        <div class="card bg-dark text-white">
+                            <div class="card-header bg-dark text-white">
+                                <h5>Content Analysis Results</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-4">
+                                    <div class="h5">Content Type</div>
+                                    <div class="badge bg-light text-dark mb-3 p-2">${data.content_type}</div>
+                                    
+                                    <div class="h5">Relevance Score</div>
+                                    <div class="progress mb-2" style="height: 20px;">
+                                        <div class="progress-bar bg-light" role="progressbar" 
+                                             style="width: ${data.relevance_score}%" 
+                                             aria-valuenow="${data.relevance_score}" aria-valuemin="0" aria-valuemax="100">
+                                            ${Math.round(data.relevance_score)}%
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                ${data.keywords && data.keywords.length > 0 ? `
+                                    <h6>Detected Keywords</h6>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        ${data.keywords.map(keyword => `
+                                            <span class="badge bg-secondary">${keyword}</span>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Update user data and show content history
+                    fetchUserProfile(() => {
+                        showContentHistory();
+                    });
+                } else {
+                    showAlert(alert, data.message || 'Content validation failed', 'danger');
+                }
+            })
+            .catch(error => {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+                
+                console.error('Content validation error:', error);
+                showAlert(alert, 'An error occurred during content validation', 'danger');
+            });
+        }
+        
+        function showContentHistory() {
+            // Show content history if user has content links
+            if (userData && userData.content_links && userData.content_links.length > 0) {
+                const historyContainer = document.getElementById('content-history');
+                historyContainer.classList.remove('d-none');
+                
+                const tbody = document.getElementById('content-history-tbody');
+                tbody.innerHTML = '';
+                
+                userData.content_links.forEach(link => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(link.created_at).toLocaleDateString()}</td>
+                        <td><a href="${link.url}" target="_blank" class="text-white">${truncateUrl(link.url)}</a></td>
+                        <td>${link.content_type}</td>
+                        <td>${Math.round(link.relevance_score)}%</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+        
+        // Helper functions
+        function fetchUserProfile(callback) {
+            fetch('/api/user_profile')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        userData = data.user;
+                        
+                        // Update user badge in the header
+                        document.getElementById('user-badge').textContent = userData.fan_badge || 'New Fan';
+                        
+                        if (callback) callback();
+                    }
+                })
+                .catch(error => {
+                    console.error('User profile fetch error:', error);
+                });
+        }
+        
+        function showAlert(alertElement, message, type) {
+            alertElement.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-warning', 'alert-info');
+            alertElement.classList.add(`alert-${type}`);
+            alertElement.innerHTML = message;
+        }
+        
+        function truncateUrl(url, maxLength = 30) {
+            if (url.length <= maxLength) return url;
+            return url.substr(0, maxLength) + '...';
+        }
+    </script>
+</body>
+</html>
