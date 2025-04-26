@@ -1,0 +1,218 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Registro - FURIA Fan App{% endblock %}
+{% block header_title %}Cadastro{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-register-container">
+        <!-- Logo -->
+        <div class="app-text-center app-mb-3">
+            <img src="{{ url_for('static', filename='img/furia-logo-white.png') }}" alt="FURIA Logo" width="100">
+        </div>
+        
+        <!-- Register Form -->
+        <div class="app-card">
+            <div class="app-card-body">
+                <form method="POST" action="{{ url_for('register') }}" class="app-form" id="register-form">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Personal Information -->
+                    <h4 class="app-form-section-title">Informações Pessoais</h4>
+                    
+                    <div class="app-form-group">
+                        <label for="name" class="app-form-label">{{ form.name.label }}</label>
+                        {{ form.name(class="app-form-control", id="name", placeholder="Seu nome completo") }}
+                        {% if form.name.errors %}
+                        <div class="app-form-feedback">
+                            {% for error in form.name.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="app-form-group">
+                        <label for="email" class="app-form-label">{{ form.email.label }}</label>
+                        {{ form.email(class="app-form-control", id="email", placeholder="seu@email.com") }}
+                        {% if form.email.errors %}
+                        <div class="app-form-feedback">
+                            {% for error in form.email.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="app-form-row">
+                        <div class="app-form-group app-form-col">
+                            <label for="cpf" class="app-form-label">{{ form.cpf.label }}</label>
+                            {{ form.cpf(class="app-form-control", id="cpf", placeholder="000.000.000-00") }}
+                            {% if form.cpf.errors %}
+                            <div class="app-form-feedback">
+                                {% for error in form.cpf.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="app-form-group app-form-col">
+                            <label for="birth_date" class="app-form-label">{{ form.birth_date.label }}</label>
+                            {{ form.birth_date(class="app-form-control", id="birth_date", type="date") }}
+                            {% if form.birth_date.errors %}
+                            <div class="app-form-feedback">
+                                {% for error in form.birth_date.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="app-form-group">
+                        <label for="address" class="app-form-label">{{ form.address.label }}</label>
+                        {{ form.address(class="app-form-control", id="address", placeholder="Seu endereço completo", rows=2) }}
+                        {% if form.address.errors %}
+                        <div class="app-form-feedback">
+                            {% for error in form.address.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="app-form-group">
+                        <label for="password" class="app-form-label">{{ form.password.label }}</label>
+                        <div class="app-form-password">
+                            {{ form.password(class="app-form-control", id="password") }}
+                            <button type="button" class="app-password-toggle" data-target="#password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                        <div class="app-form-feedback">
+                            {% for error in form.password.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="app-form-group">
+                        <label for="confirm_password" class="app-form-label">{{ form.confirm_password.label }}</label>
+                        <div class="app-form-password">
+                            {{ form.confirm_password(class="app-form-control", id="confirm_password") }}
+                            <button type="button" class="app-password-toggle" data-target="#confirm_password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        {% if form.confirm_password.errors %}
+                        <div class="app-form-feedback">
+                            {% for error in form.confirm_password.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Interests -->
+                    <h4 class="app-form-section-title">Interesses em Esports</h4>
+                    
+                    <div class="app-form-group">
+                        <label class="app-form-label">Jogos que você acompanha</label>
+                        <div class="app-tag-selector">
+                            {% for choice in form.esports_interests.choices %}
+                            <div class="app-tag-item">
+                                <input type="checkbox" name="interests" id="interest_{{ choice[0] }}" value="{{ choice[0] }}" class="app-tag-checkbox">
+                                <label for="interest_{{ choice[0] }}" class="app-tag-label">{{ choice[1] }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="app-form-group">
+                        <label class="app-form-label">Eventos que participou no último ano</label>
+                        <div class="app-tag-selector">
+                            {% for choice in form.events_attended.choices %}
+                            <div class="app-tag-item">
+                                <input type="checkbox" name="events" id="event_{{ choice[0] }}" value="{{ choice[0] }}" class="app-tag-checkbox">
+                                <label for="event_{{ choice[0] }}" class="app-tag-label">{{ choice[1] }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="app-form-group">
+                        <label class="app-form-label">Compras relacionadas a esports no último ano</label>
+                        <div class="app-tag-selector">
+                            {% for choice in form.purchases.choices %}
+                            <div class="app-tag-item">
+                                <input type="checkbox" name="purchases" id="purchase_{{ choice[0] }}" value="{{ choice[0] }}" class="app-tag-checkbox">
+                                <label for="purchase_{{ choice[0] }}" class="app-tag-label">{{ choice[1] }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="app-form-group app-mt-3">
+                        {{ form.submit(class="app-btn app-btn-primary app-btn-block") }}
+                    </div>
+                </form>
+                
+                <div class="app-divider"></div>
+                
+                <div class="app-text-center app-mt-2">
+                    <p class="app-text-light">Já tem uma conta?</p>
+                    <a href="{{ url_for('login') }}" class="app-btn app-btn-outline app-btn-block">Entrar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle password visibility
+    const toggleButtons = document.querySelectorAll('.app-password-toggle');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const target = document.querySelector(this.dataset.target);
+            if (target.type === 'password') {
+                target.type = 'text';
+                this.querySelector('i').classList.remove('fa-eye');
+                this.querySelector('i').classList.add('fa-eye-slash');
+            } else {
+                target.type = 'password';
+                this.querySelector('i').classList.remove('fa-eye-slash');
+                this.querySelector('i').classList.add('fa-eye');
+            }
+        });
+    });
+    
+    // CPF input mask
+    const cpfInput = document.getElementById('cpf');
+    if (cpfInput) {
+        cpfInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) {
+                value = value.substring(0, 11);
+            }
+            
+            if (value.length > 9) {
+                value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+            } else if (value.length > 6) {
+                value = value.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+            } else if (value.length > 3) {
+                value = value.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+            }
+            
+            e.target.value = value;
+        });
+    }
+});
+</script>
+{% endblock %}

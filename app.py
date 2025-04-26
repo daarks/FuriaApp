@@ -55,7 +55,9 @@ with app.app_context():
 # Routes
 @app.route('/')
 def home():
-    return render_template('home.html')
+    if 'user_id' in session:
+        return redirect(url_for('profile'))
+    return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -97,7 +99,7 @@ def register():
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('login'))
     
-    return render_template('register.html', form=form)
+    return render_template('app_register.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -407,7 +409,7 @@ def fan_power():
     # Calculate fan power metrics
     fan_power_data = get_fan_power(user, social_media, content_links)
     
-    return render_template('fan_power.html', user=user, fan_power=fan_power_data)
+    return render_template('app_fan_power.html', user=user, fan_power=fan_power_data, social_media=social_media)
 
 @app.route('/lootbox')
 def lootbox():
@@ -425,7 +427,7 @@ def lootbox():
     if last_lootbox and last_lootbox == today:
         can_open = False
     
-    return render_template('lootbox.html', user=user, can_open=can_open)
+    return render_template('app_lootbox.html', user=user, can_open=can_open)
 
 @app.route('/open_lootbox', methods=['POST'])
 def open_lootbox():
@@ -516,7 +518,7 @@ def quiz():
     # Get user's previous quiz results
     quiz_results = Quiz.query.filter_by(user_id=user.id).order_by(Quiz.created_at.desc()).all()
     
-    return render_template('quiz.html', form=form, user=user, quiz_results=quiz_results)
+    return render_template('app_quiz.html', form=form, user=user, quiz_results=quiz_results)
 
 
 if __name__ == '__main__':
