@@ -1,0 +1,221 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Quiz FURIA - FURIA Fan App{% endblock %}
+{% block header_title %}Quiz de Fã{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-quiz-container">
+        <!-- Quiz Form -->
+        <form method="POST" action="{{ url_for('quiz') }}" class="app-form" id="quiz-form">
+            {{ form.hidden_tag() }}
+            
+            <!-- Quiz Progress -->
+            <div class="app-quiz-progress" id="quiz-progress">
+                <div class="app-quiz-progress-text" id="quiz-progress-text">0 de 5 perguntas respondidas</div>
+                <div class="app-quiz-progress-bar">
+                    <div class="app-quiz-progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <!-- Question 1 -->
+            <div class="app-card app-mt-3 app-quiz-question">
+                <div class="app-card-header">
+                    <h3>Pergunta 1</h3>
+                </div>
+                <div class="app-card-body">
+                    <p class="app-quiz-question-text">{{ form.question_1.label }}</p>
+                    <div class="app-quiz-options">
+                        {% for value, label in form.question_1.choices %}
+                            <div class="app-quiz-option" data-question="1">
+                                <div class="app-quiz-option-indicator"></div>
+                                <label class="app-quiz-option-text">
+                                    <input type="radio" name="{{ form.question_1.name }}" value="{{ value }}" style="display: none;">
+                                    {{ label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {{ form.correct_1 }}
+                </div>
+            </div>
+            
+            <!-- Question 2 -->
+            <div class="app-card app-mt-3 app-quiz-question">
+                <div class="app-card-header">
+                    <h3>Pergunta 2</h3>
+                </div>
+                <div class="app-card-body">
+                    <p class="app-quiz-question-text">{{ form.question_2.label }}</p>
+                    <div class="app-quiz-options">
+                        {% for value, label in form.question_2.choices %}
+                            <div class="app-quiz-option" data-question="2">
+                                <div class="app-quiz-option-indicator"></div>
+                                <label class="app-quiz-option-text">
+                                    <input type="radio" name="{{ form.question_2.name }}" value="{{ value }}" style="display: none;">
+                                    {{ label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {{ form.correct_2 }}
+                </div>
+            </div>
+            
+            <!-- Question 3 -->
+            <div class="app-card app-mt-3 app-quiz-question">
+                <div class="app-card-header">
+                    <h3>Pergunta 3</h3>
+                </div>
+                <div class="app-card-body">
+                    <p class="app-quiz-question-text">{{ form.question_3.label }}</p>
+                    <div class="app-quiz-options">
+                        {% for value, label in form.question_3.choices %}
+                            <div class="app-quiz-option" data-question="3">
+                                <div class="app-quiz-option-indicator"></div>
+                                <label class="app-quiz-option-text">
+                                    <input type="radio" name="{{ form.question_3.name }}" value="{{ value }}" style="display: none;">
+                                    {{ label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {{ form.correct_3 }}
+                </div>
+            </div>
+            
+            <!-- Question 4 -->
+            <div class="app-card app-mt-3 app-quiz-question">
+                <div class="app-card-header">
+                    <h3>Pergunta 4</h3>
+                </div>
+                <div class="app-card-body">
+                    <p class="app-quiz-question-text">{{ form.question_4.label }}</p>
+                    <div class="app-quiz-options">
+                        {% for value, label in form.question_4.choices %}
+                            <div class="app-quiz-option" data-question="4">
+                                <div class="app-quiz-option-indicator"></div>
+                                <label class="app-quiz-option-text">
+                                    <input type="radio" name="{{ form.question_4.name }}" value="{{ value }}" style="display: none;">
+                                    {{ label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {{ form.correct_4 }}
+                </div>
+            </div>
+            
+            <!-- Question 5 -->
+            <div class="app-card app-mt-3 app-quiz-question">
+                <div class="app-card-header">
+                    <h3>Pergunta 5</h3>
+                </div>
+                <div class="app-card-body">
+                    <p class="app-quiz-question-text">{{ form.question_5.label }}</p>
+                    <div class="app-quiz-options">
+                        {% for value, label in form.question_5.choices %}
+                            <div class="app-quiz-option" data-question="5">
+                                <div class="app-quiz-option-indicator"></div>
+                                <label class="app-quiz-option-text">
+                                    <input type="radio" name="{{ form.question_5.name }}" value="{{ value }}" style="display: none;">
+                                    {{ label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {{ form.correct_5 }}
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="app-mt-3 app-mb-3">
+                <button type="submit" class="app-btn app-btn-primary app-btn-block" id="quiz-submit" disabled>
+                    Enviar Respostas
+                </button>
+            </div>
+        </form>
+        
+        <!-- Previous Quiz Results -->
+        {% if quiz_results %}
+            <div class="app-card app-mt-3">
+                <div class="app-card-header">
+                    <h3>Resultados Anteriores</h3>
+                </div>
+                <div class="app-card-body">
+                    <div class="app-quiz-history">
+                        {% for result in quiz_results %}
+                            <div class="app-quiz-history-item">
+                                <div class="app-quiz-history-date">
+                                    {{ result.created_at.strftime('%d/%m/%Y') }}
+                                </div>
+                                <div class="app-quiz-history-score">
+                                    {{ result.score }}/5
+                                </div>
+                                <div class="app-quiz-history-level app-level-{{ result.fan_level|lower }}">
+                                    {{ result.fan_level }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeQuiz();
+});
+
+function initializeQuiz() {
+    const quizOptions = document.querySelectorAll('.app-quiz-option');
+    const submitButton = document.getElementById('quiz-submit');
+    
+    quizOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove selection from other options in the same question
+            const questionId = this.dataset.question;
+            document.querySelectorAll(`.app-quiz-option[data-question="${questionId}"]`)
+                .forEach(opt => opt.classList.remove('selected'));
+            
+            // Select this option
+            this.classList.add('selected');
+            
+            // Update the hidden input
+            const radioInput = this.querySelector('input[type="radio"]');
+            if (radioInput) {
+                radioInput.checked = true;
+            }
+            
+            // Update progress
+            updateQuizProgress();
+        });
+    });
+    
+    function updateQuizProgress() {
+        const totalQuestions = document.querySelectorAll('.app-quiz-question').length;
+        const answeredQuestions = document.querySelectorAll('.app-quiz-option.selected').length;
+        
+        const progressText = document.getElementById('quiz-progress-text');
+        const progressBar = document.querySelector('.app-quiz-progress-fill');
+        
+        if (progressText) {
+            progressText.textContent = `${answeredQuestions} de ${totalQuestions} perguntas respondidas`;
+        }
+        
+        if (progressBar) {
+            progressBar.style.width = `${(answeredQuestions / totalQuestions) * 100}%`;
+        }
+        
+        if (submitButton) {
+            submitButton.disabled = (answeredQuestions < totalQuestions);
+        }
+    }
+}
+</script>
+{% endblock %}

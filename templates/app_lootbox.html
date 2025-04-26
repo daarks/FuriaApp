@@ -1,0 +1,157 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Lootbox - FURIA Fan App{% endblock %}
+{% block header_title %}Lootbox Diária{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-lootbox-container">
+        <!-- Lootbox Info -->
+        <div class="app-lootbox-info">
+            <h2 class="app-lootbox-title">FURIA Lootbox</h2>
+            <p class="app-lootbox-desc">Abra sua lootbox diária para ganhar recompensas exclusivas da FURIA!</p>
+        </div>
+        
+        <!-- Lootbox -->
+        <div id="lootbox" class="app-lootbox {% if not can_open %}disabled{% endif %}" onclick="openLootbox()">
+            {% if not can_open %}
+                <div class="app-lootbox-overlay">
+                    <i class="fas fa-lock"></i>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Lootbox Status -->
+        {% if not can_open %}
+            <div class="app-lootbox-countdown">
+                <span>Próxima lootbox disponível em</span>
+                <span class="app-countdown-timer" id="countdown-timer">24:00:00</span>
+            </div>
+        {% else %}
+            <p class="app-lootbox-instruction">Toque para abrir</p>
+        {% endif %}
+        
+        <!-- Reward Container (Hidden Initially) -->
+        <div id="reward-container" class="app-reward-container"></div>
+        
+        <!-- Confetti Container -->
+        <div class="confetti-container"></div>
+        
+        <!-- Previous Rewards -->
+        <div class="app-card app-mt-3">
+            <div class="app-card-header">
+                <h3>Recompensas Anteriores</h3>
+            </div>
+            <div class="app-card-body">
+                {% if user.lootbox_rewards %}
+                    {% set rewards_json = user.lootbox_rewards|from_json if user.lootbox_rewards else [] %}
+                    
+                    {% if rewards_json|length > 0 %}
+                        <div class="app-rewards-grid">
+                            {% for reward in rewards_json %}
+                                <div class="app-reward-item app-reward-{{ reward.rarity }}">
+                                    <div class="app-reward-icon">
+                                        {% if reward.type == 'wallpaper' %}
+                                            <i class="fas fa-image"></i>
+                                        {% elif reward.type == 'avatar' %}
+                                            <i class="fas fa-user-circle"></i>
+                                        {% elif reward.type == 'gif' %}
+                                            <i class="fas fa-film"></i>
+                                        {% elif reward.type == 'discount' %}
+                                            <i class="fas fa-percent"></i>
+                                        {% elif reward.type == 'digital_item' %}
+                                            <i class="fas fa-gift"></i>
+                                        {% elif reward.type == 'exclusive' %}
+                                            <i class="fas fa-crown"></i>
+                                        {% else %}
+                                            <i class="fas fa-question"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="app-reward-info">
+                                        <h4 class="app-reward-name">{{ reward.name }}</h4>
+                                        <div class="app-reward-rarity rarity-{{ reward.rarity }}">
+                                            {{ reward.rarity|capitalize }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="app-empty-state">
+                            <i class="fas fa-box-open app-icon-large"></i>
+                            <p>Você ainda não possui recompensas</p>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="app-empty-state">
+                        <i class="fas fa-box-open app-icon-large"></i>
+                        <p>Você ainda não possui recompensas</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Rarity Info -->
+        <div class="app-card app-mt-3">
+            <div class="app-card-header">
+                <h3>Raridades</h3>
+            </div>
+            <div class="app-card-body">
+                <div class="app-rarity-list">
+                    <div class="app-rarity-item">
+                        <div class="app-rarity-badge rarity-common">Comum</div>
+                        <div class="app-rarity-desc">Itens básicos (60% de chance)</div>
+                    </div>
+                    <div class="app-rarity-item">
+                        <div class="app-rarity-badge rarity-uncommon">Incomum</div>
+                        <div class="app-rarity-desc">Itens diferenciados (25% de chance)</div>
+                    </div>
+                    <div class="app-rarity-item">
+                        <div class="app-rarity-badge rarity-rare">Raro</div>
+                        <div class="app-rarity-desc">Itens especiais (10% de chance)</div>
+                    </div>
+                    <div class="app-rarity-item">
+                        <div class="app-rarity-badge rarity-legendary">Lendário</div>
+                        <div class="app-rarity-desc">Itens exclusivos (5% de chance)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/lootbox.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if not can_open %}
+            // Initialize countdown timer
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            
+            const updateCountdown = function() {
+                const now = new Date();
+                const diff = tomorrow - now;
+                
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                document.getElementById('countdown-timer').textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (diff > 0) {
+                    setTimeout(updateCountdown, 1000);
+                } else {
+                    window.location.reload();
+                }
+            };
+            
+            updateCountdown();
+        {% endif %}
+    });
+</script>
+{% endblock %}
