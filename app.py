@@ -56,7 +56,8 @@ with app.app_context():
 # Routes
 @app.route('/')
 def home():
-    return redirect(url_for('login'))
+    # Route principal diretamente para a página de login
+    return render_template('app_login.html', form=LoginForm())
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

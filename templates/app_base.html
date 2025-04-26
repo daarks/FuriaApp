@@ -18,7 +18,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    {% if not session.get('user_id') and request.endpoint == 'login' %}
+    {% if not session.get('user_id') and (request.endpoint == 'login' or request.endpoint == 'home') %}
     <!-- Splash Screen (only on login page) -->
     <div id="splash-screen" class="splash-screen">
         <img src="{{ url_for('static', filename='img/furia-logo-white.png') }}" alt="FURIA Logo" class="splash-logo">

@@ -331,25 +331,25 @@ p {
 }
 
 .app-btn-primary {
-  color: white;
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
+  color: #000000;
+  background-color: #ffffff;
+  border-color: #ffffff;
 }
 
 .app-btn-primary:hover {
-  background-color: var(--primary-dark);
-  border-color: var(--primary-dark);
+  background-color: #e0e0e0;
+  border-color: #e0e0e0;
 }
 
 .app-btn-outline {
-  color: var(--primary-color);
-  border-color: var(--primary-color);
+  color: #ffffff;
+  border-color: #ffffff;
   background-color: transparent;
 }
 
 .app-btn-outline:hover {
-  color: white;
-  background-color: var(--primary-color);
+  color: #000000;
+  background-color: #ffffff;
 }
 
 .app-btn-block {

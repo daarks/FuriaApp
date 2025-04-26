@@ -3,6 +3,10 @@
 {% block title %}Redes Sociais - FURIA Fan App{% endblock %}
 {% block header_title %}Conectar Redes Sociais{% endblock %}
 
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/social_analytics.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="app-container">
     <div class="app-card app-mb-3">
@@ -117,7 +121,7 @@
             {% if social_media.hashtags %}
             <h4 class="app-mt-3">Hashtags populares</h4>
             <div class="app-hashtag-cloud">
-                {% set hashtags = social_media.hashtags|from_json if social_media.hashtags else [] %}
+                {% set hashtags = social_media.hashtags|tojson|safe if social_media.hashtags else [] %}
                 {% for tag in hashtags %}
                 <span class="app-hashtag">{{ tag }}</span>
                 {% endfor %}
