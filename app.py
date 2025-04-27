@@ -431,30 +431,51 @@ def fan_power():
         flash('Please login first.', 'warning')
         return redirect(url_for('login'))
     
-    user = User.query.get(session['user_id'])
-    
-    # Get all user data for fan power analysis
-    social_media = SocialMedia.query.filter_by(user_id=user.id).first()
-    content_links = ContentLink.query.filter_by(user_id=user.id).all()
-    document = Document.query.filter_by(user_id=user.id).first()
-    
-    # Calculate fan power metrics
-    fan_power_data = get_fan_power(user, social_media, content_links)
-    
-    # Convert social_media.hashtags to Python list if it exists as JSON string
-    if social_media and social_media.hashtags:
+    try:
+        user = User.query.get(session['user_id'])
+        if not user:
+            session.pop('user_id', None)
+            flash('User not found. Please login again.', 'danger')
+            return redirect(url_for('login'))
+        
+        # Get all user data for fan power analysis
+        social_media = SocialMedia.query.filter_by(user_id=user.id).first()
+        content_links = ContentLink.query.filter_by(user_id=user.id).order_by(ContentLink.created_at.desc()).limit(5).all()
+        document = Document.query.filter_by(user_id=user.id).first()
+        
+        # Calculate fan power metrics (with error handling)
         try:
-            hashtags = json.loads(social_media.hashtags)
-            social_media.hashtags = hashtags
-        except:
-            social_media.hashtags = []
-    
-    return render_template('app_fan_power.html', 
-                          user=user, 
-                          fan_power=fan_power_data, 
-                          social_media=social_media,
-                          content_links=content_links,
-                          document=document)
+            fan_power_data = get_fan_power(user, social_media, content_links)
+        except Exception as e:
+            app.logger.error(f"Error calculating fan power: {str(e)}")
+            # Provide default values if calculation fails
+            fan_power_data = {
+                'fan_score': 10,
+                'social_score': 0,
+                'content_score': 0,
+                'engagement_score': 0
+            }
+        
+        # Convert social_media.hashtags to Python list if it exists as JSON string
+        if social_media and social_media.hashtags:
+            try:
+                hashtags = json.loads(social_media.hashtags)
+                social_media.hashtags = hashtags
+            except Exception as e:
+                app.logger.error(f"Error parsing hashtags: {str(e)}")
+                social_media.hashtags = []
+        
+        return render_template('app_fan_power.html', 
+                              user=user, 
+                              fan_power=fan_power_data, 
+                              social_media=social_media,
+                              content_links=content_links,
+                              document=document)
+                              
+    except Exception as e:
+        app.logger.error(f"Error in fan_power route: {str(e)}")
+        flash('An error occurred while accessing Fan Power. Please try again.', 'danger')
+        return redirect(url_for('home_dashboard'))
 
 @app.route('/edit_interests', methods=['GET', 'POST'])
 def edit_interests():

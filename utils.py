@@ -547,7 +547,12 @@ def get_fan_power(user, social_media, content_links):
         base_social_score = min(60, connected_count * 15)
         
         # Add engagement bonus if available
-        engagement_bonus = social_media.engagement_score * 0.4 if hasattr(social_media, 'engagement_score') else 0
+        engagement_bonus = 0
+        if hasattr(social_media, 'engagement_score') and social_media.engagement_score is not None:
+            try:
+                engagement_bonus = float(social_media.engagement_score) * 0.4
+            except (ValueError, TypeError):
+                engagement_bonus = 0
         
         result["social_score"] = base_social_score + engagement_bonus
     
@@ -558,14 +563,18 @@ def get_fan_power(user, social_media, content_links):
         relevance_total = 0
         
         for link in content_links:
-            if hasattr(link, 'relevance_score') and link.relevance_score:
-                relevance_total += link.relevance_score
+            if hasattr(link, 'relevance_score') and link.relevance_score is not None:
+                try:
+                    relevance_total += float(link.relevance_score)
+                except (ValueError, TypeError):
+                    # Skip this item if relevance score can't be converted to float
+                    pass
         
         if content_count > 0 and relevance_total > 0:
             avg_relevance = relevance_total / content_count
-            result["content_score"] = min(100, content_count * 15 + avg_relevance * 10)
+            result["content_score"] = min(100.0, content_count * 15.0 + avg_relevance * 10.0)
         else:
-            result["content_score"] = min(100, content_count * 20)
+            result["content_score"] = min(100.0, content_count * 20.0)
     
     # Calculate engagement score (0-100)
     # This combines quiz results, document verification, and participation
