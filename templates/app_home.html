@@ -11,6 +11,16 @@
     </div>
     
     <div class="app-home-grid">
+        <a href="{{ url_for('bolao') }}" class="app-feature-card highlight">
+            <div class="app-feature-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="app-feature-info">
+                <h3>O BOLÃO</h3>
+                <p>Faça seus palpites e ganhe pontos com suas previsões</p>
+            </div>
+        </a>
+        
         <a href="{{ url_for('player_match') }}" class="app-feature-card">
             <div class="app-feature-icon">
                 <i class="fas fa-users"></i>
@@ -38,16 +48,6 @@
             <div class="app-feature-info">
                 <h3>Quiz</h3>
                 <p>Teste seus conhecimentos sobre a FURIA</p>
-            </div>
-        </a>
-        
-        <a href="{{ url_for('calendar') }}" class="app-feature-card">
-            <div class="app-feature-icon">
-                <i class="fas fa-calendar"></i>
-            </div>
-            <div class="app-feature-info">
-                <h3>Calendário</h3>
-                <p>Veja os próximos eventos de esports</p>
             </div>
         </a>
     </div>
@@ -83,6 +83,36 @@
     </div>
     {% endif %}
     
+    <!-- Próximas Partidas do Bolão -->
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3 class="app-card-title"><i class="fas fa-trophy"></i> Próximas Partidas</h3>
+        </div>
+        <div class="app-card-body">
+            {% if upcoming_matches %}
+                <div class="app-upcoming-matches">
+                    {% for match in upcoming_matches[:3] %}
+                        <div class="app-match-item">
+                            <div class="app-match-date">{{ match.formatted_date().split(' ')[0] }}</div>
+                            <div class="app-match-info">
+                                <div class="app-match-title">FURIA vs {{ match.opponent }}</div>
+                                <div class="app-match-subtitle">{{ match.tournament }}</div>
+                            </div>
+                            <div class="app-match-game">{{ match.game }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="app-event-more">
+                    <a href="{{ url_for('bolao') }}">Ver todas as partidas <i class="fas fa-arrow-right"></i></a>
+                </div>
+            {% else %}
+                <div class="app-empty-notice">
+                    <p>Não há partidas agendadas no momento.</p>
+                    <a href="{{ url_for('bolao') }}" class="app-btn app-btn-outline">Conferir o Bolão</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 
 </div>
 {% endblock %}
@@ -131,6 +161,19 @@
 .app-feature-card:hover {
     transform: translateY(-5px);
     background-color: rgba(255, 255, 255, 0.1);
+}
+
+.app-feature-card.highlight {
+    background-color: rgba(255, 215, 0, 0.1); /* Cor de ouro com baixa opacidade */
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.app-feature-card.highlight:hover {
+    background-color: rgba(255, 215, 0, 0.15);
+}
+
+.app-feature-card.highlight .app-feature-icon {
+    color: gold;
 }
 
 .app-feature-icon {
@@ -231,6 +274,72 @@
 
 .app-event-more a:hover i {
     transform: translateX(3px);
+}
+
+.app-upcoming-matches {
+    display: flex;
+    flex-direction: column;
+}
+
+.app-match-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.app-match-item:last-child {
+    border-bottom: none;
+}
+
+.app-match-date {
+    font-weight: 600;
+    min-width: 60px;
+    font-size: 0.9rem;
+    color: #ffffff;
+}
+
+.app-match-info {
+    flex: 1;
+}
+
+.app-match-title {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.app-match-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.app-match-game {
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.app-empty-notice {
+    text-align: center;
+    padding: var(--spacing-md) 0;
+    color: var(--text-muted);
+}
+
+.app-card-header {
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-sm);
+}
+
+.app-card-title {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.app-card-title i {
+    color: gold;
+    margin-right: var(--spacing-xs);
 }
 
 @keyframes pulse {

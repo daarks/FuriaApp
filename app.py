@@ -151,12 +151,43 @@ def home_dashboard():
             session.pop('user_id', None)
             flash('Usuário não encontrado. Faça login novamente.', 'danger')
             return redirect(url_for('login'))
+            
+        # Buscar partidas futuras para o Bolão
+        upcoming_matches = []
+        try:
+            # Verificar se temos partidas na base de dados
+            matches = Match.query.order_by(Match.match_time).all()
+            
+            # Se não tiver, criar partidas de demonstração
+            if not matches:
+                # Gerar partidas de demonstração
+                demo_matches = generate_demo_matches(8)  # Gerar 8 partidas
+                for match_data in demo_matches:
+                    match = Match(**match_data)
+                    db.session.add(match)
+                
+                db.session.commit()
+                matches = Match.query.order_by(Match.match_time).all()
+            
+            # Filtrar apenas partidas futuras
+            now = datetime.now()
+            upcoming_matches = [m for m in matches if m.match_time > now]
+            
+            # Ordenar por data/hora
+            upcoming_matches.sort(key=lambda x: x.match_time)
+        except Exception as e:
+            app.logger.error(f"Erro ao buscar partidas para o dashboard: {str(e)}")
+            # Não interromper o carregamento da página principal por causa deste erro
+            
     except Exception as e:
         app.logger.error(f"Erro na página inicial: {str(e)}")
         flash('Ocorreu um erro ao acessar sua página inicial. Tente novamente.', 'danger')
         return redirect(url_for('login'))
     
-    return render_template('app_home.html', user=user, now=lambda: datetime.now())
+    return render_template('app_home.html', 
+                           user=user, 
+                           now=lambda: datetime.now(),
+                           upcoming_matches=upcoming_matches)
 
 @app.route('/profile')
 def profile():
