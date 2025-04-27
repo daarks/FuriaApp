@@ -73,9 +73,15 @@
                             {% if social_media and social_media.twitter %}Conectado{% else %}Não conectado{% endif %}
                         </div>
                     </div>
-                    <a href="{{ url_for('social_media') }}" class="app-btn {% if social_media and social_media.twitter %}app-btn-outline{% else %}app-btn-primary{% endif %}">
-                        {% if social_media and social_media.twitter %}Gerenciar{% else %}Conectar{% endif %}
+                    {% if social_media and social_media.twitter %}
+                    <a href="{{ url_for('social_media_remove', platform='twitter') }}" class="app-btn app-btn-danger app-btn-circle">
+                        <i class="fas fa-times"></i>
                     </a>
+                    {% else %}
+                    <a href="{{ url_for('social_media') }}" class="app-btn app-btn-primary">
+                        Conectar
+                    </a>
+                    {% endif %}
                 </li>
                 
                 <li class="social-connect-item">
@@ -88,9 +94,15 @@
                             {% if social_media and social_media.instagram %}Conectado{% else %}Não conectado{% endif %}
                         </div>
                     </div>
-                    <a href="{{ url_for('social_media') }}" class="app-btn {% if social_media and social_media.instagram %}app-btn-outline{% else %}app-btn-primary{% endif %}">
-                        {% if social_media and social_media.instagram %}Gerenciar{% else %}Conectar{% endif %}
+                    {% if social_media and social_media.instagram %}
+                    <a href="{{ url_for('social_media_remove', platform='instagram') }}" class="app-btn app-btn-danger app-btn-circle">
+                        <i class="fas fa-times"></i>
                     </a>
+                    {% else %}
+                    <a href="{{ url_for('social_media') }}" class="app-btn app-btn-primary">
+                        Conectar
+                    </a>
+                    {% endif %}
                 </li>
                 
                 <li class="social-connect-item">
@@ -103,14 +115,20 @@
                             {% if social_media and social_media.twitch %}Conectado{% else %}Não conectado{% endif %}
                         </div>
                     </div>
-                    <a href="{{ url_for('social_media') }}" class="app-btn {% if social_media and social_media.twitch %}app-btn-outline{% else %}app-btn-primary{% endif %}">
-                        {% if social_media and social_media.twitch %}Gerenciar{% else %}Conectar{% endif %}
+                    {% if social_media and social_media.twitch %}
+                    <a href="{{ url_for('social_media_remove', platform='twitch') }}" class="app-btn app-btn-danger app-btn-circle">
+                        <i class="fas fa-times"></i>
                     </a>
+                    {% else %}
+                    <a href="{{ url_for('social_media') }}" class="app-btn app-btn-primary">
+                        Conectar
+                    </a>
+                    {% endif %}
                 </li>
             </ul>
             
             <div class="app-mt-2 app-text-center">
-                <a href="{{ url_for('social_media') }}" class="app-btn app-btn-primary app-btn-block">Gerenciar Todas as Redes</a>
+                <a href="{{ url_for('social_media') }}" class="app-btn app-btn-primary app-btn-block">Conectar Mais Redes</a>
             </div>
         </div>
     </div>

@@ -291,6 +291,60 @@ def document_validation():
     document = Document.query.filter_by(user_id=user.id).first()
     return render_template('app_document_validation.html', form=form, document=document)
 
+@app.route('/social_media_remove/<platform>')
+def social_media_remove(platform):
+    if 'user_id' not in session:
+        flash('Por favor, faça login primeiro.', 'warning')
+        return redirect(url_for('login'))
+    
+    try:
+        user = User.query.get(session['user_id'])
+        if not user:
+            session.pop('user_id', None)
+            flash('Usuário não encontrado. Por favor, faça login novamente.', 'danger')
+            return redirect(url_for('login'))
+        
+        # Get existing social media data
+        social_media = SocialMedia.query.filter_by(user_id=user.id).first()
+        
+        if social_media:
+            if platform == 'twitter':
+                social_media.twitter = ''
+            elif platform == 'instagram':
+                social_media.instagram = ''
+            elif platform == 'twitch':
+                social_media.twitch = ''
+            elif platform == 'youtube':
+                social_media.youtube = ''
+            elif platform == 'facebook':
+                social_media.facebook = ''
+            
+            # Recalculate engagement score if needed
+            social_platforms = [
+                social_media.twitter, 
+                social_media.instagram, 
+                social_media.twitch, 
+                social_media.youtube, 
+                social_media.facebook
+            ]
+            connected_platforms = sum(1 for p in social_platforms if p)
+            
+            # If no platforms left, reset hashtags and interactions
+            if connected_platforms == 0:
+                social_media.hashtags = '[]'
+                social_media.interactions = '{}'
+                social_media.engagement_score = 0
+            
+            db.session.commit()
+            flash(f'Perfil de {platform} removido com sucesso!', 'success')
+        
+        return redirect(url_for('fan_power'))
+        
+    except Exception as e:
+        app.logger.error(f"Error in social_media_remove route: {str(e)}")
+        flash('Ocorreu um erro ao remover a rede social. Por favor, tente novamente.', 'danger')
+        return redirect(url_for('fan_power'))
+
 @app.route('/social_media', methods=['GET', 'POST'])
 def social_media():
     if 'user_id' not in session:
@@ -507,14 +561,14 @@ def toggle_favorite():
 @app.route('/fan_power')
 def fan_power():
     if 'user_id' not in session:
-        flash('Please login first.', 'warning')
+        flash('Por favor, faça login primeiro.', 'warning')
         return redirect(url_for('login'))
     
     try:
         user = User.query.get(session['user_id'])
         if not user:
             session.pop('user_id', None)
-            flash('User not found. Please login again.', 'danger')
+            flash('Usuário não encontrado. Por favor, faça login novamente.', 'danger')
             return redirect(url_for('login'))
         
         # Get all user data for fan power analysis
@@ -532,7 +586,7 @@ def fan_power():
                 'fan_score': 10,
                 'social_score': 0,
                 'content_score': 0,
-                'engagement_score': 0
+                'engagement_score': 0 if not social_media else social_media.engagement_score
             }
         
         # Convert social_media.hashtags to Python list if it exists as JSON string
@@ -553,7 +607,7 @@ def fan_power():
                               
     except Exception as e:
         app.logger.error(f"Error in fan_power route: {str(e)}")
-        flash('An error occurred while accessing Fan Power. Please try again.', 'danger')
+        flash('Ocorreu um erro ao acessar o Fan Power. Por favor, tente novamente.', 'danger')
         return redirect(url_for('home_dashboard'))
 
 @app.route('/edit_interests', methods=['GET', 'POST'])
