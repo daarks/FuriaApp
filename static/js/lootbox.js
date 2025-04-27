@@ -16,12 +16,17 @@ function openLootbox() {
     // Play sound effect if available
     playLootboxSound();
     
+    // Get CSRF token from meta tag
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
     // Send request to server
     fetch('/open_lootbox', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
-        }
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({})
     })
     .then(response => response.json())
     .then(data => {

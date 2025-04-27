@@ -121,6 +121,190 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+/* Lootbox animations */
+.app-lootbox {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 30px auto;
+    background-image: url('{{ url_for('static', filename='images/lootbox-closed.png') }}');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.app-lootbox:active {
+    transform: scale(0.95);
+}
+
+.app-lootbox.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.app-lootbox-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #ffffff;
+}
+
+.app-lootbox.opening {
+    animation: shake 0.5s ease-in-out;
+}
+
+.app-lootbox.opened {
+    background-image: url('{{ url_for('static', filename='images/lootbox-open.png') }}');
+}
+
+.app-reward-container {
+    opacity: 0;
+    transform: scale(0.8);
+    max-width: 250px;
+    margin: 0 auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+}
+
+.app-reward-container.show {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.app-reward-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.app-reward-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.app-reward-name {
+    margin: 0 0 10px;
+    font-size: 1.2rem;
+}
+
+.app-reward-rarity {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.app-reward-common .app-reward-icon,
+.rarity-common {
+    color: #bdc3c7;
+    background-color: rgba(189, 195, 199, 0.2);
+}
+
+.app-reward-uncommon .app-reward-icon,
+.rarity-uncommon {
+    color: #3498db; 
+    background-color: rgba(52, 152, 219, 0.2);
+}
+
+.app-reward-rare .app-reward-icon,
+.rarity-rare {
+    color: #9b59b6;
+    background-color: rgba(155, 89, 182, 0.2);
+}
+
+.app-reward-legendary .app-reward-icon,
+.rarity-legendary {
+    color: #f39c12;
+    background-color: rgba(243, 156, 18, 0.2);
+}
+
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.confetti {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    top: -10px;
+    animation: confetti-fall 5s linear forwards;
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+@keyframes shake {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-5px, 0) rotate(-5deg); }
+    20% { transform: translate(5px, 0) rotate(5deg); }
+    30% { transform: translate(-5px, 0) rotate(-5deg); }
+    40% { transform: translate(5px, 0) rotate(5deg); }
+    50% { transform: translate(-5px, 0) rotate(-5deg); }
+    60% { transform: translate(5px, 0) rotate(5deg); }
+    70% { transform: translate(-5px, 0) rotate(-5deg); }
+    80% { transform: translate(5px, 0) rotate(5deg); }
+    90% { transform: translate(-5px, 0) rotate(-5deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.app-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: #000;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 5px;
+    z-index: 9999;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.app-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.app-toast-error {
+    background-color: #e74c3c;
+}
+
+.app-toast-success {
+    background-color: #2ecc71;
+}
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/lootbox.js') }}"></script>
 <script>
