@@ -1,4 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+import random
+import json
 from app import db
 
 class User(db.Model):
@@ -106,3 +108,92 @@ class Calendar(db.Model):
     # Meta
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class Match(db.Model):
+    """Representa uma partida de FURIA para o Bolão"""
+    id = db.Column(db.Integer, primary_key=True)
+    opponent = db.Column(db.String(100), nullable=False)  # Time adversário
+    game = db.Column(db.String(50), nullable=False)  # CS:GO, Valorant, etc.
+    tournament = db.Column(db.String(100))  # Torneio/campeonato
+    match_time = db.Column(db.DateTime, nullable=False)  # Data e hora da partida
+    format = db.Column(db.String(50))  # BO1, BO3, BO5
+    map_pool = db.Column(db.Text)  # JSON com os mapas possíveis
+    status = db.Column(db.String(20), default='scheduled')  # scheduled, live, completed, cancelled
+    
+    # Resultado (preenchido após a partida)
+    furia_score = db.Column(db.Integer)
+    opponent_score = db.Column(db.Integer)
+    mvp = db.Column(db.String(100))  # Melhor jogador da FURIA
+    opponent_highlight = db.Column(db.String(100))  # Destaque do time adversário
+    
+    # Meta
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamentos
+    predictions = db.relationship('MatchPrediction', backref='match', lazy=True)
+    
+    @property
+    def is_predictable(self):
+        """Verifica se a partida ainda pode receber palpites (mais de 5min para começar)"""
+        if self.status != 'scheduled':
+            return False
+        return datetime.utcnow() < (self.match_time - timedelta(minutes=5))
+    
+    @property
+    def time_until_match(self):
+        """Retorna o tempo restante até a partida em formato legível"""
+        if self.match_time < datetime.utcnow():
+            return "Partida em andamento ou finalizada"
+            
+        delta = self.match_time - datetime.utcnow()
+        days = delta.days
+        hours, remainder = divmod(delta.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        
+        if days > 0:
+            return f"{days}d {hours}h {minutes}m"
+        elif hours > 0:
+            return f"{hours}h {minutes}m"
+        else:
+            return f"{minutes}m {seconds}s"
+    
+    @property
+    def formatted_date(self):
+        """Retorna a data formatada em pt-BR"""
+        months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+                  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+        weekdays = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"]
+        
+        weekday = weekdays[self.match_time.weekday()]
+        day = self.match_time.day
+        month = months[self.match_time.month - 1]
+        year = self.match_time.year
+        time = self.match_time.strftime("%H:%M")
+        
+        return f"{weekday}, {day} de {month} • {time}"
+
+class MatchPrediction(db.Model):
+    """Representa um palpite de um usuário em uma partida"""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    match_id = db.Column(db.Integer, db.ForeignKey('match.id'), nullable=False)
+    
+    # Previsão do usuário
+    furia_score = db.Column(db.Integer, nullable=False)
+    opponent_score = db.Column(db.Integer, nullable=False)
+    predicted_mvp = db.Column(db.String(100))  # Palpite de quem será o MVP da FURIA
+    predicted_opponent_highlight = db.Column(db.String(100))  # Palpite do destaque adversário
+    
+    # Pontuação do palpite (calculada após a partida)
+    score_prediction_points = db.Column(db.Integer, default=0)  # +3 para placar exato, +1 para vencedor certo
+    mvp_prediction_points = db.Column(db.Integer, default=0)  # +2 para MVP correto
+    highlight_prediction_points = db.Column(db.Integer, default=0)  # +1 para destaque adversário correto
+    total_points = db.Column(db.Integer, default=0)  # Soma dos pontos
+    
+    # Meta
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Referência para a relação reversa do User
+    user = db.relationship('User', backref=db.backref('match_predictions', lazy=True))
