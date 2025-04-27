@@ -1,7 +1,7 @@
 import random
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 import string
 
@@ -658,13 +658,234 @@ def get_events_by_interests(interests):
     Returns:
         list: Filtered events
     """
-    logger.debug(f"Filtering events by interests: {interests}")
+    logger.debug("Filtering events by user interests")
     
-    filtered_events = []
+    # Convert string interests to list if needed
+    if isinstance(interests, str):
+        try:
+            interests = json.loads(interests)
+        except:
+            interests = [interests]
     
+    # Handle UserInterest objects from database
+    if hasattr(interests[0], 'interest') if interests else False:
+        interest_values = [interest.interest for interest in interests]
+    else:
+        interest_values = interests
+    
+    # Convert to lowercase for case-insensitive matching
+    interest_values = [i.lower() for i in interest_values if i]
+    
+    # Match events with relevant tags
+    matched_events = []
     for event in ESPORTS_EVENTS:
-        # Check if any event tag matches user interests
-        if any(tag in interests for tag in event["tags"]):
-            filtered_events.append(event)
+        # Case-insensitive tag matching
+        event_tags = [tag.lower() for tag in event["tags"]]
+        game_tag = event["game"].lower().replace(" ", "").replace("-", "").replace(":", "")
+        
+        # Add the game as an implicit tag
+        event_tags.append(game_tag)
+        
+        # Check if any user interest matches event tags
+        if any(interest in event_tags for interest in interest_values):
+            matched_events.append(event)
+        
+        # Also match substrings (e.g. "cs" matches "csgo")
+        elif any(any(interest in tag for interest in interest_values) for tag in event_tags):
+            matched_events.append(event)
     
-    return filtered_events
+    # If no matches, return a few random events
+    if not matched_events:
+        matched_events = random.sample(ESPORTS_EVENTS, min(3, len(ESPORTS_EVENTS)))
+    
+    # Sort events by date
+    matched_events.sort(key=lambda e: e["date"])
+    
+    return matched_events
+
+# Dados para gerar matches do Bolão
+MATCH_OPPONENTS = [
+    "MIBR", "paiN Gaming", "Liquid", "Cloud9", "FaZe", "G2", 
+    "Astralis", "Natus Vincere", "Vitality", "NIP", "Complexity",
+    "Imperial", "00Nation", "NAVI", "Evil Geniuses", "LOUD", 
+    "Sentinels", "DRX", "KRÜ Esports", "Fnatic", "TSM"
+]
+
+TOURNAMENTS = [
+    "ESL Pro League", "BLAST Premier", "IEM Cologne", "IEM Katowice", 
+    "Major Championship", "ESL One", "Flashpoint", "CBCS", "PGL Major", 
+    "VCT Americas", "VCT Champions", "VCT Masters", "CBLOL"
+]
+
+CS_MAPS = ["Inferno", "Mirage", "Nuke", "Ancient", "Overpass", "Vertigo", "Anubis"]
+VALORANT_MAPS = ["Ascent", "Bind", "Haven", "Split", "Icebox", "Breeze", "Fracture", "Pearl", "Lotus"]
+LOL_MAPS = ["Summoner's Rift"]
+
+def generate_demo_matches(num_matches=5):
+    """
+    Gera partidas de demonstração para o Bolão da FURIA
+    
+    Args:
+        num_matches: Número de partidas a serem geradas
+        
+    Returns:
+        list: Lista de dicionários contendo dados das partidas
+    """
+    matches = []
+    now = datetime.now()
+    
+    for i in range(num_matches):
+        # Determinar o jogo (game) da partida
+        game = random.choice(["CS:GO", "Valorant", "League of Legends"])
+        
+        # Selecionar o adversário
+        opponent = random.choice(MATCH_OPPONENTS)
+        
+        # Selecionar o formato da partida
+        if game == "CS:GO":
+            match_format = random.choice(["BO1", "BO3", "BO5"])
+            map_pool = random.sample(CS_MAPS, min(5, len(CS_MAPS)))
+        elif game == "Valorant":
+            match_format = random.choice(["BO3", "BO5"])
+            map_pool = random.sample(VALORANT_MAPS, min(5, len(VALORANT_MAPS)))
+        else:  # League of Legends
+            match_format = random.choice(["BO1", "BO3", "BO5"])
+            map_pool = LOL_MAPS
+            
+        # Determinar data e hora (algumas no passado, atual e futuro)
+        days_offset = random.randint(-3, 15)  # -3 a -1 = passado, 0 = hoje, 1 a 15 = futuro
+        hours_offset = random.randint(0, 23)
+        minutes_offset = random.choice([0, 15, 30, 45])
+        
+        match_time = now + timedelta(days=days_offset, hours=hours_offset, minutes=minutes_offset)
+        match_time = match_time.replace(second=0, microsecond=0)  # Arredondar para minutos
+        
+        # Construir o objeto de partida
+        match = {
+            "opponent": opponent,
+            "game": game,
+            "tournament": random.choice(TOURNAMENTS),
+            "match_time": match_time,
+            "format": match_format,
+            "map_pool": json.dumps(map_pool) if isinstance(map_pool, list) else json.dumps([map_pool]),
+            "status": "completed" if days_offset < 0 else "scheduled",
+        }
+        
+        # Adicionar resultados para partidas já realizadas
+        if match["status"] == "completed":
+            # Determinar o resultado aleatoriamente (com viés para FURIA vencer)
+            if random.random() < 0.6:  # 60% chance de FURIA vencer
+                if match_format == "BO1":
+                    match["furia_score"] = 1
+                    match["opponent_score"] = 0
+                elif match_format == "BO3":
+                    match["furia_score"] = 2
+                    match["opponent_score"] = random.choice([0, 1])
+                else:  # BO5
+                    match["furia_score"] = 3
+                    match["opponent_score"] = random.randint(0, 2)
+            else:  # 40% chance de FURIA perder
+                if match_format == "BO1":
+                    match["furia_score"] = 0
+                    match["opponent_score"] = 1
+                elif match_format == "BO3":
+                    match["furia_score"] = random.choice([0, 1])
+                    match["opponent_score"] = 2
+                else:  # BO5
+                    match["furia_score"] = random.randint(0, 2)
+                    match["opponent_score"] = 3
+                    
+            # Adicionar MVP da FURIA e destaque do adversário
+            cs_players = [p["name"] for p in FURIA_PLAYERS if p["game"] == "CS:GO"]
+            valorant_players = [p["name"] for p in FURIA_PLAYERS if p["game"] == "Valorant"]
+            lol_players = [p["name"] for p in FURIA_PLAYERS if p["game"] == "League of Legends"]
+            
+            if game == "CS:GO":
+                match["mvp"] = random.choice(cs_players) if cs_players else "KSCERATO"
+            elif game == "Valorant":
+                match["mvp"] = random.choice(valorant_players) if valorant_players else "QA7"
+            else:  # League of Legends
+                match["mvp"] = random.choice(lol_players) if lol_players else "RedBert"
+                
+            # Gerar nomes fictícios para destaque do adversário
+            common_nicknames = ["steel", "fallen", "cold", "tarik", "s1mple", "device", "niko", 
+                             "tenz", "sinatraa", "shahzam", "scream", "hiko", "faker", "bjergsen"]
+            match["opponent_highlight"] = random.choice(common_nicknames)
+            
+        matches.append(match)
+        
+    return matches
+
+def calculate_prediction_points(prediction, match):
+    """
+    Calcula os pontos de uma previsão com base no resultado real da partida
+    
+    Args:
+        prediction: Objeto MatchPrediction
+        match: Objeto Match
+        
+    Returns:
+        dict: Pontuação detalhada
+    """
+    if match.status != 'completed':
+        return {
+            "score_prediction_points": 0,
+            "mvp_prediction_points": 0,
+            "highlight_prediction_points": 0,
+            "total_points": 0,
+            "message": "A partida ainda não foi realizada"
+        }
+    
+    score_points = 0
+    mvp_points = 0
+    highlight_points = 0
+    
+    # Avalia previsão de pontuação
+    if prediction.furia_score == match.furia_score and prediction.opponent_score == match.opponent_score:
+        # Placar exato - 3 pontos
+        score_points = 3
+    elif (prediction.furia_score > prediction.opponent_score and match.furia_score > match.opponent_score) or \
+         (prediction.furia_score < prediction.opponent_score and match.furia_score < match.opponent_score) or \
+         (prediction.furia_score == prediction.opponent_score and match.furia_score == match.opponent_score):
+        # Acertou o vencedor - 1 ponto
+        score_points = 1
+    
+    # Avalia previsão de MVP
+    if prediction.predicted_mvp and match.mvp and prediction.predicted_mvp.lower() == match.mvp.lower():
+        # MVP correto - 2 pontos
+        mvp_points = 2
+    
+    # Avalia previsão de destaque do adversário
+    if prediction.predicted_opponent_highlight and match.opponent_highlight and \
+       prediction.predicted_opponent_highlight.lower() == match.opponent_highlight.lower():
+        # Destaque adversário correto - 1 ponto
+        highlight_points = 1
+    
+    total_points = score_points + mvp_points + highlight_points
+    
+    return {
+        "score_prediction_points": score_points,
+        "mvp_prediction_points": mvp_points,
+        "highlight_prediction_points": highlight_points,
+        "total_points": total_points,
+        "message": "Pontuação calculada com sucesso"
+    }
+
+def get_furia_players_by_game(game):
+    """
+    Retorna a lista de jogadores da FURIA para um determinado jogo
+    
+    Args:
+        game: Nome do jogo (CS:GO, Valorant, etc.)
+        
+    Returns:
+        list: Lista de nomes de jogadores
+    """
+    game = game.lower().replace(":", "").replace("-", "").strip()
+    
+    if game == "csgo" or game == "cs":
+        game = "CS:GO"
+    elif game == "lol":
+        game = "League of Legends"
+    
+    return [p["name"] for p in FURIA_PLAYERS if p["game"] == game]

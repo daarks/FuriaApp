@@ -43,10 +43,10 @@ csrf = CSRFProtect(app)
 
 # Import models and forms
 with app.app_context():
-    from models import User, UserInterest, Document, SocialMedia, ContentLink, Quiz, Calendar
+    from models import User, UserInterest, Document, SocialMedia, ContentLink, Quiz, Calendar, Match, MatchPrediction
     from forms import (
         RegistrationForm, LoginForm, DocumentUploadForm, SocialMediaForm, 
-        ContentValidationForm, QuizForm
+        ContentValidationForm, QuizForm, MatchPredictionForm
     )
     from utils import (
         validate_document, analyze_social_media, validate_content_links,
