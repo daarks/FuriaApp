@@ -4,6 +4,7 @@
 
 function openLootbox() {
     const lootboxElement = document.getElementById('lootbox');
+    const lootboxImg = document.getElementById('lootbox-img');
     
     // Check if lootbox is disabled
     if (!lootboxElement || lootboxElement.classList.contains('disabled')) {
@@ -28,6 +29,12 @@ function openLootbox() {
         if (data.success) {
             setTimeout(() => {
                 lootboxElement.classList.add('opened');
+                // Change lootbox image to open
+                if (lootboxImg) {
+                    lootboxImg.src = '/static/img/lootbox_closed.png';
+                    lootboxImg.style.transform = 'scale(1.2)';
+                    lootboxImg.style.filter = 'brightness(1.5)';
+                }
                 showReward(data.reward);
             }, 1000);
         } else {
