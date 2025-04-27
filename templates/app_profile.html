@@ -149,7 +149,61 @@
         </div>
     </div>
     
-
+    <!-- Redes Sociais -->
+    <div class="app-card app-mt-2">
+        <div class="app-card-header">
+            <h3>Redes Sociais</h3>
+        </div>
+        <div class="app-card-body">
+            {% if social_media and (social_media.twitter or social_media.instagram or social_media.twitch or social_media.youtube or social_media.facebook) %}
+            <div class="app-social-list">
+                {% if social_media.twitter %}
+                <div class="app-social-item">
+                    <i class="fab fa-twitter app-social-icon twitter"></i>
+                    <span class="app-social-title">Twitter/X</span>
+                </div>
+                {% endif %}
+                
+                {% if social_media.instagram %}
+                <div class="app-social-item">
+                    <i class="fab fa-instagram app-social-icon instagram"></i>
+                    <span class="app-social-title">Instagram</span>
+                </div>
+                {% endif %}
+                
+                {% if social_media.twitch %}
+                <div class="app-social-item">
+                    <i class="fab fa-twitch app-social-icon twitch"></i>
+                    <span class="app-social-title">Twitch</span>
+                </div>
+                {% endif %}
+                
+                {% if social_media.youtube %}
+                <div class="app-social-item">
+                    <i class="fab fa-youtube app-social-icon youtube"></i>
+                    <span class="app-social-title">YouTube</span>
+                </div>
+                {% endif %}
+                
+                {% if social_media.facebook %}
+                <div class="app-social-item">
+                    <i class="fab fa-facebook-f app-social-icon facebook"></i>
+                    <span class="app-social-title">Facebook</span>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="app-empty-state">
+                <i class="fas fa-share-alt app-icon-large app-mb-1"></i>
+                <p>Nenhuma rede social conectada</p>
+                <p class="app-text-light">Conecte suas redes para aumentar seu Fan Power</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="app-card-footer">
+            <a href="{{ url_for('social_media') }}" class="app-btn app-btn-outline">Gerenciar redes</a>
+        </div>
+    </div>
     
     <!-- Logout Button -->
     <div class="app-mt-3 app-mb-3 app-text-center">
@@ -212,6 +266,45 @@ document.addEventListener('DOMContentLoaded', function() {
 .app-avatar-edit:hover {
     background-color: rgba(0, 0, 0, 0.9);
     transform: scale(1.1);
+}
+
+.app-social-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.app-social-item {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 20px;
+}
+
+.app-social-icon {
+    font-size: 1.2rem;
+    margin-right: 8px;
+}
+
+.app-social-icon.twitter {
+    color: #1DA1F2;
+}
+
+.app-social-icon.instagram {
+    color: #E1306C;
+}
+
+.app-social-icon.twitch {
+    color: #9146FF;
+}
+
+.app-social-icon.youtube {
+    color: #FF0000;
+}
+
+.app-social-icon.facebook {
+    color: #4267B2;
 }
 </style>
 {% endblock %}

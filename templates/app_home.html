@@ -83,6 +83,46 @@
     </div>
     {% endif %}
     
+    <!-- Próximos Eventos -->
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Próximos Eventos</h3>
+        </div>
+        <div class="app-card-body">
+            <div class="app-upcoming-events">
+                <div class="app-event-item">
+                    <div class="app-event-date">HOJE</div>
+                    <div class="app-event-info">
+                        <div class="app-event-title">FURIA vs MIBR</div>
+                        <div class="app-event-subtitle">BLAST Premier Spring</div>
+                    </div>
+                    <div class="app-event-game">CS2</div>
+                </div>
+                
+                <div class="app-event-item">
+                    <div class="app-event-date">SET 28</div>
+                    <div class="app-event-info">
+                        <div class="app-event-title">FURIA vs Imperial</div>
+                        <div class="app-event-subtitle">ESL Pro League</div>
+                    </div>
+                    <div class="app-event-game">CS2</div>
+                </div>
+                
+                <div class="app-event-item">
+                    <div class="app-event-date">OUT 02</div>
+                    <div class="app-event-info">
+                        <div class="app-event-title">FURIA vs Sentinels</div>
+                        <div class="app-event-subtitle">VCT America</div>
+                    </div>
+                    <div class="app-event-game">VALORANT</div>
+                </div>
+                
+                <div class="app-event-more">
+                    <a href="{{ url_for('calendar') }}">Ver todos os eventos <i class="fas fa-chevron-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
 {% endblock %}
