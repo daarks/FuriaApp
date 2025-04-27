@@ -3,10 +3,6 @@
 {% block title %}Redes Sociais - FURIA Fan App{% endblock %}
 {% block header_title %}Conectar Redes Sociais{% endblock %}
 
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/social_analytics.js') }}"></script>
-{% endblock %}
-
 {% block content %}
 <div class="app-container">
     <div class="app-card app-mb-3">
@@ -14,89 +10,67 @@
             <h3>Conecte Suas Redes</h3>
         </div>
         <div class="app-card-body">
-            <p>Conecte suas redes sociais para aumentar seu Fan Power e desbloquear conteúdos exclusivos.</p>
+            <p>Insira os links de seus perfis nas redes sociais para aumentar seu Fan Power e desbloquear conteúdos exclusivos.</p>
             
-            <ul class="social-connect-list">
-                <li class="social-connect-item">
-                    <div class="social-connect-icon social-connect-twitter">
-                        <i class="fab fa-twitter"></i>
-                    </div>
-                    <div class="social-connect-info">
-                        <div class="social-connect-name">Twitter</div>
-                        <div class="social-connect-status {% if social_media and social_media.twitter %}connected{% endif %}">
-                            {% if social_media and social_media.twitter %}Conectado{% else %}Não conectado{% endif %}
-                        </div>
-                    </div>
-                    <button class="app-btn {% if social_media and social_media.twitter %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
-                            onclick="connectSocialMedia('twitter')">
-                        {% if social_media and social_media.twitter %}Desconectar{% else %}Conectar{% endif %}
-                    </button>
-                </li>
+            <form method="post" action="{{ url_for('social_media') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
-                <li class="social-connect-item">
-                    <div class="social-connect-icon social-connect-instagram">
-                        <i class="fab fa-instagram"></i>
-                    </div>
-                    <div class="social-connect-info">
-                        <div class="social-connect-name">Instagram</div>
-                        <div class="social-connect-status {% if social_media and social_media.instagram %}connected{% endif %}">
-                            {% if social_media and social_media.instagram %}Conectado{% else %}Não conectado{% endif %}
-                        </div>
-                    </div>
-                    <button class="app-btn {% if social_media and social_media.instagram %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
-                            onclick="connectSocialMedia('instagram')">
-                        {% if social_media and social_media.instagram %}Desconectar{% else %}Conectar{% endif %}
-                    </button>
-                </li>
+                <div class="app-form-group">
+                    <label for="twitter">
+                        <i class="fab fa-twitter"></i> Twitter/X
+                    </label>
+                    <input type="text" class="app-form-control" id="twitter" name="twitter" 
+                           placeholder="https://twitter.com/FuriaGG" 
+                           value="{{ social_media.twitter if social_media else '' }}">
+                    <div class="app-form-text">Insira o link para seu perfil no Twitter/X</div>
+                </div>
                 
-                <li class="social-connect-item">
-                    <div class="social-connect-icon social-connect-twitch">
-                        <i class="fab fa-twitch"></i>
-                    </div>
-                    <div class="social-connect-info">
-                        <div class="social-connect-name">Twitch</div>
-                        <div class="social-connect-status {% if social_media and social_media.twitch %}connected{% endif %}">
-                            {% if social_media and social_media.twitch %}Conectado{% else %}Não conectado{% endif %}
-                        </div>
-                    </div>
-                    <button class="app-btn {% if social_media and social_media.twitch %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
-                            onclick="connectSocialMedia('twitch')">
-                        {% if social_media and social_media.twitch %}Desconectar{% else %}Conectar{% endif %}
-                    </button>
-                </li>
+                <div class="app-form-group">
+                    <label for="instagram">
+                        <i class="fab fa-instagram"></i> Instagram
+                    </label>
+                    <input type="text" class="app-form-control" id="instagram" name="instagram" 
+                           placeholder="https://instagram.com/furiagg" 
+                           value="{{ social_media.instagram if social_media else '' }}">
+                    <div class="app-form-text">Insira o link para seu perfil no Instagram</div>
+                </div>
                 
-                <li class="social-connect-item">
-                    <div class="social-connect-icon social-connect-youtube">
-                        <i class="fab fa-youtube"></i>
-                    </div>
-                    <div class="social-connect-info">
-                        <div class="social-connect-name">YouTube</div>
-                        <div class="social-connect-status {% if social_media and social_media.youtube %}connected{% endif %}">
-                            {% if social_media and social_media.youtube %}Conectado{% else %}Não conectado{% endif %}
-                        </div>
-                    </div>
-                    <button class="app-btn {% if social_media and social_media.youtube %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
-                            onclick="connectSocialMedia('youtube')">
-                        {% if social_media and social_media.youtube %}Desconectar{% else %}Conectar{% endif %}
-                    </button>
-                </li>
+                <div class="app-form-group">
+                    <label for="twitch">
+                        <i class="fab fa-twitch"></i> Twitch
+                    </label>
+                    <input type="text" class="app-form-control" id="twitch" name="twitch" 
+                           placeholder="https://twitch.tv/furiatv" 
+                           value="{{ social_media.twitch if social_media else '' }}">
+                    <div class="app-form-text">Insira o link para seu canal na Twitch</div>
+                </div>
                 
-                <li class="social-connect-item">
-                    <div class="social-connect-icon social-connect-facebook">
-                        <i class="fab fa-facebook-f"></i>
-                    </div>
-                    <div class="social-connect-info">
-                        <div class="social-connect-name">Facebook</div>
-                        <div class="social-connect-status {% if social_media and social_media.facebook %}connected{% endif %}">
-                            {% if social_media and social_media.facebook %}Conectado{% else %}Não conectado{% endif %}
-                        </div>
-                    </div>
-                    <button class="app-btn {% if social_media and social_media.facebook %}app-btn-outline{% else %}app-btn-primary{% endif %}" 
-                            onclick="connectSocialMedia('facebook')">
-                        {% if social_media and social_media.facebook %}Desconectar{% else %}Conectar{% endif %}
+                <div class="app-form-group">
+                    <label for="youtube">
+                        <i class="fab fa-youtube"></i> YouTube
+                    </label>
+                    <input type="text" class="app-form-control" id="youtube" name="youtube" 
+                           placeholder="https://youtube.com/@furiagg" 
+                           value="{{ social_media.youtube if social_media else '' }}">
+                    <div class="app-form-text">Insira o link para seu canal no YouTube</div>
+                </div>
+                
+                <div class="app-form-group">
+                    <label for="facebook">
+                        <i class="fab fa-facebook-f"></i> Facebook
+                    </label>
+                    <input type="text" class="app-form-control" id="facebook" name="facebook" 
+                           placeholder="https://facebook.com/furiagg" 
+                           value="{{ social_media.facebook if social_media else '' }}">
+                    <div class="app-form-text">Insira o link para seu perfil no Facebook</div>
+                </div>
+                
+                <div class="app-form-group app-text-center">
+                    <button type="submit" class="app-btn app-btn-primary app-btn-block">
+                        Salvar e Analisar Redes Sociais
                     </button>
-                </li>
-            </ul>
+                </div>
+            </form>
         </div>
     </div>
     

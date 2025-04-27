@@ -115,12 +115,17 @@ class DocumentUploadForm(FlaskForm):
     submit = SubmitField('Upload and Validate')
 
 class SocialMediaForm(FlaskForm):
-    twitter = StringField('Twitter Profile', validators=[Optional(), URL()])
-    instagram = StringField('Instagram Profile', validators=[Optional(), URL()])
-    twitch = StringField('Twitch Channel', validators=[Optional(), URL()])
-    youtube = StringField('YouTube Channel', validators=[Optional(), URL()])
-    facebook = StringField('Facebook Profile', validators=[Optional(), URL()])
-    submit = SubmitField('Analyze Social Media')
+    twitter = StringField('Twitter/X Profile', validators=[Optional()],
+                          description="Ex: https://twitter.com/FuriaGG")
+    instagram = StringField('Instagram Profile', validators=[Optional()],
+                            description="Ex: https://instagram.com/furiagg")
+    twitch = StringField('Twitch Channel', validators=[Optional()],
+                         description="Ex: https://twitch.tv/furiatv")
+    youtube = StringField('YouTube Channel', validators=[Optional()],
+                          description="Ex: https://youtube.com/@furiagg")
+    facebook = StringField('Facebook Profile', validators=[Optional()],
+                           description="Ex: https://facebook.com/furiagg")
+    submit = SubmitField('Analisar Redes Sociais')
 
 class ContentValidationForm(FlaskForm):
     content_url = StringField('Content URL', validators=[DataRequired(), URL()])
