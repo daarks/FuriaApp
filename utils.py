@@ -275,84 +275,60 @@ LOOTBOX_REWARDS = [
 
 def validate_document(file_path, user_name, user_cpf):
     """
-    Simulates document validation using OCR/AI
+    Validação de documentos utilizando IA/OCR
     
     Args:
-        file_path: Path to the uploaded document
-        user_name: User's registered name
-        user_cpf: User's registered CPF
+        file_path: Caminho para o arquivo do documento
+        user_name: Nome registrado do usuário
+        user_cpf: CPF registrado do usuário
     
     Returns:
-        dict: Validation result with status and message
+        dict: Resultado da validação com status e mensagem
     """
-    logger.debug(f"Validating document: {file_path}")
+    logger.debug(f"Validando documento: {file_path}")
     
-    # Simulate OCR analysis
-    # In a real implementation, this would use actual OCR libraries
-    
-    # Generate random validation data with 70% chance of success
-    success = random.random() > 0.3
-    
-    if success:
-        # Simulate extracting correct information
-        extracted_name = user_name
-        extracted_cpf = user_cpf
-        confidence_score = random.uniform(0.85, 0.99)
+    try:
+        # Importar o serviço de IA para documentos
+        from services.document_ai import document_ai
         
+        # Preparar dados do usuário
+        user_data = {
+            "name": user_name,
+            "cpf": user_cpf
+        }
+        
+        # Usar IA para validar o documento
+        result = document_ai.validate_document(file_path, user_data)
+        
+        # Traduzir mensagens de status para português
+        if result["status"] == "verified":
+            result["message"] = "Documento validado com sucesso!"
+        elif result["status"] == "pending":
+            result["message"] = "Documento em análise. Alguns dados precisam de verificação adicional."
+        elif result["status"] == "rejected":
+            if "qualidade" in result["message"].lower() or "quality" in result["message"].lower():
+                result["message"] = "A qualidade da imagem do documento é muito baixa para verificação."
+            elif "correspondem" in result["message"].lower() or "match" in result["message"].lower():
+                result["message"] = "Os dados no documento não correspondem às informações registradas."
+            elif "incompleto" in result["message"].lower() or "incomplete" in result["message"].lower():
+                result["message"] = "O documento parece estar incompleto ou parcialmente visível."
+            else:
+                result["message"] = "Documento rejeitado. " + result["message"]
+        
+        return result
+    
+    except Exception as e:
+        logger.error(f"Erro durante validação de documento: {str(e)}")
+        
+        # Retornar resposta de fallback em caso de falha no serviço de IA
         return {
-            "status": "verified",
-            "message": "Document successfully validated",
+            "status": "rejected",
+            "message": "Erro ao processar documento. Por favor, tente novamente com uma imagem mais clara.",
             "extracted_data": {
-                "name": extracted_name,
-                "cpf": extracted_cpf,
-                "confidence_score": confidence_score
+                "confidence_score": 0.0,
+                "error": str(e)
             }
         }
-    else:
-        # Simulate extraction failure or mismatch
-        failure_type = random.choice(["poor_quality", "data_mismatch", "incomplete_document"])
-        
-        if failure_type == "poor_quality":
-            return {
-                "status": "rejected",
-                "message": "Document image quality is too low for verification",
-                "extracted_data": {
-                    "confidence_score": random.uniform(0.3, 0.6)
-                }
-            }
-        elif failure_type == "data_mismatch":
-            # Simulate slight name variation
-            name_parts = user_name.split()
-            if len(name_parts) > 1:
-                extracted_name = f"{name_parts[0]} {''.join([p[0] + '.' for p in name_parts[1:]])}"
-            else:
-                extracted_name = user_name
-                
-            # Generate slightly modified CPF
-            cpf_digits = user_cpf.replace('.', '').replace('-', '')
-            modified_cpf = list(cpf_digits)
-            modified_cpf[random.randint(0, len(modified_cpf)-1)] = str(random.randint(0, 9))
-            modified_cpf = ''.join(modified_cpf)
-            
-            return {
-                "status": "rejected",
-                "message": "Data in the document doesn't match registered information",
-                "extracted_data": {
-                    "name": extracted_name,
-                    "cpf": modified_cpf,
-                    "confidence_score": random.uniform(0.7, 0.85)
-                }
-            }
-        else:  # incomplete_document
-            return {
-                "status": "rejected",
-                "message": "Document appears to be incomplete or partially visible",
-                "extracted_data": {
-                    "name": user_name if random.random() > 0.5 else None,
-                    "cpf": None,
-                    "confidence_score": random.uniform(0.4, 0.7)
-                }
-            }
 
 def analyze_social_media(social_media_data):
     """

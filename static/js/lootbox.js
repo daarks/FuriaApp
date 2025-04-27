@@ -25,68 +25,40 @@ function openLootbox() {
     // Show loading animation
     const loadingToast = showLoading('Abrindo lootbox...');
     
-    // Add CSRF token to request headers
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-    
-    // Send request to server
-    fetch('/open_lootbox', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-        },
-        credentials: 'same-origin'
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Server responded with status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Hide loading toast
+    // Versão offline que não depende de requisição ao servidor
+    // Gerar recompensa aleatória localmente
+    setTimeout(() => {
+        // Remover toast de carregamento
         if (loadingToast) {
             document.body.removeChild(loadingToast);
         }
         
-        if (data.success) {
-            console.log('Lootbox opened successfully:', data.reward);
-            
-            setTimeout(() => {
-                lootboxElement.classList.add('opened');
-                // Change lootbox image to open
-                if (lootboxImg) {
-                    lootboxImg.src = '/static/img/lootbox_open.png'; // Ensure we have this image
-                    lootboxImg.style.transform = 'scale(1.2)';
-                    lootboxImg.style.filter = 'brightness(1.5)';
-                }
-                showReward(data.reward);
-                
-                // Disable lootbox after opening
-                lootboxElement.classList.add('disabled');
-                
-                // Add overlay to indicate it's been opened
-                const overlay = document.createElement('div');
-                overlay.className = 'app-lootbox-overlay';
-                overlay.innerHTML = '<i class="fas fa-lock"></i>';
-                lootboxElement.appendChild(overlay);
-            }, 1000);
-        } else {
-            console.error('Failed to open lootbox:', data.message);
-            showError(data.message || 'Erro ao abrir lootbox');
-            lootboxElement.classList.remove('opening');
-        }
-    })
-    .catch(error => {
-        // Hide loading toast
-        if (loadingToast) {
-            document.body.removeChild(loadingToast);
+        // Gerar recompensa aleatória
+        const reward = getRandomLocalReward();
+        console.log('Lootbox opened with local reward:', reward);
+        
+        // Animar abertura da lootbox
+        lootboxElement.classList.add('opened');
+        
+        // Mudar imagem da lootbox para aberta
+        if (lootboxImg) {
+            lootboxImg.src = '/static/img/lootbox_open.png';
+            lootboxImg.style.transform = 'scale(1.2)';
+            lootboxImg.style.filter = 'brightness(1.5)';
         }
         
-        console.error('Error opening lootbox:', error);
-        showError('Erro ao comunicar com o servidor. Tente novamente.');
-        lootboxElement.classList.remove('opening');
-    });
+        // Mostrar recompensa
+        showReward(reward);
+        
+        // Desabilitar lootbox após abrir
+        lootboxElement.classList.add('disabled');
+        
+        // Adicionar overlay indicando que foi aberta
+        const overlay = document.createElement('div');
+        overlay.className = 'app-lootbox-overlay';
+        overlay.innerHTML = '<i class="fas fa-lock"></i>';
+        lootboxElement.appendChild(overlay);
+    }, 1500);
 }
 
 function showReward(reward) {
@@ -246,5 +218,123 @@ function showError(message) {
 }
 
 function capitalize(string) {
+    if (!string) return '';
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+// Constantes para recompensas locais
+const LOCAL_REWARDS = [
+    {
+        "type": "wallpaper",
+        "name": "FURIA Team Wallpaper 2023",
+        "rarity": "common",
+        "description": "Papel de parede para desktop com a equipe FURIA CS:GO.",
+        "image": "furia_team_wallpaper.jpg"
+    },
+    {
+        "type": "wallpaper",
+        "name": "FURIA Logo Pattern",
+        "rarity": "common",
+        "description": "Papel de parede com padrão elegante do logo da FURIA para seu desktop ou dispositivo móvel.",
+        "image": "furia_pattern_wallpaper.jpg"
+    },
+    {
+        "type": "avatar",
+        "name": "FURIA Fan Avatar",
+        "rarity": "common",
+        "description": "Avatar de perfil mostrando seu status de fã da FURIA.",
+        "image": "furia_avatar.png"
+    },
+    {
+        "type": "gif",
+        "name": "FURIA Victory Animation",
+        "rarity": "uncommon",
+        "description": "GIF animado celebrando uma vitória da FURIA em torneio.",
+        "image": "furia_victory.gif"
+    },
+    {
+        "type": "discount",
+        "name": "10% Off FURIA Store",
+        "rarity": "uncommon",
+        "description": "Código de desconto de 10% para sua próxima compra na loja oficial da FURIA.",
+        "code": "FURIAFAN10"
+    },
+    {
+        "type": "wallpaper",
+        "name": "KSCERATO Highlight Wallpaper",
+        "rarity": "uncommon",
+        "description": "Papel de parede premium com KSCERATO em ação.",
+        "image": "kscerato_wallpaper.jpg"
+    },
+    {
+        "type": "digital_item",
+        "name": "FURIA Digital Sticker Pack",
+        "rarity": "uncommon",
+        "description": "Coleção de adesivos digitais para usar em suas redes sociais.",
+        "image": "furia_stickers.png"
+    },
+    {
+        "type": "discount",
+        "name": "15% Off FURIA Store",
+        "rarity": "rare",
+        "description": "Código de desconto de 15% para sua próxima compra na loja oficial da FURIA.",
+        "code": "SUPERFAN15"
+    },
+    {
+        "type": "digital_item",
+        "name": "Exclusive FURIA Mousepad Design",
+        "rarity": "rare",
+        "description": "Design digital de um mousepad de edição limitada da FURIA.",
+        "image": "furia_mousepad.png"
+    },
+    {
+        "type": "exclusive",
+        "name": "FURIA Player Signed Digital Card",
+        "rarity": "legendary",
+        "description": "Cartão colecionável digital com uma assinatura digital de um jogador da FURIA.",
+        "image": "signed_card.png"
+    }
+];
+
+// Função para obter uma recompensa aleatória com base na raridade
+function getRandomLocalReward() {
+    // Determinar raridade com probabilidades ponderadas
+    const rarityRoll = Math.random();
+    let rarity;
+    
+    if (rarityRoll < 0.02) { // 2% chance de legendário
+        rarity = "legendary";
+    } else if (rarityRoll < 0.15) { // 13% chance de raro
+        rarity = "rare";
+    } else if (rarityRoll < 0.40) { // 25% chance de incomum
+        rarity = "uncommon";
+    } else { // 60% chance de comum
+        rarity = "common";
+    }
+    
+    // Filtrar recompensas pela raridade
+    const possibleRewards = LOCAL_REWARDS.filter(reward => reward.rarity === rarity);
+    
+    // Selecionar recompensa aleatória com raridade correspondente
+    if (possibleRewards.length > 0) {
+        const randomIndex = Math.floor(Math.random() * possibleRewards.length);
+        const reward = {...possibleRewards[randomIndex]};
+        
+        // Adicionar identificador único à recompensa
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let rewardId = '';
+        for (let i = 0; i < 8; i++) {
+            rewardId += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        
+        reward.id = rewardId;
+        reward.obtained_at = new Date().toISOString();
+        
+        return reward;
+    } else {
+        // Fallback para comum se nenhuma recompensa corresponder
+        const commonRewards = LOCAL_REWARDS.filter(r => r.rarity === "common");
+        const randomIndex = Math.floor(Math.random() * commonRewards.length);
+        return {...commonRewards[randomIndex]};
+    }
 }
