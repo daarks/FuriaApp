@@ -148,21 +148,21 @@ def home_dashboard():
 @app.route('/profile')
 def profile():
     if 'user_id' not in session:
-        flash('Please login to access your profile.', 'warning')
+        flash('Por favor, faça login para acessar seu perfil.', 'warning')
         return redirect(url_for('login'))
     
     try:
         user = User.query.get(session['user_id'])
         if not user:
             session.pop('user_id', None)
-            flash('User not found. Please login again.', 'danger')
+            flash('Usuário não encontrado. Por favor, faça login novamente.', 'danger')
             return redirect(url_for('login'))
         
         # Get user interests
         interests = UserInterest.query.filter_by(user_id=user.id).all()
     except Exception as e:
         app.logger.error(f"Error in profile route: {str(e)}")
-        flash('An error occurred while accessing your profile. Please try again.', 'danger')
+        flash('Ocorreu um erro ao acessar seu perfil. Por favor, tente novamente.', 'danger')
         return redirect(url_for('login'))
     
     # Get document verification status
@@ -172,7 +172,7 @@ def profile():
     social_media = SocialMedia.query.filter_by(user_id=user.id).first()
     
     # Get fan badge
-    fan_badge = user.fan_badge if user.fan_badge else "New Fan"
+    fan_badge = user.fan_badge if user.fan_badge else "Fã Casual"
     
     # Get player match
     player_match = user.player_match
@@ -190,6 +190,58 @@ def profile():
         player_match=player_match,
         now=lambda: datetime.now()
     )
+
+@app.route('/upload_profile_photo', methods=['POST'])
+def upload_profile_photo():
+    if 'user_id' not in session:
+        flash('Por favor, faça login primeiro.', 'warning')
+        return redirect(url_for('login'))
+    
+    try:
+        user = User.query.get(session['user_id'])
+        
+        if 'profile_photo' not in request.files:
+            flash('Nenhuma foto selecionada.', 'warning')
+            return redirect(url_for('profile'))
+        
+        file = request.files['profile_photo']
+        
+        if file.filename == '':
+            flash('Nenhuma foto selecionada.', 'warning')
+            return redirect(url_for('profile'))
+        
+        if file:
+            # Create uploads directory if it doesn't exist
+            uploads_dir = os.path.join('static', 'uploads')
+            os.makedirs(uploads_dir, exist_ok=True)
+            
+            # Generate a secure filename with user ID to prevent duplication
+            filename = secure_filename(f"user_{user.id}_{file.filename}")
+            file_path = os.path.join(uploads_dir, filename)
+            
+            # Delete old profile image if exists
+            if user.profile_image:
+                old_file_path = os.path.join('static', 'uploads', user.profile_image)
+                if os.path.exists(old_file_path):
+                    try:
+                        os.remove(old_file_path)
+                    except Exception as e:
+                        app.logger.error(f"Error deleting old profile image: {str(e)}")
+            
+            # Save new file
+            file.save(file_path)
+            
+            # Update user record
+            user.profile_image = filename
+            db.session.commit()
+            
+            flash('Foto de perfil atualizada com sucesso!', 'success')
+            return redirect(url_for('profile'))
+    
+    except Exception as e:
+        app.logger.error(f"Error uploading profile photo: {str(e)}")
+        flash('Ocorreu um erro ao atualizar sua foto de perfil. Tente novamente.', 'danger')
+        return redirect(url_for('profile'))
 
 @app.route('/document_validation', methods=['GET', 'POST'])
 def document_validation():
@@ -242,68 +294,77 @@ def document_validation():
 @app.route('/social_media', methods=['GET', 'POST'])
 def social_media():
     if 'user_id' not in session:
-        flash('Please login first.', 'warning')
+        flash('Por favor, faça login primeiro.', 'warning')
         return redirect(url_for('login'))
     
-    form = SocialMediaForm()
-    user = User.query.get(session['user_id'])
-    
-    if form.validate_on_submit():
-        # Get social media links
-        social_media_data = {
-            'twitter': form.twitter.data,
-            'instagram': form.instagram.data,
-            'twitch': form.twitch.data,
-            'youtube': form.youtube.data,
-            'facebook': form.facebook.data
-        }
+    try:
+        user = User.query.get(session['user_id'])
+        if not user:
+            session.pop('user_id', None)
+            flash('Usuário não encontrado. Por favor, faça login novamente.', 'danger')
+            return redirect(url_for('login'))
         
-        # Simulate social media analysis
-        analysis_result = analyze_social_media(social_media_data)
-        
-        # Save social media data
+        # Get existing social media data
         social_media = SocialMedia.query.filter_by(user_id=user.id).first()
-        if social_media:
-            social_media.twitter = form.twitter.data
-            social_media.instagram = form.instagram.data
-            social_media.twitch = form.twitch.data
-            social_media.youtube = form.youtube.data
-            social_media.facebook = form.facebook.data
-            social_media.engagement_score = analysis_result['engagement_score']
-            social_media.hashtags = json.dumps(analysis_result['hashtags'])
-            social_media.interactions = json.dumps(analysis_result['interactions'])
-        else:
-            social_media = SocialMedia(
-                user_id=user.id,
-                twitter=form.twitter.data,
-                instagram=form.instagram.data,
-                twitch=form.twitch.data,
-                youtube=form.youtube.data,
-                facebook=form.facebook.data,
-                engagement_score=analysis_result['engagement_score'],
-                hashtags=json.dumps(analysis_result['hashtags']),
-                interactions=json.dumps(analysis_result['interactions'])
-            )
-            db.session.add(social_media)
         
-        # Update user fan badge
-        user.fan_badge = analysis_result['fan_badge']
+        if request.method == 'POST':
+            # Get social media links from form
+            twitter = request.form.get('twitter', '')
+            instagram = request.form.get('instagram', '')
+            twitch = request.form.get('twitch', '')
+            youtube = request.form.get('youtube', '')
+            facebook = request.form.get('facebook', '')
+            
+            # Validate URLs (basic validation)
+            social_media_data = {
+                'twitter': twitter if twitter and twitter.startswith('http') else '',
+                'instagram': instagram if instagram and instagram.startswith('http') else '',
+                'twitch': twitch if twitch and twitch.startswith('http') else '',
+                'youtube': youtube if youtube and youtube.startswith('http') else '',
+                'facebook': facebook if facebook and facebook.startswith('http') else ''
+            }
+            
+            # Simulate social media analysis
+            analysis_result = analyze_social_media(social_media_data)
+            
+            # Save social media data
+            if social_media:
+                social_media.twitter = social_media_data['twitter']
+                social_media.instagram = social_media_data['instagram']
+                social_media.twitch = social_media_data['twitch']
+                social_media.youtube = social_media_data['youtube']
+                social_media.facebook = social_media_data['facebook']
+                social_media.engagement_score = analysis_result['engagement_score']
+                social_media.hashtags = json.dumps(analysis_result['hashtags'])
+                social_media.interactions = json.dumps(analysis_result['interactions'])
+            else:
+                social_media = SocialMedia(
+                    user_id=user.id,
+                    twitter=social_media_data['twitter'],
+                    instagram=social_media_data['instagram'],
+                    twitch=social_media_data['twitch'],
+                    youtube=social_media_data['youtube'],
+                    facebook=social_media_data['facebook'],
+                    engagement_score=analysis_result['engagement_score'],
+                    hashtags=json.dumps(analysis_result['hashtags']),
+                    interactions=json.dumps(analysis_result['interactions'])
+                )
+                db.session.add(social_media)
+            
+            # Update user fan badge
+            user.fan_badge = analysis_result['fan_badge']
+            
+            db.session.commit()
+            
+            flash(f'Perfis de redes sociais analisados! Você agora está categorizado como: {user.fan_badge}', 'success')
+            return redirect(url_for('profile'))
         
-        db.session.commit()
-        
-        flash(f'Social media profiles analyzed! You are now categorized as: {user.fan_badge}', 'success')
+        return render_template('app_social_media.html', social_media=social_media)
+    
+    except Exception as e:
+        app.logger.error(f"Error in social_media route: {str(e)}")
+        flash('Ocorreu um erro ao processar as redes sociais. Por favor, tente novamente.', 'danger')
         return redirect(url_for('profile'))
-    
-    # Pre-fill form if data exists
-    social_media = SocialMedia.query.filter_by(user_id=user.id).first()
-    if social_media:
-        form.twitter.data = social_media.twitter
-        form.instagram.data = social_media.instagram
-        form.twitch.data = social_media.twitch
-        form.youtube.data = social_media.youtube
-        form.facebook.data = social_media.facebook
-    
-    return render_template('app_social_media.html', form=form, social_media=social_media)
 
 @app.route('/content_validation', methods=['GET', 'POST'])
 def content_validation():
@@ -498,35 +559,45 @@ def fan_power():
 @app.route('/edit_interests', methods=['GET', 'POST'])
 def edit_interests():
     if 'user_id' not in session:
-        flash('Please login first.', 'warning')
+        flash('Por favor, faça login primeiro.', 'warning')
         return redirect(url_for('login'))
     
-    user = User.query.get(session['user_id'])
-    
-    # Get user's current interests
-    interests = UserInterest.query.filter_by(user_id=user.id).all()
-    current_interests = [interest.interest for interest in interests]
-    
-    if request.method == 'POST':
-        # Clear existing interests
-        UserInterest.query.filter_by(user_id=user.id).delete()
+    try:
+        user = User.query.get(session['user_id'])
+        if not user:
+            session.pop('user_id', None)
+            flash('Usuário não encontrado. Por favor, faça login novamente.', 'danger')
+            return redirect(url_for('login'))
         
-        # Get new interests from form
-        new_interests = request.form.getlist('interests[]')
+        # Get user's current interests
+        interests = UserInterest.query.filter_by(user_id=user.id).all()
+        current_interests = [interest.interest for interest in interests]
         
-        # Add new interests
-        for interest in new_interests:
-            user_interest = UserInterest(
-                user_id=user.id,
-                interest=interest
-            )
-            db.session.add(user_interest)
+        if request.method == 'POST':
+            # Clear existing interests
+            UserInterest.query.filter_by(user_id=user.id).delete()
+            
+            # Get new interests from form
+            new_interests = request.form.getlist('interests[]')
+            
+            # Add new interests
+            for interest in new_interests:
+                user_interest = UserInterest(
+                    user_id=user.id,
+                    interest=interest
+                )
+                db.session.add(user_interest)
+            
+            db.session.commit()
+            flash('Seus interesses foram atualizados com sucesso!', 'success')
+            return redirect(url_for('profile'))
         
-        db.session.commit()
-        flash('Seus interesses foram atualizados com sucesso!', 'success')
+        return render_template('app_edit_interests.html', user=user, current_interests=current_interests)
+        
+    except Exception as e:
+        app.logger.error(f"Error in edit_interests route: {str(e)}")
+        flash('Ocorreu um erro ao editar seus interesses. Por favor, tente novamente.', 'danger')
         return redirect(url_for('profile'))
-    
-    return render_template('app_edit_interests.html', user=user, current_interests=current_interests)
 
 @app.route('/lootbox')
 def lootbox():
