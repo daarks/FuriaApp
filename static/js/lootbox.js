@@ -11,38 +11,78 @@ function openLootbox() {
         return;
     }
     
+    // Check if already opening
+    if (lootboxElement.classList.contains('opening')) {
+        return;
+    }
+    
     // Add opening animation
     lootboxElement.classList.add('opening');
     
     // Play sound effect if available
     playLootboxSound();
     
+    // Show loading animation
+    const loadingToast = showLoading('Abrindo lootbox...');
+    
+    // Add CSRF token to request headers
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    
     // Send request to server
     fetch('/open_lootbox', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
-        }
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        credentials: 'same-origin'
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        // Hide loading toast
+        if (loadingToast) {
+            document.body.removeChild(loadingToast);
+        }
+        
         if (data.success) {
+            console.log('Lootbox opened successfully:', data.reward);
+            
             setTimeout(() => {
                 lootboxElement.classList.add('opened');
                 // Change lootbox image to open
                 if (lootboxImg) {
-                    lootboxImg.src = '/static/img/lootbox_closed.png';
+                    lootboxImg.src = '/static/img/lootbox_open.png'; // Ensure we have this image
                     lootboxImg.style.transform = 'scale(1.2)';
                     lootboxImg.style.filter = 'brightness(1.5)';
                 }
                 showReward(data.reward);
+                
+                // Disable lootbox after opening
+                lootboxElement.classList.add('disabled');
+                
+                // Add overlay to indicate it's been opened
+                const overlay = document.createElement('div');
+                overlay.className = 'app-lootbox-overlay';
+                overlay.innerHTML = '<i class="fas fa-lock"></i>';
+                lootboxElement.appendChild(overlay);
             }, 1000);
         } else {
+            console.error('Failed to open lootbox:', data.message);
             showError(data.message || 'Erro ao abrir lootbox');
             lootboxElement.classList.remove('opening');
         }
     })
     .catch(error => {
+        // Hide loading toast
+        if (loadingToast) {
+            document.body.removeChild(loadingToast);
+        }
+        
         console.error('Error opening lootbox:', error);
         showError('Erro ao comunicar com o servidor. Tente novamente.');
         lootboxElement.classList.remove('opening');
@@ -55,6 +95,12 @@ function showReward(reward) {
     
     // Clear container
     rewardContainer.innerHTML = '';
+    
+    // Create reward header
+    const headerElement = document.createElement('h3');
+    headerElement.textContent = 'Parabéns!';
+    headerElement.className = 'app-reward-header';
+    rewardContainer.appendChild(headerElement);
     
     // Create reward element
     const rewardElement = document.createElement('div');
@@ -77,14 +123,32 @@ function showReward(reward) {
     rarityElement.className = `app-reward-rarity rarity-${reward.rarity}`;
     rarityElement.textContent = capitalize(reward.rarity);
     
+    const descElement = document.createElement('p');
+    descElement.className = 'app-reward-desc';
+    descElement.textContent = reward.description || `Um item ${reward.rarity} exclusivo FURIA!`;
+    
     // Add elements to DOM
     infoElement.appendChild(nameElement);
     infoElement.appendChild(rarityElement);
+    infoElement.appendChild(descElement);
     
     rewardElement.appendChild(iconElement);
     rewardElement.appendChild(infoElement);
     
     rewardContainer.appendChild(rewardElement);
+    
+    // Add close button
+    const closeButton = document.createElement('button');
+    closeButton.className = 'app-btn app-btn-primary app-mt-2';
+    closeButton.textContent = 'Fechar';
+    closeButton.onclick = function() {
+        // Hide reward container and reload page to update rewards list
+        rewardContainer.classList.remove('show');
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+    };
+    rewardContainer.appendChild(closeButton);
     
     // Show container with animation
     rewardContainer.classList.add('show');
@@ -143,6 +207,25 @@ function playLootboxSound() {
     } catch (e) {
         console.log('Audio playback not supported');
     }
+}
+
+function showLoading(message) {
+    const toast = document.createElement('div');
+    toast.className = 'app-toast app-toast-loading';
+    toast.innerHTML = `
+        <div class="app-toast-content">
+            <div class="app-loading-spinner"></div>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    
+    return toast;
 }
 
 function showError(message) {
