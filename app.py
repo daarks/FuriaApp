@@ -70,33 +70,45 @@ def register():
             flash('Email already registered. Please login.', 'danger')
             return redirect(url_for('login'))
         
-        # Create the user
-        user = User(
-            name=form.name.data,
-            email=form.email.data,
-            address=form.address.data,
-            cpf=form.cpf.data,
-            birth_date=form.birth_date.data,
-            password_hash=generate_password_hash(form.password.data)
-        )
-        db.session.add(user)
-        db.session.commit()
-        
-        # Add user interests
-        interests = request.form.getlist('interests')
-        for interest in interests:
-            user_interest = UserInterest(user_id=user.id, interest=interest)
-            db.session.add(user_interest)
-        
-        # Add esports events attended
-        events = request.form.getlist('events')
-        user.events_attended = json.dumps(events)
-        
-        # Add purchases
-        purchases = request.form.getlist('purchases')
-        user.purchases = json.dumps(purchases)
-        
-        db.session.commit()
+        try:
+            # Check if user with this CPF already exists
+            existing_cpf = User.query.filter_by(cpf=form.cpf.data).first()
+            if existing_cpf:
+                flash('CPF já cadastrado. Por favor, use outro CPF.', 'danger')
+                return redirect(url_for('register'))
+                
+            # Create the user
+            user = User(
+                name=form.name.data,
+                email=form.email.data,
+                address=form.address.data,
+                cpf=form.cpf.data,
+                birth_date=form.birth_date.data,
+                password_hash=generate_password_hash(form.password.data)
+            )
+            db.session.add(user)
+            db.session.commit()
+            
+            # Add user interests
+            interests = request.form.getlist('interests')
+            for interest in interests:
+                user_interest = UserInterest(user_id=user.id, interest=interest)
+                db.session.add(user_interest)
+            
+            # Add esports events attended
+            events = request.form.getlist('events')
+            user.events_attended = json.dumps(events)
+            
+            # Add purchases
+            purchases = request.form.getlist('purchases')
+            user.purchases = json.dumps(purchases)
+            
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error during registration: {str(e)}")
+            flash('Erro durante o cadastro. Por favor, tente novamente.', 'danger')
+            return redirect(url_for('register'))
         
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('login'))
@@ -674,43 +686,52 @@ def lootbox():
 @app.route('/open_lootbox', methods=['POST'])
 def open_lootbox():
     if 'user_id' not in session:
-        return {"success": False, "message": "Not logged in"}, 401
+        return {"success": False, "message": "Não está logado"}, 401
     
-    user = User.query.get(session['user_id'])
-    
-    # Check if user already opened a lootbox today
-    last_lootbox = user.last_lootbox_date
-    today = datetime.now().date()
-    
-    if last_lootbox and last_lootbox == today:
-        return {"success": False, "message": "You've already opened your lootbox today"}, 400
-    
-    # Get a random reward
-    reward = get_lootbox_reward()
-    
-    # Update user's last lootbox date
-    user.last_lootbox_date = today
-    
-    # Add reward to user's lootbox rewards
-    # Make sure we handle both None values and existing JSON strings
-    if not user.lootbox_rewards:
-        user.lootbox_rewards = json.dumps([reward])
-    else:
-        try:
-            current_rewards = json.loads(user.lootbox_rewards)
-            if isinstance(current_rewards, list):
-                current_rewards.append(reward)
-            else:
-                # If current_rewards is not a list, initialize a new list
-                current_rewards = [reward]
-            user.lootbox_rewards = json.dumps(current_rewards)
-        except json.JSONDecodeError:
-            # Handle case where lootbox_rewards exists but isn't valid JSON
+    try:
+        user = User.query.get(session['user_id'])
+        
+        # Check if user already opened a lootbox today
+        last_lootbox = user.last_lootbox_date
+        today = datetime.now().date()
+        
+        if last_lootbox and last_lootbox == today:
+            return {"success": False, "message": "Você já abriu sua lootbox hoje"}, 400
+        
+        # Get a random reward
+        reward = get_lootbox_reward()
+        
+        # Update user's last lootbox date
+        user.last_lootbox_date = today
+        
+        # Add reward to user's lootbox rewards
+        # Make sure we handle both None values and existing JSON strings
+        if not user.lootbox_rewards:
             user.lootbox_rewards = json.dumps([reward])
-    
-    db.session.commit()
-    
-    return {"success": True, "reward": reward}
+        else:
+            try:
+                current_rewards = json.loads(user.lootbox_rewards)
+                if isinstance(current_rewards, list):
+                    current_rewards.append(reward)
+                else:
+                    # If current_rewards is not a list, initialize a new list
+                    current_rewards = [reward]
+                user.lootbox_rewards = json.dumps(current_rewards)
+            except json.JSONDecodeError:
+                # Handle case where lootbox_rewards exists but isn't valid JSON
+                user.lootbox_rewards = json.dumps([reward])
+        
+        # Commit changes to database
+        db.session.commit()
+        
+        app.logger.debug(f"Lootbox reward generated: {reward}")
+        
+        # Return success response with reward data
+        return {"success": True, "reward": reward}
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error opening lootbox: {str(e)}")
+        return {"success": False, "message": "Erro ao abrir lootbox: " + str(e)}, 500
 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
