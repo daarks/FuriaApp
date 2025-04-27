@@ -8,11 +8,23 @@
     <!-- Profile Header -->
     <div class="app-profile-header">
         <div class="app-profile-avatar">
-            {% if user.player_match %}
+            {% if user.profile_image %}
+                <img src="{{ url_for('static', filename='uploads/' + user.profile_image) }}" alt="Avatar" class="app-avatar-img">
+            {% elif user.player_match %}
                 <img src="{{ user.player_image }}" alt="Avatar" class="app-avatar-img">
             {% else %}
                 <i class="fas fa-user-circle app-avatar-icon"></i>
             {% endif %}
+            
+            <div class="app-avatar-edit" id="uploadProfileBtn">
+                <i class="fas fa-camera"></i>
+            </div>
+            
+            <!-- Upload form (hidden) -->
+            <form id="profilePhotoForm" action="{{ url_for('upload_profile_photo') }}" method="post" enctype="multipart/form-data" style="display: none;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="file" name="profile_photo" id="profilePhotoInput" accept="image/*">
+            </form>
         </div>
         <div class="app-profile-info">
             <h2 class="app-profile-name">{{ user.name }}</h2>
@@ -146,4 +158,60 @@
         </a>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup profile photo upload
+    const uploadBtn = document.getElementById('uploadProfileBtn');
+    const photoInput = document.getElementById('profilePhotoInput');
+    const photoForm = document.getElementById('profilePhotoForm');
+    
+    if (uploadBtn && photoInput) {
+        uploadBtn.addEventListener('click', function() {
+            photoInput.click();
+        });
+        
+        photoInput.addEventListener('change', function() {
+            if (photoInput.files.length > 0) {
+                // Submit the form when a file is selected
+                photoForm.submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.app-profile-avatar {
+    position: relative;
+    display: inline-block;
+}
+
+.app-avatar-edit {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    border: 2px solid white;
+    transition: all 0.2s ease;
+}
+
+.app-avatar-edit:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+}
+</style>
 {% endblock %}
