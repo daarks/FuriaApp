@@ -1,0 +1,210 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Validação de Conteúdo - FURIA Fan App{% endblock %}
+{% block header_title %}Validação de Conteúdo{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-card app-mb-3">
+        <div class="app-card-header">
+            <h3>Validar Conteúdo</h3>
+        </div>
+        <div class="app-card-body">
+            <p class="app-text-light">Compartilhe links de conteúdo relacionado a esports para verificarmos a relevância para seu perfil de fã.</p>
+            
+            <form method="post" action="{{ url_for('content_validation') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="app-form-group">
+                    <label for="content_url">URL do Conteúdo</label>
+                    <input type="text" class="app-form-control" id="content_url" name="content_url" 
+                           placeholder="https://www.exemplo.com.br/artigo">
+                    <div class="app-form-text">Cole links de artigos, vídeos, perfis ou páginas de esports</div>
+                </div>
+                
+                <div class="app-form-group app-text-center">
+                    <button type="submit" class="app-btn app-btn-primary app-btn-block">
+                        Validar Conteúdo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if content_links %}
+    <div class="app-card app-mb-3">
+        <div class="app-card-header">
+            <h3>Histórico de Conteúdo</h3>
+        </div>
+        <div class="app-card-body">
+            {% for link in content_links %}
+            <div class="app-content-item">
+                <div class="app-content-header">
+                    <span class="app-badge app-badge-{{ link.content_type|default('artigo')|lower }}">
+                        {{ link.content_type|default('Artigo') }}
+                    </span>
+                    <span class="app-content-date">
+                        {% if link.created_at %}
+                            {{ link.created_at.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            Hoje
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <a href="{{ link.url }}" target="_blank" class="app-content-link">
+                    {{ link.url }}
+                </a>
+                
+                <div class="app-relevance">
+                    <div class="app-relevance-header">
+                        <span class="app-relevance-label">Relevância para seu perfil:</span>
+                        <span class="app-relevance-value">{{ link.relevance_score|round|int if link.relevance_score else 0 }}%</span>
+                    </div>
+                    <div class="app-progress">
+                        <div class="app-progress-bar" style="width: {{ link.relevance_score|default(0) }}%"></div>
+                    </div>
+                </div>
+                
+                {% if link.keywords %}
+                <div class="app-keywords">
+                    {% set keywords = link.keywords|tojson|safe if link.keywords|string|lower != 'none' else '[]' %}
+                    {% for keyword in keywords %}
+                    <span class="app-keyword">{{ keyword }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if not loop.last %}
+            <hr class="app-divider">
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="app-card">
+        <div class="app-card-header">
+            <h3>Por que validar conteúdo?</h3>
+        </div>
+        <div class="app-card-body">
+            <ul class="app-benefits-list">
+                <li class="app-benefit-item">
+                    <i class="fas fa-chart-line app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Aumente seu Fan Power</div>
+                        <div class="app-benefit-desc">Compartilhar conteúdo relevante melhora sua pontuação</div>
+                    </div>
+                </li>
+                <li class="app-benefit-item">
+                    <i class="fas fa-users app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Melhore seu match de jogador</div>
+                        <div class="app-benefit-desc">Ajudamos a identificar qual jogador combina mais com você</div>
+                    </div>
+                </li>
+                <li class="app-benefit-item">
+                    <i class="fas fa-calendar-check app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Recomendações personalizadas</div>
+                        <div class="app-benefit-desc">Receba sugestões de eventos e conteúdo baseadas em seus interesses</div>
+                    </div>
+                </li>
+                <li class="app-benefit-item">
+                    <i class="fas fa-gift app-benefit-icon"></i>
+                    <div class="app-benefit-info">
+                        <div class="app-benefit-title">Melhores recompensas</div>
+                        <div class="app-benefit-desc">Aumenta suas chances de itens raros nas lootboxes</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.app-content-item {
+    margin-bottom: var(--spacing-md);
+}
+
+.app-content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+}
+
+.app-content-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.app-content-link {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    word-break: break-all;
+    font-size: 0.9rem;
+}
+
+.app-relevance {
+    margin-bottom: var(--spacing-sm);
+}
+
+.app-relevance-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+}
+
+.app-relevance-label {
+    color: var(--text-muted);
+}
+
+.app-relevance-value {
+    font-weight: 500;
+}
+
+.app-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: var(--spacing-xs);
+}
+
+.app-keyword {
+    font-size: 0.8rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.app-divider {
+    border-color: var(--border-color);
+    margin: var(--spacing-md) 0;
+}
+
+.app-badge-article {
+    background-color: #6c757d;
+}
+
+.app-badge-video {
+    background-color: #dc3545;
+}
+
+.app-badge-profile {
+    background-color: #198754;
+}
+
+.app-badge-news {
+    background-color: #0d6efd;
+}
+
+.app-badge-social {
+    background-color: #fd7e14;
+}
+</style>
+{% endblock %}

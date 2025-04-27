@@ -308,34 +308,52 @@ def social_media():
 @app.route('/content_validation', methods=['GET', 'POST'])
 def content_validation():
     if 'user_id' not in session:
-        flash('Please login first.', 'warning')
+        flash('Por favor, faça login primeiro.', 'warning')
         return redirect(url_for('login'))
     
-    form = ContentValidationForm()
-    user = User.query.get(session['user_id'])
-    
-    if form.validate_on_submit():
-        # Validate the content link
-        validation_result = validate_content_links(form.content_url.data)
+    try:
+        user = User.query.get(session['user_id'])
+        if not user:
+            session.pop('user_id', None)
+            flash('Usuário não encontrado. Faça login novamente.', 'danger')
+            return redirect(url_for('login'))
         
-        # Save content link
-        content_link = ContentLink(
-            user_id=user.id,
-            url=form.content_url.data,
-            content_type=validation_result['content_type'],
-            relevance_score=validation_result['relevance_score'],
-            keywords=json.dumps(validation_result['keywords'])
-        )
-        db.session.add(content_link)
-        db.session.commit()
+        if request.method == 'POST':
+            content_url = request.form.get('content_url')
+            if not content_url:
+                flash('A URL do conteúdo é obrigatória.', 'danger')
+                content_links = ContentLink.query.filter_by(user_id=user.id).order_by(ContentLink.created_at.desc()).all()
+                return render_template('app_content_validation.html', content_links=content_links)
+            
+            # Validate the content link
+            try:
+                validation_result = validate_content_links(content_url)
+                
+                # Save content link
+                content_link = ContentLink(
+                    user_id=user.id,
+                    url=content_url,
+                    content_type=validation_result['content_type'],
+                    relevance_score=validation_result['relevance_score'],
+                    keywords=json.dumps(validation_result['keywords'])
+                )
+                db.session.add(content_link)
+                db.session.commit()
+                
+                flash(f'Conteúdo analisado com {validation_result["relevance_score"]}% de relevância para seu perfil!', 'success')
+            except Exception as e:
+                app.logger.error(f"Error validating content: {str(e)}")
+                flash('Ocorreu um erro ao analisar o conteúdo. Verifique se o URL é válido.', 'danger')
         
-        flash(f'Content analyzed with {validation_result["relevance_score"]}% relevance to your profile!', 'success')
-        return redirect(url_for('content_validation'))
+        # Get user's content links
+        content_links = ContentLink.query.filter_by(user_id=user.id).order_by(ContentLink.created_at.desc()).all()
+        
+        return render_template('app_content_validation.html', content_links=content_links)
     
-    # Get user's content links
-    content_links = ContentLink.query.filter_by(user_id=user.id).order_by(ContentLink.created_at.desc()).all()
-    
-    return render_template('content_validation.html', form=form, content_links=content_links)
+    except Exception as e:
+        app.logger.error(f"Error in content_validation route: {str(e)}")
+        flash('Ocorreu um erro ao carregar a página de validação de conteúdo.', 'danger')
+        return redirect(url_for('home_dashboard'))
 
 @app.route('/player_match')
 def player_match():

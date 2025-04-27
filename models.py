@@ -11,6 +11,7 @@ class User(db.Model):
     birth_date = db.Column(db.Date, nullable=False)
     registration_date = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
+    profile_image = db.Column(db.String(255))  # Path to profile image
     
     # Fan profile data
     events_attended = db.Column(db.Text)  # JSON list of events
