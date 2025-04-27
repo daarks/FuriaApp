@@ -4,6 +4,7 @@ import random
 from datetime import datetime
 from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -38,6 +39,7 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 # Initialize extensions
 db.init_app(app)
+csrf = CSRFProtect(app)
 
 # Import models and forms
 with app.app_context():
