@@ -83,7 +83,36 @@
     </div>
     {% endif %}
     
-
+    <!-- Upcoming Events Section -->
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Próximos Eventos</h3>
+        </div>
+        <div class="app-card-body">
+            <div class="app-upcoming-events">
+                {% set events = [
+                    {"date": "26 Abr", "title": "ESL One Rio 2024", "subtitle": "Rio de Janeiro, Brasil", "game": "CS:GO"},
+                    {"date": "15 Mai", "title": "Rainbow Six Major - São Paulo 2024", "subtitle": "São Paulo, Brasil", "game": "R6 Siege"},
+                    {"date": "10 Mai", "title": "Free Fire World Series 2024", "subtitle": "Bangkok, Tailândia", "game": "Free Fire"}
+                ] %}
+                
+                {% for event in events %}
+                <div class="app-event-item">
+                    <div class="app-event-date">{{ event.date }}</div>
+                    <div class="app-event-info">
+                        <div class="app-event-title">{{ event.title }}</div>
+                        <div class="app-event-subtitle">{{ event.subtitle }}</div>
+                    </div>
+                    <div class="app-event-game">{{ event.game }}</div>
+                </div>
+                {% endfor %}
+                
+                <div class="app-event-more">
+                    <a href="{{ url_for('calendar') }}">Ver todos os eventos <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 

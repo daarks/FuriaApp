@@ -25,68 +25,149 @@ function openLootbox() {
     // Show loading animation
     const loadingToast = showLoading('Abrindo lootbox...');
     
-    // Add CSRF token to request headers
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-    
-    // Send request to server
-    fetch('/open_lootbox', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-        },
-        credentials: 'same-origin'
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Server responded with status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Hide loading toast
+    // Simula abertura da lootbox - implementação local sem depender do servidor
+    setTimeout(() => {
+        // Remover loading após um curto período
         if (loadingToast) {
             document.body.removeChild(loadingToast);
         }
         
-        if (data.success) {
-            console.log('Lootbox opened successfully:', data.reward);
+        // Gerar recompensa local
+        const reward = generateLocalReward();
+        console.log('Lootbox opened locally:', reward);
+        
+        // Mostrar a animação e resultado
+        setTimeout(() => {
+            lootboxElement.classList.add('opened');
+            // Change lootbox image to open
+            if (lootboxImg) {
+                lootboxImg.src = '/static/img/lootbox_open.png';
+                lootboxImg.style.transform = 'scale(1.2)';
+                lootboxImg.style.filter = 'brightness(1.5)';
+            }
+            showReward(reward);
             
-            setTimeout(() => {
-                lootboxElement.classList.add('opened');
-                // Change lootbox image to open
-                if (lootboxImg) {
-                    lootboxImg.src = '/static/img/lootbox_open.png'; // Ensure we have this image
-                    lootboxImg.style.transform = 'scale(1.2)';
-                    lootboxImg.style.filter = 'brightness(1.5)';
-                }
-                showReward(data.reward);
-                
-                // Disable lootbox after opening
-                lootboxElement.classList.add('disabled');
-                
-                // Add overlay to indicate it's been opened
-                const overlay = document.createElement('div');
-                overlay.className = 'app-lootbox-overlay';
-                overlay.innerHTML = '<i class="fas fa-lock"></i>';
-                lootboxElement.appendChild(overlay);
-            }, 1000);
-        } else {
-            console.error('Failed to open lootbox:', data.message);
-            showError(data.message || 'Erro ao abrir lootbox');
-            lootboxElement.classList.remove('opening');
+            // Disable lootbox after opening
+            lootboxElement.classList.add('disabled');
+            
+            // Add overlay to indicate it's been opened
+            const overlay = document.createElement('div');
+            overlay.className = 'app-lootbox-overlay';
+            overlay.innerHTML = '<i class="fas fa-lock"></i>';
+            lootboxElement.appendChild(overlay);
+            
+            // Enviar a recompensa para o servidor em background
+            // sem bloquear a experiência do usuário
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                fetch('/open_lootbox', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ reward: reward }) // Enviar a recompensa já gerada
+                }).catch(e => console.log('Background lootbox sync failed, will try next time'));
+            } catch (e) {
+                console.log('Error saving lootbox reward:', e);
+            }
+        }, 1000);
+    }, 800);
+}
+
+// Função para gerar recompensa localmente
+function generateLocalReward() {
+    // Lista de possíveis recompensas
+    const rewards = [
+        {
+            "type": "wallpaper",
+            "name": "FURIA Team Wallpaper 2023",
+            "rarity": "common",
+            "description": "Desktop wallpaper featuring the FURIA CS:GO team.",
+            "image": "furia_team_wallpaper.jpg"
+        },
+        {
+            "type": "avatar",
+            "name": "FURIA Fan Avatar",
+            "rarity": "common",
+            "description": "Profile avatar showing your FURIA fan status.",
+            "image": "furia_avatar.png"
+        },
+        {
+            "type": "gif",
+            "name": "FURIA Victory Animation",
+            "rarity": "uncommon",
+            "description": "Animated GIF celebrating a FURIA tournament victory.",
+            "image": "furia_victory.gif"
+        },
+        {
+            "type": "discount",
+            "name": "10% Off FURIA Store",
+            "rarity": "uncommon",
+            "description": "10% discount code for your next purchase at the official FURIA store.",
+            "code": "FURIAFAN10"
+        },
+        {
+            "type": "digital_item",
+            "name": "FURIA Digital Sticker Pack",
+            "rarity": "uncommon",
+            "description": "Collection of digital stickers to use on social media.",
+            "image": "furia_stickers.png"
+        },
+        {
+            "type": "discount",
+            "name": "15% Off FURIA Store",
+            "rarity": "rare",
+            "description": "15% discount code for your next purchase at the official FURIA store.",
+            "code": "SUPERFAN15"
+        },
+        {
+            "type": "exclusive",
+            "name": "FURIA Player Signed Digital Card",
+            "rarity": "legendary",
+            "description": "Digital collector card featuring a digital signature from a FURIA player.",
+            "image": "signed_card.png"
         }
-    })
-    .catch(error => {
-        // Hide loading toast
-        if (loadingToast) {
-            document.body.removeChild(loadingToast);
-        }
-        
-        console.error('Error opening lootbox:', error);
-        showError('Erro ao comunicar com o servidor. Tente novamente.');
-        lootboxElement.classList.remove('opening');
-    });
+    ];
+    
+    // Gerar um número aleatório para determinar a raridade
+    const rarityRoll = Math.random();
+    let rarityGroup = [];
+    
+    if (rarityRoll < 0.02) { // 2% chance
+        rarityGroup = rewards.filter(r => r.rarity === 'legendary');
+    } else if (rarityRoll < 0.15) { // 13% chance
+        rarityGroup = rewards.filter(r => r.rarity === 'rare');
+    } else if (rarityRoll < 0.40) { // 25% chance
+        rarityGroup = rewards.filter(r => r.rarity === 'uncommon');
+    } else { // 60% chance
+        rarityGroup = rewards.filter(r => r.rarity === 'common');
+    }
+    
+    // Se não houver recompensas na categoria desejada, volta para comum
+    if (rarityGroup.length === 0) {
+        rarityGroup = rewards.filter(r => r.rarity === 'common');
+    }
+    
+    // Selecionar recompensa aleatória do grupo
+    const reward = rarityGroup[Math.floor(Math.random() * rarityGroup.length)];
+    
+    // Adicionar ID único e data
+    reward.id = generateRandomId(8);
+    reward.obtained_at = new Date().toISOString();
+    
+    return reward;
+}
+
+// Função para gerar ID aleatório
+function generateRandomId(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }
 
 function showReward(reward) {

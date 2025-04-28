@@ -695,11 +695,29 @@ def open_lootbox():
         last_lootbox = user.last_lootbox_date
         today = datetime.now().date()
         
-        if last_lootbox and last_lootbox == today:
-            return {"success": False, "message": "Você já abriu sua lootbox hoje"}, 400
+        # Verificar se o cliente enviou uma recompensa já gerada
+        reward = None
+        client_reward = None
         
-        # Get a random reward
-        reward = get_lootbox_reward()
+        if request.json and 'reward' in request.json:
+            client_reward = request.json.get('reward')
+            app.logger.debug(f"Client provided reward: {client_reward}")
+            
+            # Validar a recompensa do cliente (verificações básicas)
+            if (isinstance(client_reward, dict) and 
+                'type' in client_reward and 
+                'name' in client_reward and 
+                'rarity' in client_reward):
+                reward = client_reward
+        
+        # Se não houver recompensa válida do cliente, gerar uma
+        if not reward:
+            # Se o usuário já abriu a lootbox hoje (e não estamos apenas salvando uma recompensa gerada pelo cliente)
+            if last_lootbox and last_lootbox == today and not client_reward:
+                return {"success": False, "message": "Você já abriu sua lootbox hoje"}, 400
+            
+            # Gerar nova recompensa
+            reward = get_lootbox_reward()
         
         # Update user's last lootbox date
         user.last_lootbox_date = today
@@ -712,7 +730,11 @@ def open_lootbox():
             try:
                 current_rewards = json.loads(user.lootbox_rewards)
                 if isinstance(current_rewards, list):
-                    current_rewards.append(reward)
+                    # Evitar duplicação se a recompensa já existir (pelo ID)
+                    if 'id' in reward and any(r.get('id') == reward['id'] for r in current_rewards if isinstance(r, dict) and 'id' in r):
+                        pass  # Recompensa já existe
+                    else:
+                        current_rewards.append(reward)
                 else:
                     # If current_rewards is not a list, initialize a new list
                     current_rewards = [reward]
@@ -724,7 +746,7 @@ def open_lootbox():
         # Commit changes to database
         db.session.commit()
         
-        app.logger.debug(f"Lootbox reward generated: {reward}")
+        app.logger.debug(f"Lootbox reward saved: {reward}")
         
         # Return success response with reward data
         return {"success": True, "reward": reward}

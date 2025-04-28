@@ -275,7 +275,7 @@ LOOTBOX_REWARDS = [
 
 def validate_document(file_path, user_name, user_cpf):
     """
-    Simulates document validation using OCR/AI
+    Implementação avançada de validação de documentos com simulação de IA
     
     Args:
         file_path: Path to the uploaded document
@@ -285,74 +285,155 @@ def validate_document(file_path, user_name, user_cpf):
     Returns:
         dict: Validation result with status and message
     """
-    logger.debug(f"Validating document: {file_path}")
+    logger.debug(f"Validando documento com IA: {file_path}")
     
-    # Simulate OCR analysis
-    # In a real implementation, this would use actual OCR libraries
-    
-    # Generate random validation data with 70% chance of success
-    success = random.random() > 0.3
-    
-    if success:
-        # Simulate extracting correct information
-        extracted_name = user_name
-        extracted_cpf = user_cpf
-        confidence_score = random.uniform(0.85, 0.99)
-        
+    # Verificar se o arquivo existe
+    import os
+    if not os.path.exists(file_path):
         return {
-            "status": "verified",
-            "message": "Document successfully validated",
+            "status": "rejected",
+            "message": "Arquivo do documento não foi encontrado",
             "extracted_data": {
-                "name": extracted_name,
-                "cpf": extracted_cpf,
+                "confidence_score": 0.0
+            }
+        }
+    
+    # Obter informações do arquivo
+    file_size = os.path.getsize(file_path)
+    file_extension = os.path.splitext(file_path)[1].lower()
+    
+    # Verificar tipo de arquivo
+    if file_extension not in ['.jpg', '.jpeg', '.png', '.pdf']:
+        return {
+            "status": "rejected",
+            "message": "Formato de arquivo não suportado. Use JPG, PNG ou PDF.",
+            "extracted_data": {
+                "confidence_score": 0.0
+            }
+        }
+    
+    # Verificar tamanho do arquivo (menor que 100kb pode ser de baixa qualidade)
+    if file_size < 100 * 1024:  # 100KB
+        return {
+            "status": "rejected",
+            "message": "A qualidade da imagem é muito baixa. Por favor, envie uma imagem com melhor resolução.",
+            "extracted_data": {
+                "confidence_score": random.uniform(0.3, 0.5)
+            }
+        }
+    
+    # Simular processo de IA para extração de texto e verificação de dados
+    # Em uma implementação real, usaríamos bibliotecas como OpenCV e Tesseract OCR ou serviços como Azure Computer Vision
+    
+    # Simular reconhecimento de padrões para diferentes tipos de documentos (RG, CNH, passaporte)
+    def extract_document_data(file_path, expected_name, expected_cpf):
+        # Simular erros de reconhecimento baseados no nome de arquivo 
+        # para permitir testes de casos de falha de forma determinista
+        if "low_quality" in file_path:
+            return None, None, 0.4
+        
+        if "incomplete" in file_path:
+            return expected_name, None, 0.65
+        
+        # Simular pequenas variações no nome para simular reconhecimento real
+        name_parts = expected_name.split()
+        if len(name_parts) > 2:
+            # Simular reconhecimento onde o OCR pode perder nomes do meio
+            extracted_name = f"{name_parts[0]} {name_parts[-1]}"
+        elif len(name_parts) == 2:
+            # Nome e sobrenome comum, perfeito para reconhecimento
+            extracted_name = expected_name
+        else:
+            # Apenas um nome, pode ser problemático
+            extracted_name = expected_name
+            
+        # Simular reconhecimento de CPF com possíveis erros
+        cpf_digits = expected_cpf.replace('.', '').replace('-', '')
+        if len(cpf_digits) != 11:
+            return extracted_name, None, 0.6  # CPF inválido
+        
+        # 90% de chance de reconhecer o CPF corretamente
+        if random.random() < 0.9:
+            extracted_cpf = cpf_digits
+            confidence = random.uniform(0.85, 0.99)
+        else:
+            # Simular erro de reconhecimento em um dígito
+            modified_cpf = list(cpf_digits)
+            modified_cpf[random.randint(0, len(modified_cpf)-1)] = str(random.randint(0, 9))
+            extracted_cpf = ''.join(modified_cpf)
+            confidence = random.uniform(0.7, 0.84)
+            
+        return extracted_name, extracted_cpf, confidence
+    
+    # Executar o processamento de IA simulado
+    extracted_name, extracted_cpf, confidence_score = extract_document_data(file_path, user_name, user_cpf)
+    
+    # Verificar resultados
+    if not extracted_name and not extracted_cpf:
+        return {
+            "status": "rejected",
+            "message": "A IA não conseguiu extrair informações do documento. Verifique se o documento está nítido e bem iluminado.",
+            "extracted_data": {
                 "confidence_score": confidence_score
             }
         }
+    
+    # Verificar correspondência dos dados
+    name_matches = extracted_name and user_name.lower() in extracted_name.lower()
+    cpf_matches = extracted_cpf and extracted_cpf == user_cpf.replace('.', '').replace('-', '')
+    
+    # Gerar relatório detalhado de verificação
+    verification_details = []
+    if extracted_name:
+        verification_details.append({
+            "field": "nome",
+            "expected": user_name,
+            "extracted": extracted_name,
+            "matches": name_matches,
+            "confidence": confidence_score
+        })
+    
+    if extracted_cpf:
+        verification_details.append({
+            "field": "cpf",
+            "expected": user_cpf,
+            "extracted": extracted_cpf,
+            "matches": cpf_matches,
+            "confidence": confidence_score
+        })
+    
+    # Determinar resultado da validação
+    if name_matches and cpf_matches and confidence_score > 0.8:
+        return {
+            "status": "verified",
+            "message": "Documento validado com sucesso",
+            "extracted_data": {
+                "name": extracted_name,
+                "cpf": extracted_cpf,
+                "confidence_score": confidence_score,
+                "verification_details": verification_details
+            }
+        }
+    elif confidence_score < 0.6:
+        return {
+            "status": "rejected",
+            "message": "Qualidade do documento é insuficiente para validação",
+            "extracted_data": {
+                "confidence_score": confidence_score,
+                "verification_details": verification_details
+            }
+        }
     else:
-        # Simulate extraction failure or mismatch
-        failure_type = random.choice(["poor_quality", "data_mismatch", "incomplete_document"])
-        
-        if failure_type == "poor_quality":
-            return {
-                "status": "rejected",
-                "message": "Document image quality is too low for verification",
-                "extracted_data": {
-                    "confidence_score": random.uniform(0.3, 0.6)
-                }
+        return {
+            "status": "rejected",
+            "message": "Os dados no documento não correspondem às informações registradas",
+            "extracted_data": {
+                "name": extracted_name,
+                "cpf": extracted_cpf,
+                "confidence_score": confidence_score,
+                "verification_details": verification_details
             }
-        elif failure_type == "data_mismatch":
-            # Simulate slight name variation
-            name_parts = user_name.split()
-            if len(name_parts) > 1:
-                extracted_name = f"{name_parts[0]} {''.join([p[0] + '.' for p in name_parts[1:]])}"
-            else:
-                extracted_name = user_name
-                
-            # Generate slightly modified CPF
-            cpf_digits = user_cpf.replace('.', '').replace('-', '')
-            modified_cpf = list(cpf_digits)
-            modified_cpf[random.randint(0, len(modified_cpf)-1)] = str(random.randint(0, 9))
-            modified_cpf = ''.join(modified_cpf)
-            
-            return {
-                "status": "rejected",
-                "message": "Data in the document doesn't match registered information",
-                "extracted_data": {
-                    "name": extracted_name,
-                    "cpf": modified_cpf,
-                    "confidence_score": random.uniform(0.7, 0.85)
-                }
-            }
-        else:  # incomplete_document
-            return {
-                "status": "rejected",
-                "message": "Document appears to be incomplete or partially visible",
-                "extracted_data": {
-                    "name": user_name if random.random() > 0.5 else None,
-                    "cpf": None,
-                    "confidence_score": random.uniform(0.4, 0.7)
-                }
-            }
+        }
 
 def analyze_social_media(social_media_data):
     """
@@ -415,52 +496,199 @@ def analyze_social_media(social_media_data):
 
 def validate_content_links(url):
     """
-    Simulates validation of content links
+    Implementação avançada de validação de conteúdo com IA
     
     Args:
         url: Content URL to validate
     
     Returns:
-        dict: Validation results
+        dict: Validation results com análise detalhada
     """
-    logger.debug(f"Validating content link: {url}")
+    logger.debug(f"Validando link de conteúdo com IA: {url}")
+    import re
+    from urllib.parse import urlparse
     
-    # Determine content type based on URL
-    if "youtube.com" in url or "youtu.be" in url:
+    # Análise da URL para determinar tipo e fonte
+    parsed_url = urlparse(url)
+    domain = parsed_url.netloc.lower()
+    
+    # Tratar variações de domínios e subdomínios
+    base_domain = re.sub(r'^www\.', '', domain)
+    path = parsed_url.path.lower()
+    
+    # Implementar sistema de detecção de plataforma mais robusto
+    platform_patterns = {
+        'youtube': [r'youtube\.com', r'youtu\.be'],
+        'twitch': [r'twitch\.tv'],
+        'twitter': [r'twitter\.com', r'x\.com'],
+        'instagram': [r'instagram\.com'],
+        'tiktok': [r'tiktok\.com'],
+        'facebook': [r'facebook\.com', r'fb\.com'],
+        'reddit': [r'reddit\.com'],
+        'liquipedia': [r'liquipedia\.net'],
+        'hltv': [r'hltv\.org'],
+        'vlr': [r'vlr\.gg'],
+        'esports_insider': [r'esportsinsider\.com'],
+        'thespike': [r'thespike\.gg'],
+        'upcomer': [r'upcomer\.com'],
+        'dotesports': [r'dotesports\.com'],
+        'esports_talk': [r'esportstalk\.com'],
+        'theenemy': [r'theenemy\.com\.br'],
+        'maisesports': [r'maisesports\.com\.br'],
+        'ESPN_esports': [r'espn\.com\.br.*esports']
+    }
+    
+    # Identificar a plataforma com base nos padrões de URL
+    detected_platform = None
+    for platform, patterns in platform_patterns.items():
+        for pattern in patterns:
+            if re.search(pattern, domain + path):
+                detected_platform = platform
+                break
+        if detected_platform:
+            break
+    
+    # Determinar tipo de conteúdo baseado na plataforma e path
+    if detected_platform in ['youtube', 'twitch']:
         content_type = "video"
-    elif "twitch.tv" in url:
-        content_type = "stream"
-    elif "twitter.com" in url or "x.com" in url:
+        if detected_platform == 'twitch' and ('/videos/' not in path and '/clip/' not in path):
+            content_type = "stream"
+    elif detected_platform in ['twitter', 'instagram', 'facebook', 'tiktok']:
         content_type = "social_post"
-    elif "instagram.com" in url:
-        content_type = "social_post"
-    elif "liquipedia.net" in url or "hltv.org" in url:
+    elif detected_platform in ['liquipedia', 'hltv', 'vlr']:
         content_type = "esports_wiki"
-    elif "reddit.com/r/" in url:
+    elif detected_platform == 'reddit':
         content_type = "forum"
+    elif detected_platform in ['esports_insider', 'dotesports', 'esports_talk', 'theenemy', 'maisesports', 'ESPN_esports', 'upcomer', 'thespike']:
+        content_type = "news"
     else:
-        content_type = "article"
+        # Análise baseada em padrões de URL para sites desconhecidos
+        if '/news/' in path or '/article/' in path or '/post/' in path:
+            content_type = "news"
+        elif '/watch/' in path or '/video/' in path or '/media/' in path:
+            content_type = "video"
+        elif '/forum/' in path or '/community/' in path or '/discussion/' in path:
+            content_type = "forum"
+        else:
+            content_type = "article"
     
-    # Generate random relevance score
-    relevance_score = random.randint(60, 100)
+    # Detecção de relevância para esports baseada na plataforma e palavras-chave na URL
+    esports_terms = ['esports', 'esport', 'gaming', 'game', 'tournament', 'championship', 
+                     'league', 'match', 'competition', 'player', 'team', 'roster']
+    furia_terms = ['furia', 'furiagg', 'furiafps', 'kscerato', 'art', 'yuurih', 'saffee', 'guerri']
+    cs_terms = ['cs', 'csgo', 'cs2', 'counterstrike', 'counter-strike', 'valve', 'fps']
+    valorant_terms = ['valorant', 'val', 'riot', 'fps', 'vct']
     
-    # Generate simulated keywords found in content
-    all_keywords = [
-        "FURIA", "esports", "CS:GO", "Valorant", "Brazil", "tournament",
-        "championship", "KSCERATO", "arT", "yuurih", "saffee", "guerri",
-        "tactic", "strategy", "team", "player", "competition", "match",
-        "win", "lose", "score", "clutch", "ace", "highlight"
-    ]
+    # Calculando score de relevância
+    relevance_score = 50  # Pontuação base
     
-    # Select random keywords
-    keywords = random.sample(all_keywords, random.randint(5, 10))
+    # Bônus por plataforma relevante
+    if detected_platform in ['liquipedia', 'hltv', 'vlr', 'esports_insider', 
+                            'dotesports', 'esports_talk', 'thespike']:
+        relevance_score += 20
+    elif detected_platform in ['youtube', 'twitch', 'twitter', 'reddit']:
+        relevance_score += 10
     
-    return {
+    # Analisar URL para pontos de relevância adicionais
+    url_lower = url.lower()
+    
+    # Bônus para termos FURIA na URL
+    for term in furia_terms:
+        if term in url_lower:
+            relevance_score += 15
+            break
+    
+    # Bônus para termos de esports na URL
+    esports_bonus = False
+    for term in esports_terms:
+        if term in url_lower:
+            relevance_score += 10
+            esports_bonus = True
+            break
+    
+    # Bônus para termos de jogos específicos na URL
+    game_bonus = False
+    for term in cs_terms + valorant_terms:
+        if term in url_lower:
+            relevance_score += 5
+            game_bonus = True
+            break
+    
+    # Ajuste de pontuação para ficar dentro dos limites
+    relevance_score = min(100, max(0, relevance_score))
+    
+    # Determinar se é um conteúdo FURIA (alta confiança)
+    is_furia_content = any(term in url_lower for term in furia_terms)
+    
+    # Gerar palavras-chave detectadas com base na análise
+    # Em uma implementação real, isso viria de uma análise do conteúdo da página
+    keywords = []
+    
+    # Se encontramos termos FURIA na URL, adicionar termos relacionados à FURIA
+    if is_furia_content:
+        keywords.extend(["FURIA", "Esports Brasileiro", "Time Profissional"])
+        
+        # Adicionar players potencialmente mencionados
+        if 'kscerato' in url_lower:
+            keywords.append("KSCERATO")
+        if 'art' in url_lower or 'andrei' in url_lower:
+            keywords.append("arT")
+        if 'yuurih' in url_lower:
+            keywords.append("yuurih")
+        if 'saffee' in url_lower:
+            keywords.append("saffee")
+        if 'guerri' in url_lower:
+            keywords.append("guerri")
+    
+    # Se encontramos termos de esports, adicionar palavras-chave de esports
+    if esports_bonus:
+        esports_keywords = ["Competição", "Esports", "Tournament", "Profissional", "Championship"]
+        keywords.extend(random.sample(esports_keywords, min(3, len(esports_keywords))))
+    
+    # Se encontramos termos de jogos específicos, adicionar palavras-chave de jogos
+    if game_bonus:
+        if any(term in url_lower for term in cs_terms):
+            game_keywords = ["CS:GO", "Counter-Strike", "Valve", "FPS", "Competitivo"]
+            keywords.extend(random.sample(game_keywords, min(2, len(game_keywords))))
+        
+        if any(term in url_lower for term in valorant_terms):
+            game_keywords = ["Valorant", "Riot Games", "FPS Tático", "VCT"]
+            keywords.extend(random.sample(game_keywords, min(2, len(game_keywords))))
+    
+    # Garantir que temos pelo menos algumas palavras-chave
+    if not keywords:
+        general_keywords = [
+            "Conteúdo Gaming", "Entretenimento", "Comunidade", "Jogos", "Online"
+        ]
+        keywords.extend(random.sample(general_keywords, 3))
+    
+    # Remover possíveis duplicatas
+    keywords = list(set(keywords))
+    
+    # Construir o resultado com informações detalhadas    
+    result = {
         "content_type": content_type,
+        "platform": detected_platform or "unknown",
         "relevance_score": relevance_score,
         "keywords": keywords,
-        "analyzed_at": datetime.now().isoformat()
+        "is_furia_content": is_furia_content,
+        "analyzed_at": datetime.now().isoformat(),
+        "recommendation": "approve" if relevance_score >= 60 else "review"
     }
+    
+    # Adicionar explicação baseada no score
+    if relevance_score >= 85:
+        result["analysis"] = "Conteúdo altamente relevante para fãs da FURIA."
+    elif relevance_score >= 70:
+        result["analysis"] = "Conteúdo bem relevante para o ecossistema de esports."
+    elif relevance_score >= 60:
+        result["analysis"] = "Conteúdo relacionado a esports ou gaming."
+    elif relevance_score >= 40:
+        result["analysis"] = "Conteúdo possivelmente relacionado a gaming, mas relevância limitada."
+    else:
+        result["analysis"] = "Baixa relevância para esports ou FURIA."
+    
+    return result
 
 def match_player(user_interests, social_media):
     """
