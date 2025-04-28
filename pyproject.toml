@@ -14,8 +14,4 @@ dependencies = [
     "trafilatura>=2.0.0",
     "requests>=2.32.3",
     "python-dotenv>=1.1.0",
-    "openai>=1.76.0",
-    "opencv-python-headless>=4.11.0.86",
-    "pillow>=11.2.1",
-    "numpy>=2.2.5",
 ]

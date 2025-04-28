@@ -43,15 +43,14 @@ csrf = CSRFProtect(app)
 
 # Import models and forms
 with app.app_context():
-    from models import User, UserInterest, Document, SocialMedia, ContentLink, Quiz, Calendar, Match, MatchPrediction
+    from models import User, UserInterest, Document, SocialMedia, ContentLink, Quiz, Calendar
     from forms import (
         RegistrationForm, LoginForm, DocumentUploadForm, SocialMediaForm, 
-        ContentValidationForm, QuizForm, MatchPredictionForm
+        ContentValidationForm, QuizForm
     )
     from utils import (
         validate_document, analyze_social_media, validate_content_links,
-        match_player, get_fan_power, get_lootbox_reward, get_events_by_interests,
-        generate_demo_matches, calculate_prediction_points, get_furia_players_by_game
+        match_player, get_fan_power, get_lootbox_reward
     )
     
     db.create_all()
@@ -151,43 +150,12 @@ def home_dashboard():
             session.pop('user_id', None)
             flash('Usuário não encontrado. Faça login novamente.', 'danger')
             return redirect(url_for('login'))
-            
-        # Buscar partidas futuras para o Bolão
-        upcoming_matches = []
-        try:
-            # Verificar se temos partidas na base de dados
-            matches = Match.query.order_by(Match.match_time).all()
-            
-            # Se não tiver, criar partidas de demonstração
-            if not matches:
-                # Gerar partidas de demonstração
-                demo_matches = generate_demo_matches(8)  # Gerar 8 partidas
-                for match_data in demo_matches:
-                    match = Match(**match_data)
-                    db.session.add(match)
-                
-                db.session.commit()
-                matches = Match.query.order_by(Match.match_time).all()
-            
-            # Filtrar apenas partidas futuras
-            now = datetime.now()
-            upcoming_matches = [m for m in matches if m.match_time > now]
-            
-            # Ordenar por data/hora
-            upcoming_matches.sort(key=lambda x: x.match_time)
-        except Exception as e:
-            app.logger.error(f"Erro ao buscar partidas para o dashboard: {str(e)}")
-            # Não interromper o carregamento da página principal por causa deste erro
-            
     except Exception as e:
         app.logger.error(f"Erro na página inicial: {str(e)}")
         flash('Ocorreu um erro ao acessar sua página inicial. Tente novamente.', 'danger')
         return redirect(url_for('login'))
     
-    return render_template('app_home.html', 
-                           user=user, 
-                           now=lambda: datetime.now(),
-                           upcoming_matches=upcoming_matches)
+    return render_template('app_home.html', user=user, now=lambda: datetime.now())
 
 @app.route('/profile')
 def profile():
@@ -290,60 +258,47 @@ def upload_profile_photo():
 @app.route('/document_validation', methods=['GET', 'POST'])
 def document_validation():
     if 'user_id' not in session:
-        flash('Por favor, faça login primeiro.', 'warning')
+        flash('Please login first.', 'warning')
         return redirect(url_for('login'))
     
     form = DocumentUploadForm()
     user = User.query.get(session['user_id'])
     
     if form.validate_on_submit():
-        try:
-            # Obter o arquivo enviado
-            document_file = form.document.data
-            filename = secure_filename(document_file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_{filename}")
-            document_file.save(file_path)
-            
-            # Validar o documento usando IA
-            validation_result = validate_document(file_path, user.name, user.cpf)
-            
-            # Log do resultado para debug
-            app.logger.debug(f"Resultado da validação: {validation_result}")
-            
-            # Salvar registro do documento
-            document = Document.query.filter_by(user_id=user.id).first()
-            if document:
-                document.file_path = file_path
-                document.document_type = form.document_type.data
-                document.validation_status = validation_result['status']
-                document.validation_data = json.dumps(validation_result)
-            else:
-                document = Document(
-                    user_id=user.id,
-                    file_path=file_path,
-                    document_type=form.document_type.data,
-                    validation_status=validation_result['status'],
-                    validation_data=json.dumps(validation_result)
-                )
-                db.session.add(document)
-            
-            db.session.commit()
-            
-            # Feedback para o usuário baseado no status
-            if validation_result['status'] == 'verified':
-                flash('Documento validado com sucesso!', 'success')
-            elif validation_result['status'] == 'pending':
-                flash('Documento em análise. Alguns dados precisam de verificação adicional.', 'warning')
-            else:
-                flash(f'Falha na validação do documento: {validation_result["message"]}', 'danger')
-            
-            return redirect(url_for('profile'))
-            
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Erro na validação de documento: {str(e)}")
-            flash('Erro ao processar o documento. Por favor, tente novamente.', 'danger')
-            return redirect(url_for('document_validation'))
+        # Get the uploaded file
+        document_file = form.document.data
+        filename = secure_filename(document_file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_{filename}")
+        document_file.save(file_path)
+        
+        # Simulate document validation
+        validation_result = validate_document(file_path, user.name, user.cpf)
+        
+        # Save document record
+        document = Document.query.filter_by(user_id=user.id).first()
+        if document:
+            document.file_path = file_path
+            document.document_type = form.document_type.data
+            document.validation_status = validation_result['status']
+            document.validation_data = json.dumps(validation_result)
+        else:
+            document = Document(
+                user_id=user.id,
+                file_path=file_path,
+                document_type=form.document_type.data,
+                validation_status=validation_result['status'],
+                validation_data=json.dumps(validation_result)
+            )
+            db.session.add(document)
+        
+        db.session.commit()
+        
+        if validation_result['status'] == 'verified':
+            flash('Document successfully validated!', 'success')
+        else:
+            flash(f'Document validation failed: {validation_result["message"]}', 'danger')
+        
+        return redirect(url_for('profile'))
     
     document = Document.query.filter_by(user_id=user.id).first()
     return render_template('app_document_validation.html', form=form, document=document)
@@ -567,7 +522,7 @@ def player_match():
 @app.route('/calendar')
 def calendar():
     if 'user_id' not in session:
-        flash('Por favor, faça login primeiro.', 'warning')
+        flash('Please login first.', 'warning')
         return redirect(url_for('login'))
     
     user = User.query.get(session['user_id'])
@@ -584,234 +539,6 @@ def calendar():
                            user=user, 
                            interests=interest_list,
                            favorite_ids=json.dumps(favorite_ids))
-                           
-@app.route('/bolao')
-def bolao():
-    """Rota principal do Bolão da FURIA com lista de partidas"""
-    if 'user_id' not in session:
-        flash('Por favor, faça login primeiro.', 'warning')
-        return redirect(url_for('login'))
-    
-    try:
-        user = User.query.get(session['user_id'])
-        if not user:
-            session.pop('user_id', None)
-            flash('Usuário não encontrado. Por favor, faça login novamente.', 'danger')
-            return redirect(url_for('login'))
-        
-        # Buscar partidas existentes ou criar novas se não houver
-        matches = Match.query.order_by(Match.match_time).all()
-        
-        if not matches:
-            # Gerar partidas de demonstração se não existir nenhuma
-            demo_matches = generate_demo_matches(8)  # Gerar 8 partidas
-            for match_data in demo_matches:
-                match = Match(**match_data)
-                db.session.add(match)
-            
-            db.session.commit()
-            matches = Match.query.order_by(Match.match_time).all()
-        
-        # Buscar previsões do usuário
-        user_predictions = {}
-        predictions = MatchPrediction.query.filter_by(user_id=user.id).all()
-        for pred in predictions:
-            user_predictions[pred.match_id] = pred
-        
-        # Separar partidas futuras e passadas
-        now = datetime.now()
-        upcoming_matches = [m for m in matches if m.match_time > now]
-        past_matches = [m for m in matches if m.match_time <= now]
-        
-        # Ordenar as partidas: futuras em ordem cronológica, passadas em ordem cronológica reversa
-        upcoming_matches.sort(key=lambda x: x.match_time)
-        past_matches.sort(key=lambda x: x.match_time, reverse=True)
-        
-        # Calcular pontuação total do usuário
-        total_points = 0
-        for match_id, prediction in user_predictions.items():
-            total_points += prediction.total_points
-        
-        return render_template(
-            'app_bolao.html',
-            upcoming_matches=upcoming_matches,
-            past_matches=past_matches,
-            user_predictions=user_predictions,
-            total_points=total_points,
-            now=now
-        )
-    
-    except Exception as e:
-        app.logger.error(f"Erro na página do Bolão: {str(e)}")
-        flash('Ocorreu um erro ao acessar o Bolão. Por favor, tente novamente.', 'danger')
-        return redirect(url_for('home_dashboard'))
-
-@app.route('/bolao/predict/<int:match_id>', methods=['GET', 'POST'])
-def bolao_predict(match_id):
-    """Rota para fazer uma previsão para uma partida"""
-    if 'user_id' not in session:
-        flash('Por favor, faça login primeiro.', 'warning')
-        return redirect(url_for('login'))
-    
-    try:
-        user = User.query.get(session['user_id'])
-        match = Match.query.get_or_404(match_id)
-        
-        # Verificar se a partida ainda permite palpites
-        if not match.is_predictable:
-            flash('Esta partida não está mais disponível para palpites.', 'warning')
-            return redirect(url_for('bolao'))
-        
-        # Verificar se o usuário já fez uma previsão para esta partida
-        existing_prediction = MatchPrediction.query.filter_by(
-            user_id=user.id, match_id=match.id
-        ).first()
-        
-        form = MatchPredictionForm()
-        
-        # Configurar as opções de jogadores para MVP
-        players = get_furia_players_by_game(match.game)
-        form.set_player_choices(players)
-        
-        if request.method == 'GET' and existing_prediction:
-            # Preencher o formulário com os dados existentes
-            form.furia_score.data = existing_prediction.furia_score
-            form.opponent_score.data = existing_prediction.opponent_score
-            form.predicted_mvp.data = existing_prediction.predicted_mvp
-            form.predicted_opponent_highlight.data = existing_prediction.predicted_opponent_highlight
-        
-        if form.validate_on_submit():
-            # Salvar ou atualizar a previsão
-            if existing_prediction:
-                existing_prediction.furia_score = form.furia_score.data
-                existing_prediction.opponent_score = form.opponent_score.data
-                existing_prediction.predicted_mvp = form.predicted_mvp.data
-                existing_prediction.predicted_opponent_highlight = form.predicted_opponent_highlight.data
-            else:
-                prediction = MatchPrediction(
-                    user_id=user.id,
-                    match_id=match.id,
-                    furia_score=form.furia_score.data,
-                    opponent_score=form.opponent_score.data,
-                    predicted_mvp=form.predicted_mvp.data,
-                    predicted_opponent_highlight=form.predicted_opponent_highlight.data
-                )
-                db.session.add(prediction)
-            
-            db.session.commit()
-            flash('Seu palpite foi registrado com sucesso!', 'success')
-            return redirect(url_for('bolao'))
-        
-        return render_template(
-            'app_bolao_predict.html',
-            match=match,
-            form=form,
-            existing_prediction=existing_prediction
-        )
-    
-    except Exception as e:
-        app.logger.error(f"Erro ao fazer previsão: {str(e)}")
-        flash('Ocorreu um erro ao processar seu palpite. Por favor, tente novamente.', 'danger')
-        return redirect(url_for('bolao'))
-
-@app.route('/bolao/detail/<int:match_id>')
-def bolao_match_detail(match_id):
-    """Rota para ver detalhes de uma partida e seu resultado"""
-    if 'user_id' not in session:
-        flash('Por favor, faça login primeiro.', 'warning')
-        return redirect(url_for('login'))
-    
-    try:
-        user = User.query.get(session['user_id'])
-        match = Match.query.get_or_404(match_id)
-        
-        # Buscar previsão do usuário
-        prediction = MatchPrediction.query.filter_by(
-            user_id=user.id, match_id=match.id
-        ).first()
-        
-        # Calcular pontos se a partida já ocorreu
-        points = None
-        if match.status == 'completed' and prediction:
-            points = calculate_prediction_points(prediction, match)
-            
-            # Atualizar os pontos na previsão se necessário
-            if prediction.total_points == 0 and points['total_points'] > 0:
-                prediction.score_prediction_points = points['score_prediction_points']
-                prediction.mvp_prediction_points = points['mvp_prediction_points']
-                prediction.highlight_prediction_points = points['highlight_prediction_points']
-                prediction.total_points = points['total_points']
-                db.session.commit()
-        
-        # Buscar outras previsões para esta partida (ranking)
-        other_predictions = None
-        if match.status == 'completed':
-            other_predictions = MatchPrediction.query.filter_by(match_id=match.id).order_by(
-                MatchPrediction.total_points.desc()
-            ).limit(10).all()
-        
-        return render_template(
-            'app_bolao_detail.html',
-            match=match,
-            prediction=prediction,
-            points=points,
-            other_predictions=other_predictions,
-            user_id=user.id
-        )
-    
-    except Exception as e:
-        app.logger.error(f"Erro ao exibir detalhes da partida: {str(e)}")
-        flash('Ocorreu um erro ao acessar os detalhes da partida. Por favor, tente novamente.', 'danger')
-        return redirect(url_for('bolao'))
-
-@app.route('/bolao/leaderboard')
-def bolao_leaderboard():
-    """Rota para ver o ranking geral do Bolão"""
-    if 'user_id' not in session:
-        flash('Por favor, faça login primeiro.', 'warning')
-        return redirect(url_for('login'))
-    
-    try:
-        # Selecionar todos os usuários com previsões e calcular a pontuação total
-        users = db.session.query(User).join(MatchPrediction).group_by(User.id).all()
-        
-        leaderboard = []
-        for user in users:
-            total_points = sum([p.total_points for p in user.match_predictions])
-            predictions_count = len(user.match_predictions)
-            exact_scores = sum([1 for p in user.match_predictions if p.score_prediction_points == 3])
-            
-            leaderboard.append({
-                'user': user,
-                'total_points': total_points,
-                'predictions_count': predictions_count,
-                'exact_scores': exact_scores
-            })
-        
-        # Ordenar por pontuação total
-        leaderboard.sort(key=lambda x: x['total_points'], reverse=True)
-        
-        # Adicionar posição no ranking
-        for i, entry in enumerate(leaderboard):
-            entry['position'] = i + 1
-        
-        # Encontrar a posição do usuário atual
-        user_position = None
-        for entry in leaderboard:
-            if entry['user'].id == session['user_id']:
-                user_position = entry
-                break
-        
-        return render_template(
-            'app_bolao_leaderboard.html',
-            leaderboard=leaderboard[:20],  # Top 20
-            user_position=user_position
-        )
-    
-    except Exception as e:
-        app.logger.error(f"Erro ao exibir ranking: {str(e)}")
-        flash('Ocorreu um erro ao acessar o ranking. Por favor, tente novamente.', 'danger')
-        return redirect(url_for('bolao'))
 
 @app.route('/toggle_favorite', methods=['POST'])
 def toggle_favorite():

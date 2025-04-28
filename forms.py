@@ -2,10 +2,8 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms import (
     StringField, PasswordField, DateField, TextAreaField, SelectField,
-    BooleanField, RadioField, SubmitField, SelectMultipleField, HiddenField,
-    IntegerField
+    BooleanField, RadioField, SubmitField, SelectMultipleField, HiddenField
 )
-from wtforms.validators import NumberRange
 from wtforms.validators import DataRequired, Email, Length, EqualTo, URL, Optional, ValidationError
 import datetime
 
@@ -132,24 +130,6 @@ class SocialMediaForm(FlaskForm):
 class ContentValidationForm(FlaskForm):
     content_url = StringField('Content URL', validators=[DataRequired(), URL()])
     submit = SubmitField('Validate Content')
-
-class MatchPredictionForm(FlaskForm):
-    """Formulário para previsão de resultados de partidas (Bolão)"""
-    furia_score = IntegerField('Pontuação FURIA', validators=[
-        DataRequired(),
-        NumberRange(min=0, max=50, message='Pontuação deve estar entre 0 e 50')
-    ])
-    opponent_score = IntegerField('Pontuação Adversário', validators=[
-        DataRequired(),
-        NumberRange(min=0, max=50, message='Pontuação deve estar entre 0 e 50')
-    ])
-    predicted_mvp = SelectField('MVP da FURIA', validators=[DataRequired()], choices=[])
-    predicted_opponent_highlight = StringField('Destaque do Adversário', validators=[DataRequired(), Length(min=2, max=50)])
-    submit = SubmitField('Enviar Palpite')
-    
-    def set_player_choices(self, players):
-        """Configura as opções de jogadores da FURIA para MVP"""
-        self.predicted_mvp.choices = [(p, p) for p in players]
 
 class QuizForm(FlaskForm):
     # Questions will be dynamically generated but here's a static example
