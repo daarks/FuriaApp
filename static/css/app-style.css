@@ -284,6 +284,43 @@ p {
   color: var(--text-subtle);
 }
 
+/* Input com ação (botão de remover) */
+.app-input-with-action {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.app-input-with-action .app-form-control {
+  padding-right: 40px; /* Espaço para o botão */
+}
+
+.app-input-action {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.app-remove-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-remove-btn:hover {
+  color: var(--danger-color);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
 .app-form-password {
   position: relative;
 }

@@ -19,9 +19,16 @@
                     <label for="twitter">
                         <i class="fab fa-twitter"></i> Twitter/X
                     </label>
-                    <input type="text" class="app-form-control" id="twitter" name="twitter" 
-                           placeholder="https://twitter.com/FuriaGG" 
-                           value="{{ social_media.twitter if social_media else '' }}">
+                    <div class="app-input-with-action">
+                        <input type="text" class="app-form-control" id="twitter" name="twitter" 
+                               placeholder="https://twitter.com/FuriaGG" 
+                               value="{{ social_media.twitter if social_media else '' }}">
+                        {% if social_media and social_media.twitter %}
+                        <a href="{{ url_for('social_media_remove', platform='twitter') }}" class="app-input-action app-remove-btn" title="Remover">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
+                    </div>
                     <div class="app-form-text">Insira o link para seu perfil no Twitter/X</div>
                 </div>
                 
@@ -29,9 +36,16 @@
                     <label for="instagram">
                         <i class="fab fa-instagram"></i> Instagram
                     </label>
-                    <input type="text" class="app-form-control" id="instagram" name="instagram" 
-                           placeholder="https://instagram.com/furiagg" 
-                           value="{{ social_media.instagram if social_media else '' }}">
+                    <div class="app-input-with-action">
+                        <input type="text" class="app-form-control" id="instagram" name="instagram" 
+                               placeholder="https://instagram.com/furiagg" 
+                               value="{{ social_media.instagram if social_media else '' }}">
+                        {% if social_media and social_media.instagram %}
+                        <a href="{{ url_for('social_media_remove', platform='instagram') }}" class="app-input-action app-remove-btn" title="Remover">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
+                    </div>
                     <div class="app-form-text">Insira o link para seu perfil no Instagram</div>
                 </div>
                 
@@ -39,9 +53,16 @@
                     <label for="twitch">
                         <i class="fab fa-twitch"></i> Twitch
                     </label>
-                    <input type="text" class="app-form-control" id="twitch" name="twitch" 
-                           placeholder="https://twitch.tv/furiatv" 
-                           value="{{ social_media.twitch if social_media else '' }}">
+                    <div class="app-input-with-action">
+                        <input type="text" class="app-form-control" id="twitch" name="twitch" 
+                               placeholder="https://twitch.tv/furiatv" 
+                               value="{{ social_media.twitch if social_media else '' }}">
+                        {% if social_media and social_media.twitch %}
+                        <a href="{{ url_for('social_media_remove', platform='twitch') }}" class="app-input-action app-remove-btn" title="Remover">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
+                    </div>
                     <div class="app-form-text">Insira o link para seu canal na Twitch</div>
                 </div>
                 
@@ -49,9 +70,16 @@
                     <label for="youtube">
                         <i class="fab fa-youtube"></i> YouTube
                     </label>
-                    <input type="text" class="app-form-control" id="youtube" name="youtube" 
-                           placeholder="https://youtube.com/@furiagg" 
-                           value="{{ social_media.youtube if social_media else '' }}">
+                    <div class="app-input-with-action">
+                        <input type="text" class="app-form-control" id="youtube" name="youtube" 
+                               placeholder="https://youtube.com/@furiagg" 
+                               value="{{ social_media.youtube if social_media else '' }}">
+                        {% if social_media and social_media.youtube %}
+                        <a href="{{ url_for('social_media_remove', platform='youtube') }}" class="app-input-action app-remove-btn" title="Remover">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
+                    </div>
                     <div class="app-form-text">Insira o link para seu canal no YouTube</div>
                 </div>
                 
@@ -59,9 +87,16 @@
                     <label for="facebook">
                         <i class="fab fa-facebook-f"></i> Facebook
                     </label>
-                    <input type="text" class="app-form-control" id="facebook" name="facebook" 
-                           placeholder="https://facebook.com/furiagg" 
-                           value="{{ social_media.facebook if social_media else '' }}">
+                    <div class="app-input-with-action">
+                        <input type="text" class="app-form-control" id="facebook" name="facebook" 
+                               placeholder="https://facebook.com/furiagg" 
+                               value="{{ social_media.facebook if social_media else '' }}">
+                        {% if social_media and social_media.facebook %}
+                        <a href="{{ url_for('social_media_remove', platform='facebook') }}" class="app-input-action app-remove-btn" title="Remover">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
+                    </div>
                     <div class="app-form-text">Insira o link para seu perfil no Facebook</div>
                 </div>
                 
