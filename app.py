@@ -385,6 +385,39 @@ def document_validation():
     
     return render_template('app_document_validation.html', form=form, document=document)
 
+@app.route('/remove_document')
+def remove_document():
+    """Remove validated document to allow for re-verification"""
+    if 'user_id' not in session:
+        flash('Por favor, faça login primeiro.', 'warning')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    try:
+        # Find and delete document
+        document = Document.query.filter_by(user_id=user_id).first()
+        if document:
+            # Delete file from filesystem if it exists
+            if document.file_path and os.path.exists(document.file_path):
+                try:
+                    os.remove(document.file_path)
+                except Exception as e:
+                    app.logger.error(f"Erro ao excluir arquivo do documento: {str(e)}")
+            
+            # Delete from database
+            db.session.delete(document)
+            db.session.commit()
+            flash('Documento removido com sucesso. Você pode enviar um novo documento para validação.', 'success')
+        else:
+            flash('Nenhum documento encontrado para remover.', 'warning')
+    except Exception as e:
+        app.logger.error(f"Erro ao remover documento: {str(e)}")
+        db.session.rollback()
+        flash('Ocorreu um erro ao remover o documento. Por favor, tente novamente.', 'danger')
+    
+    return redirect(url_for('document_validation'))
+
+
 @app.route('/social_media_remove/<platform>')
 def social_media_remove(platform):
     if 'user_id' not in session:
