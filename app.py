@@ -161,6 +161,11 @@ def home_dashboard():
             flash('Usuário não encontrado. Faça login novamente.', 'danger')
             return redirect(url_for('login'))
             
+        # Definir badge padrão se não houver
+        if not user.fan_badge or user.fan_badge.lower() == 'none':
+            user.fan_badge = 'Novo Fã'
+            db.session.commit()
+            
         # Get user interests to personalize events
         interests = UserInterest.query.filter_by(user_id=user.id).all()
         user_interests = [interest.interest for interest in interests]
