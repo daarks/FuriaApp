@@ -275,7 +275,7 @@ LOOTBOX_REWARDS = [
 
 def validate_document(file_path, user_name, user_cpf):
     """
-    Implementação avançada de validação de documentos com simulação de IA
+    Implementação avançada de validação de documentos com OCR usando OpenAI
     
     Args:
         file_path: Path to the uploaded document
@@ -285,154 +285,169 @@ def validate_document(file_path, user_name, user_cpf):
     Returns:
         dict: Validation result with status and message
     """
-    logger.debug(f"Validando documento com IA: {file_path}")
+    import os
+    import base64
+    from openai import OpenAI
+    
+    logger.debug(f"Validando documento com OCR via OpenAI: {file_path}")
     
     # Verificar se o arquivo existe
-    import os
     if not os.path.exists(file_path):
         return {
             "status": "rejected",
             "message": "Arquivo do documento não foi encontrado",
-            "extracted_data": {
-                "confidence_score": 0.0
-            }
+            "data": {}
         }
-    
-    # Obter informações do arquivo
-    file_size = os.path.getsize(file_path)
-    file_extension = os.path.splitext(file_path)[1].lower()
-    
-    # Verificar tipo de arquivo
-    if file_extension not in ['.jpg', '.jpeg', '.png', '.pdf']:
-        return {
-            "status": "rejected",
-            "message": "Formato de arquivo não suportado. Use JPG, PNG ou PDF.",
-            "extracted_data": {
-                "confidence_score": 0.0
-            }
-        }
-    
-    # Verificar tamanho do arquivo (menor que 100kb pode ser de baixa qualidade)
-    if file_size < 100 * 1024:  # 100KB
-        return {
-            "status": "rejected",
-            "message": "A qualidade da imagem é muito baixa. Por favor, envie uma imagem com melhor resolução.",
-            "extracted_data": {
-                "confidence_score": random.uniform(0.3, 0.5)
-            }
-        }
-    
-    # Simular processo de IA para extração de texto e verificação de dados
-    # Em uma implementação real, usaríamos bibliotecas como OpenCV e Tesseract OCR ou serviços como Azure Computer Vision
-    
-    # Simular reconhecimento de padrões para diferentes tipos de documentos (RG, CNH, passaporte)
-    def extract_document_data(file_path, expected_name, expected_cpf):
-        # Simular erros de reconhecimento baseados no nome de arquivo 
-        # para permitir testes de casos de falha de forma determinista
-        if "low_quality" in file_path:
-            return None, None, 0.4
         
-        if "incomplete" in file_path:
-            return expected_name, None, 0.65
+    try:
+        # Verificar extensão do arquivo
+        file_ext = os.path.splitext(file_path)[1].lower()
         
-        # Simular pequenas variações no nome para simular reconhecimento real
-        name_parts = expected_name.split()
-        if len(name_parts) > 2:
-            # Simular reconhecimento onde o OCR pode perder nomes do meio
-            extracted_name = f"{name_parts[0]} {name_parts[-1]}"
-        elif len(name_parts) == 2:
-            # Nome e sobrenome comum, perfeito para reconhecimento
-            extracted_name = expected_name
-        else:
-            # Apenas um nome, pode ser problemático
-            extracted_name = expected_name
+        if file_ext not in ['.jpg', '.jpeg', '.png', '.pdf']:
+            return {
+                "status": "rejected",
+                "message": "Formato de arquivo não suportado. Use JPG, PNG ou PDF.",
+                "data": {}
+            }
             
-        # Simular reconhecimento de CPF com possíveis erros
-        cpf_digits = expected_cpf.replace('.', '').replace('-', '')
-        if len(cpf_digits) != 11:
-            return extracted_name, None, 0.6  # CPF inválido
+        # Carregar arquivo e converter para base64
+        with open(file_path, "rb") as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
         
-        # 90% de chance de reconhecer o CPF corretamente
-        if random.random() < 0.9:
-            extracted_cpf = cpf_digits
-            confidence = random.uniform(0.85, 0.99)
-        else:
-            # Simular erro de reconhecimento em um dígito
-            modified_cpf = list(cpf_digits)
-            modified_cpf[random.randint(0, len(modified_cpf)-1)] = str(random.randint(0, 9))
-            extracted_cpf = ''.join(modified_cpf)
-            confidence = random.uniform(0.7, 0.84)
+        # Inicializar cliente OpenAI com a chave da API
+        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        
+        # Preparar o prompt para extração de dados do documento
+        prompt = """
+        Esta é uma imagem de um documento de identidade (RG, CNH ou Passaporte). 
+        Por favor, extraia as seguintes informações:
+        1. Nome completo
+        2. Data de nascimento (no formato DD/MM/AAAA)
+        3. Número do documento (se visível)
+        4. Tipo de documento (RG, CNH ou Passaporte)
+        5. CPF (se visível)
+        
+        Responda APENAS com um JSON no seguinte formato:
+        {
+            "nome": "NOME COMPLETO EXTRAÍDO",
+            "data_nascimento": "DD/MM/AAAA",
+            "numero_documento": "NÚMERO DO DOCUMENTO",
+            "tipo_documento": "TIPO DO DOCUMENTO",
+            "cpf": "NÚMERO DO CPF (SE VISÍVEL)"
+        }
+        
+        Se alguma informação não for visível ou legível, use null para o valor correspondente.
+        Se a imagem não for claramente um documento de identidade, responda com {"erro": "Não é um documento válido"}.
+        """
+        
+        logger.debug("Enviando imagem para análise com OCR...")
+        
+        # Chamar a API da OpenAI para análise da imagem
+        response = client.chat.completions.create(
+            model="gpt-4o",  # A versão mais recente com suporte a visão
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/{file_ext[1:]};base64,{base64_image}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens=500
+        )
+        
+        # Extrair a resposta
+        response_text = response.choices[0].message.content
+        logger.debug(f"Resposta do OCR: {response_text}")
+        
+        # Processar a resposta
+        import json
+        try:
+            # Tentar extrair apenas o JSON da resposta
+            import re
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                extracted_data = json.loads(json_match.group(0))
+            else:
+                extracted_data = json.loads(response_text)
+                
+            if "erro" in extracted_data:
+                return {
+                    "status": "rejected",
+                    "message": f"Falha na análise: {extracted_data['erro']}",
+                    "data": {}
+                }
+                
+        except json.JSONDecodeError as e:
+            logger.error(f"Erro ao decodificar JSON: {e}")
+            return {
+                "status": "rejected",
+                "message": "Falha ao processar o documento. O documento está nítido e legível?",
+                "data": {}
+            }
             
-        return extracted_name, extracted_cpf, confidence
-    
-    # Executar o processamento de IA simulado
-    extracted_name, extracted_cpf, confidence_score = extract_document_data(file_path, user_name, user_cpf)
-    
-    # Verificar resultados
-    if not extracted_name and not extracted_cpf:
+        # Validar os dados extraídos
+        if not extracted_data.get("nome"):
+            return {
+                "status": "rejected",
+                "message": "Não foi possível identificar o nome no documento",
+                "data": extracted_data
+            }
+            
+        # Comparar nome extraído com o nome do usuário
+        user_name_normalized = " ".join(part.lower() for part in user_name.split())
+        extracted_name_normalized = " ".join(part.lower() for part in extracted_data.get("nome", "").split())
+        
+        # Verificar correspondência de nome com tolerância
+        name_parts_user = set(user_name_normalized.split())
+        name_parts_extracted = set(extracted_name_normalized.split())
+        
+        # Calcular interseção de nomes
+        common_parts = name_parts_user.intersection(name_parts_extracted)
+        name_similarity = len(common_parts) / max(len(name_parts_user), 1)
+        
+        logger.debug(f"Similaridade de nome: {name_similarity}")
+        
+        # Verificar o CPF se estiver presente (alguns documentos podem não exibir CPF)
+        cpf_match = False
+        if extracted_data.get("cpf"):
+            user_cpf_clean = user_cpf.replace(".", "").replace("-", "")
+            extracted_cpf_clean = extracted_data["cpf"].replace(".", "").replace("-", "")
+            cpf_match = user_cpf_clean == extracted_cpf_clean
+            logger.debug(f"CPF extraído: {extracted_cpf_clean}, CPF do usuário: {user_cpf_clean}, Match: {cpf_match}")
+            
+        # Determinar resultado com base na correspondência do nome e CPF
+        if name_similarity >= 0.7:  # Se pelo menos 70% do nome corresponder
+            if extracted_data.get("cpf") and not cpf_match:
+                return {
+                    "status": "rejected",
+                    "message": "O CPF no documento não corresponde ao cadastrado no sistema",
+                    "data": extracted_data
+                }
+            return {
+                "status": "verified",
+                "message": "Documento validado com sucesso",
+                "data": extracted_data
+            }
+        else:
+            return {
+                "status": "rejected",
+                "message": "O nome no documento não corresponde ao cadastrado no sistema",
+                "data": extracted_data
+            }
+            
+    except Exception as e:
+        logger.error(f"Erro na validação do documento: {str(e)}")
         return {
             "status": "rejected",
-            "message": "A IA não conseguiu extrair informações do documento. Verifique se o documento está nítido e bem iluminado.",
-            "extracted_data": {
-                "confidence_score": confidence_score
-            }
-        }
-    
-    # Verificar correspondência dos dados
-    name_matches = extracted_name and user_name.lower() in extracted_name.lower()
-    cpf_matches = extracted_cpf and extracted_cpf == user_cpf.replace('.', '').replace('-', '')
-    
-    # Gerar relatório detalhado de verificação
-    verification_details = []
-    if extracted_name:
-        verification_details.append({
-            "field": "nome",
-            "expected": user_name,
-            "extracted": extracted_name,
-            "matches": name_matches,
-            "confidence": confidence_score
-        })
-    
-    if extracted_cpf:
-        verification_details.append({
-            "field": "cpf",
-            "expected": user_cpf,
-            "extracted": extracted_cpf,
-            "matches": cpf_matches,
-            "confidence": confidence_score
-        })
-    
-    # Determinar resultado da validação
-    if name_matches and cpf_matches and confidence_score > 0.8:
-        return {
-            "status": "verified",
-            "message": "Documento validado com sucesso",
-            "extracted_data": {
-                "name": extracted_name,
-                "cpf": extracted_cpf,
-                "confidence_score": confidence_score,
-                "verification_details": verification_details
-            }
-        }
-    elif confidence_score < 0.6:
-        return {
-            "status": "rejected",
-            "message": "Qualidade do documento é insuficiente para validação",
-            "extracted_data": {
-                "confidence_score": confidence_score,
-                "verification_details": verification_details
-            }
-        }
-    else:
-        return {
-            "status": "rejected",
-            "message": "Os dados no documento não correspondem às informações registradas",
-            "extracted_data": {
-                "name": extracted_name,
-                "cpf": extracted_cpf,
-                "confidence_score": confidence_score,
-                "verification_details": verification_details
-            }
+            "message": f"Ocorreu um erro ao processar o documento: {str(e)}",
+            "data": {}
         }
 
 def analyze_social_media(social_media_data):

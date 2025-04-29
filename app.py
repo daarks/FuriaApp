@@ -318,8 +318,10 @@ def document_validation():
             
             app.logger.debug(f"Validando documento com IA: {file_path}")
             
-            # Simulate document validation
+            # Processar documento com OCR
+            app.logger.info(f"Iniciando validação de documento com OCR: {file_path}")
             validation_result = validate_document(file_path, user.name, user.cpf)
+            app.logger.info(f"Resultado da validação: {validation_result['status']}")
             
             # Save document record
             document = Document.query.filter_by(user_id=user.id).first()
@@ -333,8 +335,8 @@ def document_validation():
                     user_id=user.id,
                     file_path=file_path,
                     document_type=form.document_type.data,
-                    validation_status=validation_result['status'],
-                    validation_data=json.dumps(validation_result)
+                    validation_status = validation_result['status'],
+                    validation_data = json.dumps(validation_result)
                 )
                 db.session.add(document)
             

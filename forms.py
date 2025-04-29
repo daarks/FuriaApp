@@ -25,16 +25,16 @@ def validate_birth_date(form, field):
         raise ValidationError('You must be at least 13 years old')
 
 class RegistrationForm(FlaskForm):
-    name = StringField('Full Name', validators=[DataRequired(), Length(min=3, max=100)])
+    name = StringField('Nome Completo', validators=[DataRequired(), Length(min=3, max=100)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
+    password = PasswordField('Senha', validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField(
-        'Confirm Password', 
-        validators=[DataRequired(), EqualTo('password', message='Passwords must match')]
+        'Confirmar Senha', 
+        validators=[DataRequired(), EqualTo('password', message='As senhas devem ser iguais')]
     )
-    address = TextAreaField('Address', validators=[DataRequired(), Length(min=10, max=200)])
+    address = TextAreaField('Endereço', validators=[DataRequired(), Length(min=10, max=200)])
     cpf = StringField('CPF', validators=[DataRequired(), validate_cpf])
-    birth_date = DateField('Birth Date', validators=[DataRequired(), validate_birth_date])
+    birth_date = DateField('Data de Nascimento', validators=[DataRequired(), validate_birth_date])
     
     # Esports interests - will be handled in the view as checkboxes
     esports_interests = SelectMultipleField(
