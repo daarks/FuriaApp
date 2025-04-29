@@ -19,4 +19,5 @@ dependencies = [
     "anthropic>=0.50.0",
     "flask-oauthlib>=0.9.6",
     "requests-oauthlib>=1.1.0",
+    "oauthlib>=2.1.0",
 ]

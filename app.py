@@ -54,6 +54,7 @@ def from_json(value):
 # Import models and forms
 with app.app_context():
     from models import User, UserInterest, Document, SocialMedia, ContentLink, Quiz, Calendar
+    from models_oauth import OAuthConnection, OAuthInteraction, OAuthContentAnalysis
     from forms import (
         RegistrationForm, LoginForm, DocumentUploadForm, SocialMediaForm, 
         ContentValidationForm, QuizForm
@@ -62,7 +63,15 @@ with app.app_context():
         validate_document, analyze_social_media, validate_content_links,
         match_player, get_fan_power, get_lootbox_reward
     )
+    from oauth_routes import oauth_blueprint
     
+    # Registrar blueprint OAuth
+    app.register_blueprint(oauth_blueprint, url_prefix='/oauth')
+    
+    # Importar folha de estilo OAuth
+    app.config['OAUTH_CSS'] = 'css/oauth-style.css'
+    
+    # Criar tabelas
     db.create_all()
 
 # Routes
