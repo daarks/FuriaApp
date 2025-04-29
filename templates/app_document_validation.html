@@ -45,6 +45,15 @@
                             </ul>
                         </div>
                     {% endif %}
+                    
+                    <!-- Botão para remover documento -->
+                    <form method="POST" action="{{ url_for('remove_document') }}" class="app-mt-3">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="app-btn app-btn-danger app-btn-sm">
+                            <i class="fas fa-trash"></i> Remover Documento
+                        </button>
+                        <small class="app-text-muted d-block app-mt-1">Para testes: remove o documento e permite nova validação</small>
+                    </form>
                 </div>
             </div>
             {% elif document and document.validation_status == 'rejected' %}
