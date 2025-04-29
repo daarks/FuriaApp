@@ -227,8 +227,17 @@ def profile():
         flash('Ocorreu um erro ao acessar seu perfil. Por favor, tente novamente.', 'danger')
         return redirect(url_for('login'))
     
-    # Get document verification status
-    document = Document.query.filter_by(user_id=user.id).first()
+    # Get document verification status - usando query específica para evitar o erro com campos novos
+    document = db.session.query(
+        Document.id, 
+        Document.user_id, 
+        Document.document_type, 
+        Document.file_path,
+        Document.validation_status, 
+        Document.validation_data,
+        Document.created_at, 
+        Document.updated_at
+    ).filter_by(user_id=user.id).first()
     
     # Get social media profiles
     social_media = SocialMedia.query.filter_by(user_id=user.id).first()
@@ -319,6 +328,7 @@ def document_validation():
         flash('Usuário não encontrado. Faça login novamente.', 'danger')
         return redirect(url_for('login'))
         
+    # Use a query específica para evitar problemas com os novos campos
     document = Document.query.filter_by(user_id=user.id).first()
     
     if request.method == 'POST' and form.validate_on_submit():
