@@ -38,7 +38,7 @@ class RegistrationForm(FlaskForm):
     
     # Esports interests - will be handled in the view as checkboxes
     esports_interests = SelectMultipleField(
-        'Esports Interests', 
+        'Interesses em Esports', 
         choices=[
             ('cs', 'Counter-Strike'),
             ('valorant', 'Valorant'),
@@ -55,7 +55,7 @@ class RegistrationForm(FlaskForm):
     
     # Events attended - will be handled in the view as checkboxes
     events_attended = SelectMultipleField(
-        'Events Attended in the Last Year',
+        'Eventos que Participou no Último Ano',
         choices=[
             ('major_rio', 'CS:GO Major Rio'),
             ('esl_one', 'ESL One'),
@@ -72,64 +72,64 @@ class RegistrationForm(FlaskForm):
     
     # Purchases - will be handled in the view as checkboxes
     purchases = SelectMultipleField(
-        'Purchases Related to Esports in the Last Year',
+        'Compras Relacionadas a Esports no Último Ano',
         choices=[
-            ('team_jersey', 'Team Jersey'),
-            ('team_merch', 'Other Team Merchandise'),
-            ('gaming_gear', 'Gaming Gear'),
-            ('event_tickets', 'Event Tickets'),
-            ('battle_pass', 'Battle Pass/Season Pass'),
-            ('in_game_items', 'In-game Items'),
-            ('streaming_sub', 'Streaming Subscription'),
-            ('esports_betting', 'Esports Betting'),
-            ('gaming_chair', 'Gaming Chair'),
-            ('gaming_pc', 'Gaming PC/Components')
+            ('team_jersey', 'Camisa Oficial de Time'),
+            ('team_merch', 'Outros Produtos Oficiais (Boné, Mousepad, etc)'),
+            ('gaming_gear', 'Equipamentos Gamers (Mouse, Teclado, Headset)'),
+            ('event_tickets', 'Ingressos para Eventos'),
+            ('battle_pass', 'Battle Pass/Passe de Temporada'),
+            ('in_game_items', 'Itens dentro de Jogos'),
+            ('streaming_sub', 'Assinatura de Plataforma de Streaming'),
+            ('esports_betting', 'Apostas em Esports'),
+            ('gaming_chair', 'Cadeira Gamer'),
+            ('gaming_pc', 'PC Gamer/Componentes')
         ]
     )
     
-    submit = SubmitField('Register')
+    submit = SubmitField('Cadastrar')
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember = BooleanField('Remember Me')
-    submit = SubmitField('Login')
+    password = PasswordField('Senha', validators=[DataRequired()])
+    remember = BooleanField('Lembrar de mim')
+    submit = SubmitField('Entrar')
 
 class DocumentUploadForm(FlaskForm):
     document_type = SelectField(
-        'Document Type',
+        'Tipo de Documento',
         choices=[
-            ('rg', 'RG - Identity Card'),
-            ('cnh', 'CNH - Driver\'s License'),
-            ('passport', 'Passport')
+            ('rg', 'RG - Carteira de Identidade'),
+            ('cnh', 'CNH - Carteira Nacional de Habilitação'),
+            ('passport', 'Passaporte')
         ],
         validators=[DataRequired()]
     )
     document = FileField(
-        'Upload Document', 
+        'Enviar Documento', 
         validators=[
             FileRequired(),
-            FileAllowed(['jpg', 'jpeg', 'png', 'pdf'], 'Images and PDF only!')
+            FileAllowed(['jpg', 'jpeg', 'png', 'pdf'], 'Apenas imagens e PDF!')
         ]
     )
-    submit = SubmitField('Upload and Validate')
+    submit = SubmitField('Enviar e Validar')
 
 class SocialMediaForm(FlaskForm):
-    twitter = StringField('Twitter/X Profile', validators=[Optional()],
+    twitter = StringField('Perfil no Twitter/X', validators=[Optional()],
                           description="Ex: https://twitter.com/FuriaGG")
-    instagram = StringField('Instagram Profile', validators=[Optional()],
+    instagram = StringField('Perfil no Instagram', validators=[Optional()],
                             description="Ex: https://instagram.com/furiagg")
-    twitch = StringField('Twitch Channel', validators=[Optional()],
+    twitch = StringField('Canal na Twitch', validators=[Optional()],
                          description="Ex: https://twitch.tv/furiatv")
-    youtube = StringField('YouTube Channel', validators=[Optional()],
+    youtube = StringField('Canal no YouTube', validators=[Optional()],
                           description="Ex: https://youtube.com/@furiagg")
-    facebook = StringField('Facebook Profile', validators=[Optional()],
+    facebook = StringField('Perfil no Facebook', validators=[Optional()],
                            description="Ex: https://facebook.com/furiagg")
     submit = SubmitField('Analisar Redes Sociais')
 
 class ContentValidationForm(FlaskForm):
-    content_url = StringField('Content URL', validators=[DataRequired(), URL()])
-    submit = SubmitField('Validate Content')
+    content_url = StringField('URL do Conteúdo', validators=[DataRequired(), URL()])
+    submit = SubmitField('Validar Conteúdo')
 
 class QuizForm(FlaskForm):
     # Questions will be dynamically generated but here's a static example

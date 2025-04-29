@@ -77,7 +77,7 @@ def register():
     if form.validate_on_submit():
         existing_user = User.query.filter_by(email=form.email.data).first()
         if existing_user:
-            flash('Email already registered. Please login.', 'danger')
+            flash('Email já cadastrado. Por favor, faça login.', 'danger')
             return redirect(url_for('login'))
         
         try:
@@ -120,7 +120,7 @@ def register():
             flash('Erro durante o cadastro. Por favor, tente novamente.', 'danger')
             return redirect(url_for('register'))
         
-        flash('Registration successful! Please login.', 'success')
+        flash('Cadastro realizado com sucesso! Por favor, faça login.', 'success')
         return redirect(url_for('login'))
     
     return render_template('app_register.html', form=form)
@@ -135,17 +135,17 @@ def login():
             session['user_id'] = user.id
             user.last_login = datetime.now()
             db.session.commit()
-            flash('Login successful!', 'success')
+            flash('Login realizado com sucesso!', 'success')
             return redirect(url_for('home_dashboard'))
         else:
-            flash('Invalid email or password', 'danger')
+            flash('Email ou senha inválidos', 'danger')
     
     return render_template('app_login.html', form=form)
 
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
-    flash('You have been logged out.', 'info')
+    flash('Você foi desconectado.', 'info')
     return redirect(url_for('home'))
 
 @app.route('/home')
@@ -165,16 +165,20 @@ def home_dashboard():
         interests = UserInterest.query.filter_by(user_id=user.id).all()
         user_interests = [interest.interest for interest in interests]
         
-        # All possible events - Fictícios para teste
+        # Eventos futuros - Fictícios para teste
         all_events = [
-            {"date": "26 Abr", "title": "ESL One Rio 2024", "subtitle": "Rio de Janeiro, Brasil", "game": "CS:GO", "game_tag": "cs"},
-            {"date": "15 Mai", "title": "Rainbow Six Major - São Paulo 2024", "subtitle": "São Paulo, Brasil", "game": "R6 Siege", "game_tag": "rainbow6"},
-            {"date": "10 Mai", "title": "Free Fire World Series 2024", "subtitle": "Bangkok, Tailândia", "game": "Free Fire", "game_tag": "freefire"},
-            {"date": "20 Mai", "title": "VCT Americas 2024", "subtitle": "Los Angeles, EUA", "game": "Valorant", "game_tag": "valorant"},
-            {"date": "05 Jun", "title": "CBLOL Split 2 - 2024", "subtitle": "São Paulo, Brasil", "game": "League of Legends", "game_tag": "lol"},
-            {"date": "12 Jun", "title": "BLAST Premier Spring Finals 2024", "subtitle": "Londres, Reino Unido", "game": "CS:GO", "game_tag": "cs"},
-            {"date": "18 Jun", "title": "Apex Legends Global Series 2024", "subtitle": "Estocolmo, Suécia", "game": "Apex Legends", "game_tag": "apex"},
-            {"date": "22 Jun", "title": "Rocket League Championship Series 2024", "subtitle": "Dallas, EUA", "game": "Rocket League", "game_tag": "rocket_league"}
+            {"date": "15 Mai", "title": "ESL One Rio 2025", "subtitle": "Rio de Janeiro, Brasil", "game": "CS:GO", "game_tag": "cs"},
+            {"date": "22 Mai", "title": "Rainbow Six Major - São Paulo 2025", "subtitle": "São Paulo, Brasil", "game": "R6 Siege", "game_tag": "rainbow6"},
+            {"date": "29 Mai", "title": "Free Fire World Series 2025", "subtitle": "Bangkok, Tailândia", "game": "Free Fire", "game_tag": "freefire"},
+            {"date": "05 Jun", "title": "VCT Americas 2025", "subtitle": "Los Angeles, EUA", "game": "Valorant", "game_tag": "valorant"},
+            {"date": "12 Jun", "title": "CBLOL Split 2 - 2025", "subtitle": "São Paulo, Brasil", "game": "League of Legends", "game_tag": "lol"},
+            {"date": "19 Jun", "title": "BLAST Premier Summer Finals 2025", "subtitle": "Lisboa, Portugal", "game": "CS:GO", "game_tag": "cs"},
+            {"date": "26 Jun", "title": "Apex Legends Global Series 2025", "subtitle": "Estocolmo, Suécia", "game": "Apex Legends", "game_tag": "apex"},
+            {"date": "03 Jul", "title": "Rocket League World Championship 2025", "subtitle": "Tokyo, Japão", "game": "Rocket League", "game_tag": "rocket_league"},
+            {"date": "10 Jul", "title": "FURIA Invitational 2025", "subtitle": "São Paulo, Brasil", "game": "Multi-Game", "game_tag": "cs"},
+            {"date": "17 Jul", "title": "Game Changers Championship 2025", "subtitle": "Berlin, Alemanha", "game": "Valorant", "game_tag": "valorant"},
+            {"date": "24 Jul", "title": "PUBG Global Championship 2025", "subtitle": "Seoul, Coreia do Sul", "game": "PUBG", "game_tag": "pubg"},
+            {"date": "31 Jul", "title": "Copa Brasil de Free Fire 2025", "subtitle": "Rio de Janeiro, Brasil", "game": "Free Fire", "game_tag": "freefire"}
         ]
         
         # Filter events based on user interests, if they have any
@@ -576,7 +580,7 @@ def player_match():
 @app.route('/calendar')
 def calendar():
     if 'user_id' not in session:
-        flash('Please login first.', 'warning')
+        flash('Por favor, faça login primeiro.', 'warning')
         return redirect(url_for('login'))
     
     user = User.query.get(session['user_id'])
@@ -589,10 +593,64 @@ def calendar():
     favorites = Calendar.query.filter_by(user_id=user.id, is_favorite=True).all()
     favorite_ids = [favorite.event_id for favorite in favorites]
     
+    # Eventos de esports atuais e futuros (fictícios para 2024-2025)
+    all_events = [
+        # Maio 2024
+        {"id": "vct_americas_2024", "date": "2024-05-20", "title": "VCT Americas 2024", "location": "Los Angeles, EUA", "game": "Valorant", "game_tag": "valorant", "description": "Campeonato regional de Valorant com as melhores equipes das Américas, incluindo FURIA."},
+        {"id": "msi_2024", "date": "2024-05-25", "title": "Mid-Season Invitational 2024", "location": "Seul, Coreia do Sul", "game": "League of Legends", "game_tag": "lol", "description": "Competição internacional de meio de temporada de LoL."},
+        {"id": "freefire_ws_2024", "date": "2024-05-10", "title": "Free Fire World Series 2024", "location": "Bangkok, Tailândia", "game": "Free Fire", "game_tag": "freefire", "description": "O maior torneio mundial de Free Fire."},
+        
+        # Junho 2024
+        {"id": "cblol_split2_2024", "date": "2024-06-05", "title": "CBLOL Split 2 - 2024", "location": "São Paulo, Brasil", "game": "League of Legends", "game_tag": "lol", "description": "Segunda etapa do Campeonato Brasileiro de League of Legends."},
+        {"id": "esl_one_bh_2024", "date": "2024-06-12", "title": "ESL One Belo Horizonte 2024", "location": "Belo Horizonte, Brasil", "game": "CS:GO", "game_tag": "cs", "description": "Torneio internacional de CS:GO sediado no Brasil."},
+        {"id": "blast_premier_spring_2024", "date": "2024-06-12", "title": "BLAST Premier Spring Finals 2024", "location": "Londres, Reino Unido", "game": "CS:GO", "game_tag": "cs", "description": "Finais da temporada Spring da BLAST Premier."},
+        {"id": "apex_global_series_2024", "date": "2024-06-18", "title": "Apex Legends Global Series 2024", "location": "Estocolmo, Suécia", "game": "Apex Legends", "game_tag": "apex", "description": "Competição mundial de Apex Legends."},
+        {"id": "rlcs_2024", "date": "2024-06-22", "title": "Rocket League Championship Series 2024", "location": "Dallas, EUA", "game": "Rocket League", "game_tag": "rocket_league", "description": "Campeonato mundial oficial de Rocket League."},
+        
+        # Julho 2024
+        {"id": "valorant_masters_2024", "date": "2024-07-10", "title": "Valorant Masters Shanghai 2024", "location": "Shanghai, China", "game": "Valorant", "game_tag": "valorant", "description": "Segundo Masters internacional de Valorant da temporada."},
+        {"id": "iem_cologne_2024", "date": "2024-07-15", "title": "IEM Cologne 2024", "location": "Colônia, Alemanha", "game": "CS:GO", "game_tag": "cs", "description": "Um dos torneios mais prestigiados do calendário de CS:GO."},
+        
+        # Agosto 2024
+        {"id": "r6_major_saopaulo_2024", "date": "2024-08-05", "title": "Rainbow Six Major São Paulo 2024", "location": "São Paulo, Brasil", "game": "Rainbow Six Siege", "game_tag": "rainbow6", "description": "Major de R6 sediado no Brasil com a participação da FURIA."},
+        {"id": "fortnite_invitational_2024", "date": "2024-08-15", "title": "Fortnite Championship Series Invitational", "location": "Atlanta, EUA", "game": "Fortnite", "game_tag": "fortnite", "description": "Campeonato por convite dos melhores jogadores de Fortnite."},
+        
+        # Setembro 2024
+        {"id": "overwatch_contenders_2024", "date": "2024-09-03", "title": "Overwatch Contenders 2024 - Season 2", "location": "Online", "game": "Overwatch", "game_tag": "overwatch", "description": "Segunda temporada do circuito de base do Overwatch."},
+        {"id": "lol_worlds_2024", "date": "2024-09-25", "title": "League of Legends World Championship 2024", "location": "Diversas cidades, Japão", "game": "League of Legends", "game_tag": "lol", "description": "Campeonato Mundial de League of Legends."},
+        
+        # Outubro 2024
+        {"id": "valorant_champions_2024", "date": "2024-10-10", "title": "Valorant Champions 2024", "location": "Berlim, Alemanha", "game": "Valorant", "game_tag": "valorant", "description": "Campeonato mundial de Valorant que encerra a temporada."},
+        {"id": "blast_premier_fall_2024", "date": "2024-10-20", "title": "BLAST Premier Fall Finals 2024", "location": "Copenhague, Dinamarca", "game": "CS:GO", "game_tag": "cs", "description": "Finais da temporada Fall da BLAST Premier."},
+        
+        # Novembro 2024
+        {"id": "cs_major_fall_2024", "date": "2024-11-04", "title": "CS Major Fall 2024", "location": "Estocolmo, Suécia", "game": "CS:GO", "game_tag": "cs", "description": "Segundo Major de CS de 2024."},
+        {"id": "freefire_pro_league_2024", "date": "2024-11-15", "title": "Free Fire Pro League Brasil - Grande Final", "location": "São Paulo, Brasil", "game": "Free Fire", "game_tag": "freefire", "description": "Grande final da liga brasileira de Free Fire."}
+    ]
+    
+    # Filtrar eventos com base nos interesses do usuário
+    if interest_list:
+        filtered_events = [event for event in all_events if event["game_tag"] in interest_list]
+    else:
+        filtered_events = all_events
+    
+    # Se não houver eventos relacionados aos interesses, mostrar todos
+    if not filtered_events:
+        filtered_events = all_events
+        
+    # Marcar os eventos favoritos
+    for event in filtered_events:
+        event["is_favorite"] = event["id"] in favorite_ids
+        
+    # Ordenar eventos por data (os mais próximos primeiro)
+    from datetime import datetime
+    filtered_events.sort(key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d"))
+    
     return render_template('app_calendar.html', 
                            user=user, 
                            interests=interest_list,
-                           favorite_ids=json.dumps(favorite_ids))
+                           favorite_ids=json.dumps(favorite_ids),
+                           events=filtered_events)
 
 @app.route('/toggle_favorite', methods=['POST'])
 def toggle_favorite():
