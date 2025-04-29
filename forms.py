@@ -105,12 +105,20 @@ class DocumentUploadForm(FlaskForm):
         ],
         validators=[DataRequired()]
     )
-    document = FileField(
-        'Enviar Documento', 
+    document_front = FileField(
+        'Frente do Documento (Obrigatório)', 
         validators=[
             FileRequired(),
-            FileAllowed(['jpg', 'jpeg', 'png', 'pdf'], 'Apenas imagens e PDF!')
-        ]
+            FileAllowed(['jpg', 'jpeg', 'png'], 'Apenas imagens (JPG, JPEG, PNG)!')
+        ],
+        description="Envie uma foto nítida da frente do seu documento"
+    )
+    document_back = FileField(
+        'Verso do Documento (Obrigatório para RG e CNH)', 
+        validators=[
+            FileAllowed(['jpg', 'jpeg', 'png'], 'Apenas imagens (JPG, JPEG, PNG)!')
+        ],
+        description="Envie uma foto nítida do verso do seu documento"
     )
     submit = SubmitField('Enviar e Validar')
 

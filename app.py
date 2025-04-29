@@ -326,36 +326,56 @@ def document_validation():
             # Create uploads directory if it doesn't exist
             os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
             
-            # Get the uploaded file
-            document_file = form.document.data
-            if not document_file:
-                flash('Nenhum arquivo selecionado.', 'danger')
+            # Get the uploaded files
+            front_file = form.document_front.data
+            back_file = form.document_back.data
+            doc_type = form.document_type.data
+            
+            if not front_file:
+                flash('Nenhuma imagem da frente do documento selecionada.', 'danger')
                 return render_template('app_document_validation.html', form=form, document=document)
                 
-            filename = secure_filename(document_file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_{filename}")
-            document_file.save(file_path)
+            # Para RG e CNH, o verso é obrigatório
+            if doc_type in ['rg', 'cnh'] and not back_file:
+                flash('Para RG e CNH, é necessário enviar a imagem do verso do documento.', 'danger')
+                return render_template('app_document_validation.html', form=form, document=document)
             
-            app.logger.debug(f"Validando documento com IA: {file_path}")
+            # Salvar a imagem da frente
+            front_filename = secure_filename(front_file.filename)
+            front_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_front_{front_filename}")
+            front_file.save(front_path)
             
-            # Processar documento com OCR
-            app.logger.info(f"Iniciando validação de documento com OCR: {file_path}")
-            validation_result = validate_document(file_path, user.name, user.cpf)
+            # Salvar a imagem do verso se fornecida
+            back_path = None
+            if back_file:
+                back_filename = secure_filename(back_file.filename)
+                back_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_back_{back_filename}")
+                back_file.save(back_path)
+            
+            app.logger.debug(f"Validando documento com IA - Frente: {front_path}, Verso: {back_path}")
+            
+            # Processar documento com OCR usando a API da OpenAI
+            app.logger.info(f"Iniciando validação de documento com OCR via OpenAI API")
+            validation_result = validate_document(front_path, back_path, doc_type, user.name, user.cpf)
             app.logger.info(f"Resultado da validação: {validation_result['status']}")
             
             # Save document record
             if document:
-                document.file_path = file_path
-                document.document_type = form.document_type.data
+                document.front_file_path = front_path
+                document.back_file_path = back_path
+                document.file_path = front_path  # Para compatibilidade com código existente
+                document.document_type = doc_type
                 document.validation_status = validation_result['status']
                 document.validation_data = json.dumps(validation_result)
             else:
                 document = Document(
                     user_id=user.id,
-                    file_path=file_path,
-                    document_type=form.document_type.data,
-                    validation_status = validation_result['status'],
-                    validation_data = json.dumps(validation_result)
+                    front_file_path=front_path,
+                    back_file_path=back_path,
+                    file_path=front_path,  # Para compatibilidade com código existente
+                    document_type=doc_type,
+                    validation_status=validation_result['status'],
+                    validation_data=json.dumps(validation_result)
                 )
                 db.session.add(document)
             
