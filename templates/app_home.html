@@ -7,7 +7,7 @@
 <div class="app-container">
     <div class="app-welcome">
         <h2>Olá, {{ user.name.split()[0] }}!</h2>
-        <p class="app-fan-level">{{ user.fan_badge }}</p>
+        <p class="app-fan-level {% if user.fan_badge == 'Super Fã' %}badge-super-fan{% elif user.fan_badge == 'Fã Dedicado' %}badge-dedicated-fan{% elif user.fan_badge == 'Fã Regular' %}badge-regular-fan{% else %}badge-casual-fan{% endif %}">{{ user.fan_badge }}</p>
     </div>
     
     <div class="app-home-grid">
@@ -136,6 +136,26 @@
     background-color: #ffffff;
     border-radius: 20px;
     font-weight: 600;
+}
+
+.badge-super-fan {
+    background-color: #ffd700; /* Gold for Super Fãs */
+    color: #000;
+}
+
+.badge-dedicated-fan {
+    background-color: #c0c0c0; /* Silver for Fãs Dedicados */
+    color: #000;
+}
+
+.badge-regular-fan {
+    background-color: #cd7f32; /* Bronze for Fãs Regulares */
+    color: #000;
+}
+
+.badge-casual-fan {
+    background-color: #ffffff; /* White for Fãs Casuais */
+    color: #000;
 }
 
 .app-home-grid {

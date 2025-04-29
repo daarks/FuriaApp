@@ -134,21 +134,21 @@ class ContentValidationForm(FlaskForm):
 class QuizForm(FlaskForm):
     # Questions will be dynamically generated but here's a static example
     question_1 = RadioField(
-        'Which year was FURIA Esports founded?',
+        'Em que ano a FURIA Esports foi fundada?',
         choices=[('2017', '2017'), ('2018', '2018'), ('2019', '2019'), ('2020', '2020')],
         validators=[DataRequired()]
     )
     correct_1 = HiddenField(default='2017')
     
     question_2 = RadioField(
-        'Which game was FURIA\'s first professional team?',
+        'Qual foi o primeiro jogo com time profissional da FURIA?',
         choices=[('cs', 'Counter-Strike'), ('lol', 'League of Legends'), ('dota', 'Dota 2'), ('rainbow6', 'Rainbow Six Siege')],
         validators=[DataRequired()]
     )
     correct_2 = HiddenField(default='cs')
     
     question_3 = RadioField(
-        'Who is the founder of FURIA Esports?',
+        'Quem é o fundador da FURIA Esports?',
         choices=[
             ('fallen', 'Gabriel "FalleN" Toledo'), 
             ('jaime', 'Jaime Pádua'), 
@@ -160,7 +160,7 @@ class QuizForm(FlaskForm):
     correct_3 = HiddenField(default='andre')
     
     question_4 = RadioField(
-        'In which CS:GO Major did FURIA first participate?',
+        'Em qual Major de CS:GO a FURIA participou pela primeira vez?',
         choices=[
             ('katowice2019', 'IEM Katowice 2019'), 
             ('berlin2019', 'StarLadder Berlin 2019'), 
@@ -172,7 +172,7 @@ class QuizForm(FlaskForm):
     correct_4 = HiddenField(default='berlin2019')
     
     question_5 = RadioField(
-        'Which of these players has NEVER been part of FURIA\'s CS:GO roster?',
+        'Qual desses jogadores NUNCA fez parte do elenco de CS:GO da FURIA?',
         choices=[
             ('kscerato', 'Kaike "KSCERATO" Cerato'), 
             ('art', 'Andrei "arT" Piovezan'), 
@@ -183,4 +183,4 @@ class QuizForm(FlaskForm):
     )
     correct_5 = HiddenField(default='fer')
     
-    submit = SubmitField('Submit Quiz')
+    submit = SubmitField('Enviar Respostas')

@@ -1,0 +1,186 @@
+{% extends 'app_base.html' %}
+
+{% block title %}Loja - FURIA Fan App{% endblock %}
+{% block header_title %}Loja FURIA{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <div class="app-card">
+        <div class="app-card-header">
+            <h3>Recomendados para Você</h3>
+        </div>
+        <div class="app-card-body">
+            <div class="app-store-products">
+                {% for product in recommended_products %}
+                <div class="app-product-item">
+                    <div class="app-product-image">
+                        <i class="{{ product.icon }}"></i>
+                    </div>
+                    <div class="app-product-info">
+                        <div class="app-product-title">{{ product.name }}</div>
+                        <div class="app-product-price">R$ {{ product.price }}</div>
+                        <div class="app-product-description">{{ product.description }}</div>
+                    </div>
+                    <div class="app-product-action">
+                        <button class="app-btn app-btn-primary app-btn-sm">Comprar</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Camisetas Oficiais</h3>
+        </div>
+        <div class="app-card-body">
+            <div class="app-store-products">
+                {% for product in jersey_products %}
+                <div class="app-product-item">
+                    <div class="app-product-image">
+                        <i class="{{ product.icon }}"></i>
+                    </div>
+                    <div class="app-product-info">
+                        <div class="app-product-title">{{ product.name }}</div>
+                        <div class="app-product-price">R$ {{ product.price }}</div>
+                        <div class="app-product-description">{{ product.description }}</div>
+                    </div>
+                    <div class="app-product-action">
+                        <button class="app-btn app-btn-primary app-btn-sm">Comprar</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Acessórios</h3>
+        </div>
+        <div class="app-card-body">
+            <div class="app-store-products">
+                {% for product in accessory_products %}
+                <div class="app-product-item">
+                    <div class="app-product-image">
+                        <i class="{{ product.icon }}"></i>
+                    </div>
+                    <div class="app-product-info">
+                        <div class="app-product-title">{{ product.name }}</div>
+                        <div class="app-product-price">R$ {{ product.price }}</div>
+                        <div class="app-product-description">{{ product.description }}</div>
+                    </div>
+                    <div class="app-product-action">
+                        <button class="app-btn app-btn-primary app-btn-sm">Comprar</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Colecionáveis</h3>
+        </div>
+        <div class="app-card-body">
+            <div class="app-store-products">
+                {% for product in collectible_products %}
+                <div class="app-product-item">
+                    <div class="app-product-image">
+                        <i class="{{ product.icon }}"></i>
+                    </div>
+                    <div class="app-product-info">
+                        <div class="app-product-title">{{ product.name }}</div>
+                        <div class="app-product-price">R$ {{ product.price }}</div>
+                        <div class="app-product-description">{{ product.description }}</div>
+                    </div>
+                    <div class="app-product-action">
+                        <button class="app-btn app-btn-primary app-btn-sm">Comprar</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.app-store-products {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.app-product-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.app-product-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.app-product-image {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    margin-right: var(--spacing-md);
+    font-size: 1.5rem;
+}
+
+.app-product-info {
+    flex: 1;
+}
+
+.app-product-title {
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.app-product-price {
+    font-weight: 600;
+    color: #ffd700;
+    margin-bottom: 5px;
+}
+
+.app-product-description {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.app-product-action {
+    padding-left: var(--spacing-md);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add animations or other JavaScript functionality here
+    const buyButtons = document.querySelectorAll('.app-product-action button');
+    
+    buyButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const product = this.closest('.app-product-item');
+            const productName = product.querySelector('.app-product-title').textContent;
+            
+            // Show a mock notification
+            alert(`Produto ${productName} adicionado ao carrinho!\n\nEsta é uma aplicação de demonstração, portanto nenhuma compra real será processada.`);
+        });
+    });
+});
+</script>
+{% endblock %}
