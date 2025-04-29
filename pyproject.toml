@@ -17,6 +17,4 @@ dependencies = [
     "openai>=1.76.0",
     "google-generativeai>=0.8.5",
     "anthropic>=0.50.0",
-    "requests-oauthlib>=2.0.0",
-    "authlib>=1.5.2",
 ]
