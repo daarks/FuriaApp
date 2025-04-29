@@ -46,7 +46,7 @@
             <div class="app-card-body">
                 {% if user.lootbox_rewards %}
                     {% set rewards_json = user.lootbox_rewards|safe %}
-                    {% set rewards = rewards_json|replace("'", '"')|from_json if rewards_json else [] %}
+                    {% set rewards = rewards_json|from_json if rewards_json else [] %}
                     
                     {% if rewards|length > 0 %}
                         <div class="app-rewards-grid">

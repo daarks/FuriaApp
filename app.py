@@ -724,7 +724,18 @@ def fan_power():
         # Get all user data for fan power analysis
         social_media = SocialMedia.query.filter_by(user_id=user.id).first()
         content_links = ContentLink.query.filter_by(user_id=user.id).order_by(ContentLink.created_at.desc()).limit(5).all()
-        document = Document.query.filter_by(user_id=user.id).first()
+        
+        # Use a query que seleciona apenas as colunas necessárias sem front_file_path e back_file_path
+        document = db.session.query(
+            Document.id, 
+            Document.user_id, 
+            Document.document_type, 
+            Document.file_path,
+            Document.validation_status, 
+            Document.validation_data,
+            Document.created_at, 
+            Document.updated_at
+        ).filter_by(user_id=user.id).first()
         
         # Calculate fan power metrics (with error handling)
         try:
