@@ -127,8 +127,15 @@
                 </li>
             </ul>
             
-            <div class="app-mt-2 app-text-center">
-                <a href="{{ url_for('social_media') }}" class="app-btn app-btn-primary app-btn-block">Conectar Mais Redes</a>
+            <div class="app-mt-2">
+                <div class="app-btn-group">
+                    <a href="{{ url_for('social_media') }}" class="app-btn app-btn-outline app-btn-block">
+                        <i class="fas fa-link"></i> Conectar Manualmente
+                    </a>
+                    <a href="{{ url_for('social_oauth') }}" class="app-btn app-btn-primary app-btn-block">
+                        <i class="fas fa-plug"></i> Conectar via OAuth
+                    </a>
+                </div>
             </div>
         </div>
     </div>
