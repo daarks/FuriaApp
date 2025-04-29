@@ -150,12 +150,43 @@ def home_dashboard():
             session.pop('user_id', None)
             flash('Usuário não encontrado. Faça login novamente.', 'danger')
             return redirect(url_for('login'))
+            
+        # Get user interests to personalize events
+        interests = UserInterest.query.filter_by(user_id=user.id).all()
+        user_interests = [interest.interest for interest in interests]
+        
+        # All possible events - Fictícios para teste
+        all_events = [
+            {"date": "26 Abr", "title": "ESL One Rio 2024", "subtitle": "Rio de Janeiro, Brasil", "game": "CS:GO", "game_tag": "cs"},
+            {"date": "15 Mai", "title": "Rainbow Six Major - São Paulo 2024", "subtitle": "São Paulo, Brasil", "game": "R6 Siege", "game_tag": "rainbow6"},
+            {"date": "10 Mai", "title": "Free Fire World Series 2024", "subtitle": "Bangkok, Tailândia", "game": "Free Fire", "game_tag": "freefire"},
+            {"date": "20 Mai", "title": "VCT Americas 2024", "subtitle": "Los Angeles, EUA", "game": "Valorant", "game_tag": "valorant"},
+            {"date": "05 Jun", "title": "CBLOL Split 2 - 2024", "subtitle": "São Paulo, Brasil", "game": "League of Legends", "game_tag": "lol"},
+            {"date": "12 Jun", "title": "BLAST Premier Spring Finals 2024", "subtitle": "Londres, Reino Unido", "game": "CS:GO", "game_tag": "cs"},
+            {"date": "18 Jun", "title": "Apex Legends Global Series 2024", "subtitle": "Estocolmo, Suécia", "game": "Apex Legends", "game_tag": "apex"},
+            {"date": "22 Jun", "title": "Rocket League Championship Series 2024", "subtitle": "Dallas, EUA", "game": "Rocket League", "game_tag": "rocket_league"}
+        ]
+        
+        # Filter events based on user interests, if they have any
+        personalized_events = []
+        if user_interests:
+            for event in all_events:
+                if event["game_tag"] in user_interests:
+                    personalized_events.append(event)
+        
+        # If no events match or user has no interests, show some default events
+        if not personalized_events:
+            personalized_events = all_events[:3]
+        else:
+            # Limit to 3 events
+            personalized_events = personalized_events[:3]
+        
     except Exception as e:
         app.logger.error(f"Erro na página inicial: {str(e)}")
         flash('Ocorreu um erro ao acessar sua página inicial. Tente novamente.', 'danger')
         return redirect(url_for('login'))
     
-    return render_template('app_home.html', user=user, now=lambda: datetime.now())
+    return render_template('app_home.html', user=user, now=lambda: datetime.now(), events=personalized_events)
 
 @app.route('/profile')
 def profile():
