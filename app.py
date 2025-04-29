@@ -806,5 +806,83 @@ def quiz():
     return render_template('app_quiz.html', form=form, user=user, quiz_results=quiz_results)
 
 
+@app.route('/store')
+def store():
+    if 'user_id' not in session:
+        flash('Por favor, faça login primeiro.', 'warning')
+        return redirect(url_for('login'))
+    
+    try:
+        user = User.query.get(session['user_id'])
+        
+        # Get user interests to personalize product recommendations
+        interests = UserInterest.query.filter_by(user_id=user.id).all()
+        user_interests = [interest.interest for interest in interests]
+        
+        # Mock product data - in a real app this would come from a database
+        all_products = {
+            'jerseys': [
+                {'id': 'jersey1', 'name': 'Camisa FURIA CS:GO Pro Player 2024', 'price': '299,90', 'description': 'Camisa oficial do time de CS:GO da FURIA para a temporada 2024.', 'icon': 'fas fa-tshirt'},
+                {'id': 'jersey2', 'name': 'Camisa FURIA Valorant', 'price': '279,90', 'description': 'Camisa oficial do time de Valorant da FURIA.', 'icon': 'fas fa-tshirt'},
+                {'id': 'jersey3', 'name': 'Camisa FURIA Rainbow Six', 'price': '279,90', 'description': 'Camisa oficial do time de Rainbow Six da FURIA.', 'icon': 'fas fa-tshirt'},
+                {'id': 'jersey4', 'name': 'Camisa FURIA Free Fire', 'price': '259,90', 'description': 'Camisa oficial do time de Free Fire da FURIA.', 'icon': 'fas fa-tshirt'}
+            ],
+            'accessories': [
+                {'id': 'acc1', 'name': 'Mousepad FURIA XL', 'price': '149,90', 'description': 'Mousepad extra grande com bordas costuradas e superfície de alta precisão.', 'icon': 'fas fa-square'},
+                {'id': 'acc2', 'name': 'Boné FURIA', 'price': '99,90', 'description': 'Boné oficial FURIA com logo bordado.', 'icon': 'fas fa-hat-cowboy'},
+                {'id': 'acc3', 'name': 'Máscara FURIA', 'price': '49,90', 'description': 'Máscara facial com logo da FURIA.', 'icon': 'fas fa-mask'},
+                {'id': 'acc4', 'name': 'Garrafa FURIA', 'price': '79,90', 'description': 'Garrafa térmica com logo da FURIA.', 'icon': 'fas fa-flask'}
+            ],
+            'collectibles': [
+                {'id': 'col1', 'name': 'Miniaturas jogadores FURIA', 'price': '199,90', 'description': 'Kit com miniaturas dos jogadores da FURIA.', 'icon': 'fas fa-chess-pawn'},
+                {'id': 'col2', 'name': 'Pôster time FURIA CS:GO', 'price': '59,90', 'description': 'Pôster oficial do time de CS:GO da FURIA, tamanho A2.', 'icon': 'fas fa-image'},
+                {'id': 'col3', 'name': 'Caneca FURIA', 'price': '69,90', 'description': 'Caneca térmica com logo da FURIA.', 'icon': 'fas fa-mug-hot'},
+                {'id': 'col4', 'name': 'Pins colecionáveis FURIA', 'price': '29,90', 'description': 'Kit com 5 pins colecionáveis da FURIA.', 'icon': 'fas fa-thumbtack'}
+            ]
+        }
+        
+        # Filter products based on user interests
+        recommended_products = []
+        
+        # Map games to product types
+        game_to_products = {
+            'cs': ['jersey1', 'col1', 'col2'],
+            'valorant': ['jersey2', 'acc1'],
+            'rainbow6': ['jersey3', 'acc2'],
+            'freefire': ['jersey4', 'acc3'],
+        }
+        
+        # Add products based on user interests
+        for interest in user_interests:
+            if interest in game_to_products:
+                for product_id in game_to_products[interest]:
+                    # Find and add the product to recommendations
+                    for category, products in all_products.items():
+                        for product in products:
+                            if product['id'] == product_id and product not in recommended_products:
+                                recommended_products.append(product)
+        
+        # If no interests match or not enough recommendations, add some default products
+        if len(recommended_products) < 3:
+            default_products = [all_products['jerseys'][0], all_products['accessories'][0], all_products['collectibles'][0]]
+            for product in default_products:
+                if product not in recommended_products:
+                    recommended_products.append(product)
+        
+        # Limit recommendations to 4 products
+        recommended_products = recommended_products[:4]
+        
+        return render_template('app_store.html', 
+                              user=user,
+                              recommended_products=recommended_products,
+                              jersey_products=all_products['jerseys'],
+                              accessory_products=all_products['accessories'],
+                              collectible_products=all_products['collectibles'])
+    
+    except Exception as e:
+        app.logger.error(f"Error in store route: {str(e)}")
+        flash('Ocorreu um erro ao carregar a loja. Por favor, tente novamente.', 'danger')
+        return redirect(url_for('home_dashboard'))
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
