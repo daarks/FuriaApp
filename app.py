@@ -33,7 +33,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure file uploads
-app.config["UPLOAD_FOLDER"] = "uploads"
+app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB limit
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
@@ -229,7 +229,7 @@ def profile():
     social_media = SocialMedia.query.filter_by(user_id=user.id).first()
     
     # Get fan badge
-    fan_badge = user.fan_badge if user.fan_badge else "Fã Casual"
+    fan_badge = user.fan_badge if user.fan_badge else "Novo Fã"
     
     # Get player match
     player_match = user.player_match
