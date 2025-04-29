@@ -275,8 +275,7 @@ LOOTBOX_REWARDS = [
 
 def validate_document(file_path, user_name, user_cpf):
     """
-    Simulação de validação de documentos para funcionar localmente
-    sem depender da API OpenAI
+    Implementação avançada de validação de documentos com OCR usando OpenAI
     
     Args:
         file_path: Path to the uploaded document
@@ -287,9 +286,10 @@ def validate_document(file_path, user_name, user_cpf):
         dict: Validation result with status and message
     """
     import os
-    import random
+    import base64
+    from openai import OpenAI
     
-    logger.debug(f"Simulando validação de documento: {file_path}")
+    logger.debug(f"Validando documento com OCR via OpenAI: {file_path}")
     
     # Verificar se o arquivo existe
     if not os.path.exists(file_path):
@@ -311,85 +311,188 @@ def validate_document(file_path, user_name, user_cpf):
                 "message": "Formato de arquivo não suportado. Use JPG, PNG ou PDF.",
                 "data": {}
             }
-        
-        # Simulação de tempo de processamento para parecer real
-        import time
-        time.sleep(1.5)  # Simular o tempo de processamento da IA
-        
-        # Gerar uma probabilidade aleatória de sucesso (85% de chances de verificar)
-        success_chance = random.random() < 0.85
-        
-        if not success_chance:
-            # Simulação de falha na verificação
-            failure_reasons = [
-                "Não foi possível identificar o nome no documento",
-                "O documento está desfocado ou com baixa qualidade",
-                "O nome no documento não corresponde ao cadastrado no sistema",
-                "O tipo de documento não é aceito pelo sistema"
-            ]
             
+        # Carregar arquivo e converter para base64
+        try:
+            with open(file_path, "rb") as image_file:
+                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+                
+            if not base64_image:
+                logger.error("Arquivo vazio ou corrompido")
+                return {
+                    "status": "rejected",
+                    "message": "O arquivo parece estar vazio ou corrompido. Tente fazer upload novamente.",
+                    "data": {}
+                }
+        except Exception as file_error:
+            logger.error(f"Erro ao ler o arquivo: {str(file_error)}")
             return {
                 "status": "rejected",
-                "message": random.choice(failure_reasons),
-                "data": {
-                    "nome": None,
-                    "data_nascimento": None,
-                    "numero_documento": None,
-                    "tipo_documento": None,
-                    "cpf": None
-                }
+                "message": "Não foi possível ler o arquivo. Verifique se ele está corrompido.",
+                "data": {}
+            }
+            
+        # Verificar chave da API
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            logger.error("Chave da API OpenAI não configurada")
+            return {
+                "status": "rejected",
+                "message": "Configuração de validação de documentos indisponível no momento.",
+                "data": {}
+            }
+            
+        # Inicializar cliente OpenAI com a chave da API
+        try:
+            client = OpenAI(api_key=api_key)
+        except Exception as client_error:
+            logger.error(f"Erro ao inicializar cliente OpenAI: {str(client_error)}")
+            return {
+                "status": "rejected",
+                "message": "Serviço de validação indisponível no momento.",
+                "data": {}
             }
         
-        # Simular extração bem-sucedida do nome e CPF
-        # Extraímos o nome do usuário e modificamos um pouco para parecer que veio do OCR
-        name_parts = user_name.split()
-        if len(name_parts) > 2:
-            # Para nomes com mais de 2 partes, podemos omitir uma aleatoriamente
-            del name_parts[random.randint(1, len(name_parts)-2)]
+        # Preparar o prompt para extração de dados do documento
+        prompt = """
+        Esta é uma imagem de um documento de identidade (RG, CNH ou Passaporte). 
+        Por favor, extraia as seguintes informações:
+        1. Nome completo
+        2. Data de nascimento (no formato DD/MM/AAAA)
+        3. Número do documento (se visível)
+        4. Tipo de documento (RG, CNH ou Passaporte)
+        5. CPF (se visível)
         
-        extracted_name = " ".join(name_parts)
-        
-        # Gerar um CPF extraído (o real com alguns dígitos alterados)
-        cpf_clean = str(user_cpf).replace(".", "").replace("-", "")
-        extracted_cpf = cpf_clean  # Por padrão, usamos o CPF correto
-        
-        # Em 25% dos casos, modificamos alguns dígitos do CPF para simular erro de OCR
-        if random.random() < 0.25:
-            cpf_list = list(cpf_clean)
-            # Altera um dígito aleatório
-            pos = random.randint(0, len(cpf_list)-1)
-            cpf_list[pos] = str(random.randint(0, 9))
-            extracted_cpf = "".join(cpf_list)
-        
-        # Formatar o CPF para exibição
-        formatted_cpf = f"{extracted_cpf[:3]}.{extracted_cpf[3:6]}.{extracted_cpf[6:9]}-{extracted_cpf[9:]}"
-        
-        # Dados do documento extraídos (simulados)
-        extracted_data = {
-            "nome": extracted_name,
-            "data_nascimento": "01/01/1990",  # Data de nascimento simulada
-            "numero_documento": "".join([str(random.randint(0, 9)) for _ in range(9)]),
-            "tipo_documento": "RG" if random.random() < 0.5 else "CNH",
-            "cpf": formatted_cpf
+        Responda APENAS com um JSON no seguinte formato:
+        {
+            "nome": "NOME COMPLETO EXTRAÍDO",
+            "data_nascimento": "DD/MM/AAAA",
+            "numero_documento": "NÚMERO DO DOCUMENTO",
+            "tipo_documento": "TIPO DO DOCUMENTO",
+            "cpf": "NÚMERO DO CPF (SE VISÍVEL)"
         }
         
-        # Verificar correspondência entre CPF extraído e do usuário
-        cpf_match = cpf_clean == extracted_cpf
+        Se alguma informação não for visível ou legível, use null para o valor correspondente.
+        Se a imagem não for claramente um documento de identidade, responda com {"erro": "Não é um documento válido"}.
+        """
         
-        # Se o CPF não corresponder, rejeitar o documento
-        if not cpf_match:
+        logger.debug("Enviando imagem para análise com OCR...")
+        
+        # Definir o tipo MIME correto com base na extensão do arquivo
+        content_type = "image/jpeg"
+        if file_ext.lower() == '.png':
+            content_type = "image/png"
+        elif file_ext.lower() == '.pdf':
+            content_type = "application/pdf"
+            
+        # Chamar a API da OpenAI para análise da imagem
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o",  # A versão mais recente com suporte a visão
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{content_type};base64,{base64_image}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=500
+            )
+            
+            # Extrair a resposta
+            response_text = response.choices[0].message.content
+            logger.debug(f"Resposta do OCR: {response_text}")
+            
+        except Exception as api_error:
+            logger.error(f"Erro na chamada da API OpenAI: {str(api_error)}")
             return {
                 "status": "rejected",
-                "message": "O CPF no documento não corresponde ao cadastrado no sistema",
+                "message": "Falha na análise do documento. Serviço temporariamente indisponível.",
+                "data": {}
+            }
+        
+        # Processar a resposta
+        import json
+        try:
+            # Tentar extrair apenas o JSON da resposta
+            import re
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                extracted_data = json.loads(json_match.group(0))
+            else:
+                extracted_data = json.loads(response_text)
+                
+            if "erro" in extracted_data:
+                return {
+                    "status": "rejected",
+                    "message": f"Falha na análise: {extracted_data['erro']}",
+                    "data": {}
+                }
+                
+        except json.JSONDecodeError as e:
+            logger.error(f"Erro ao decodificar JSON: {e}")
+            return {
+                "status": "rejected",
+                "message": "Falha ao processar o documento. O documento está nítido e legível?",
+                "data": {}
+            }
+            
+        # Validar os dados extraídos
+        if not extracted_data.get("nome"):
+            return {
+                "status": "rejected",
+                "message": "Não foi possível identificar o nome no documento",
                 "data": extracted_data
             }
+            
+        # Comparar nome extraído com o nome do usuário
+        user_name_normalized = " ".join(part.lower() for part in user_name.split())
+        extracted_name_normalized = " ".join(part.lower() for part in str(extracted_data.get("nome", "")).split())
         
-        # Documento verificado com sucesso
-        return {
-            "status": "verified",
-            "message": "Documento validado com sucesso",
-            "data": extracted_data
-        }
+        # Verificar correspondência de nome com tolerância
+        name_parts_user = set(user_name_normalized.split())
+        name_parts_extracted = set(extracted_name_normalized.split())
+        
+        # Calcular interseção de nomes
+        common_parts = name_parts_user.intersection(name_parts_extracted)
+        name_similarity = len(common_parts) / max(len(name_parts_user), 1)
+        
+        logger.debug(f"Similaridade de nome: {name_similarity}")
+        
+        # Verificar o CPF se estiver presente (alguns documentos podem não exibir CPF)
+        cpf_match = False
+        if extracted_data.get("cpf"):
+            user_cpf_clean = str(user_cpf).replace(".", "").replace("-", "")
+            extracted_cpf_clean = str(extracted_data["cpf"]).replace(".", "").replace("-", "")
+            cpf_match = user_cpf_clean == extracted_cpf_clean
+            logger.debug(f"CPF extraído: {extracted_cpf_clean}, CPF do usuário: {user_cpf_clean}, Match: {cpf_match}")
+            
+        # Determinar resultado com base na correspondência do nome e CPF
+        if name_similarity >= 0.7:  # Se pelo menos 70% do nome corresponder
+            if extracted_data.get("cpf") and not cpf_match:
+                return {
+                    "status": "rejected",
+                    "message": "O CPF no documento não corresponde ao cadastrado no sistema",
+                    "data": extracted_data
+                }
+            return {
+                "status": "verified",
+                "message": "Documento validado com sucesso",
+                "data": extracted_data
+            }
+        else:
+            return {
+                "status": "rejected",
+                "message": "O nome no documento não corresponde ao cadastrado no sistema",
+                "data": extracted_data
+            }
             
     except Exception as e:
         logger.error(f"Erro na validação do documento: {str(e)}")
