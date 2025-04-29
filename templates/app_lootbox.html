@@ -50,7 +50,7 @@
                     
                     {% if rewards|length > 0 %}
                         <div class="app-rewards-grid">
-                            {% for reward in rewards_json %}
+                            {% for reward in rewards %}
                                 <div class="app-reward-item app-reward-{{ reward.rarity }}">
                                     <div class="app-reward-icon">
                                         {% if reward.type == 'wallpaper' %}

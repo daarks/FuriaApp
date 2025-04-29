@@ -41,6 +41,16 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 db.init_app(app)
 csrf = CSRFProtect(app)
 
+# Custom Jinja filters
+@app.template_filter('from_json')
+def from_json(value):
+    if not value:
+        return []
+    try:
+        return json.loads(value)
+    except (ValueError, TypeError):
+        return []
+
 # Import models and forms
 with app.app_context():
     from models import User, UserInterest, Document, SocialMedia, ContentLink, Quiz, Calendar
@@ -861,58 +871,91 @@ def store():
         interests = UserInterest.query.filter_by(user_id=user.id).all()
         user_interests = [interest.interest for interest in interests]
         
+        # Get user's fan level to adjust recommendations
+        fan_level = user.fan_badge if user.fan_badge else "Fã Casual"
+        
+        # Get user's purchase history
+        purchase_history = []
+        if user.purchases:
+            try:
+                purchase_history = json.loads(user.purchases)
+            except (json.JSONDecodeError, TypeError):
+                purchase_history = []
+        
         # Mock product data - in a real app this would come from a database
         all_products = {
             'jerseys': [
-                {'id': 'jersey1', 'name': 'Camisa FURIA CS:GO Pro Player 2024', 'price': '299,90', 'description': 'Camisa oficial do time de CS:GO da FURIA para a temporada 2024.', 'icon': 'fas fa-tshirt'},
-                {'id': 'jersey2', 'name': 'Camisa FURIA Valorant', 'price': '279,90', 'description': 'Camisa oficial do time de Valorant da FURIA.', 'icon': 'fas fa-tshirt'},
-                {'id': 'jersey3', 'name': 'Camisa FURIA Rainbow Six', 'price': '279,90', 'description': 'Camisa oficial do time de Rainbow Six da FURIA.', 'icon': 'fas fa-tshirt'},
-                {'id': 'jersey4', 'name': 'Camisa FURIA Free Fire', 'price': '259,90', 'description': 'Camisa oficial do time de Free Fire da FURIA.', 'icon': 'fas fa-tshirt'}
+                {'id': 'jersey1', 'name': 'Camisa FURIA CS:GO Pro Player 2024', 'price': '299,90', 'description': 'Camisa oficial do time de CS:GO da FURIA para a temporada 2024.', 'icon': 'fas fa-tshirt', 'games': ['cs'], 'fan_level': 'Super Fã', 'score': 0},
+                {'id': 'jersey2', 'name': 'Camisa FURIA Valorant', 'price': '279,90', 'description': 'Camisa oficial do time de Valorant da FURIA.', 'icon': 'fas fa-tshirt', 'games': ['valorant'], 'fan_level': 'Fã Dedicado', 'score': 0},
+                {'id': 'jersey3', 'name': 'Camisa FURIA Rainbow Six', 'price': '279,90', 'description': 'Camisa oficial do time de Rainbow Six da FURIA.', 'icon': 'fas fa-tshirt', 'games': ['rainbow6'], 'fan_level': 'Fã Dedicado', 'score': 0},
+                {'id': 'jersey4', 'name': 'Camisa FURIA Free Fire', 'price': '259,90', 'description': 'Camisa oficial do time de Free Fire da FURIA.', 'icon': 'fas fa-tshirt', 'games': ['freefire'], 'fan_level': 'Fã Regular', 'score': 0}
             ],
             'accessories': [
-                {'id': 'acc1', 'name': 'Mousepad FURIA XL', 'price': '149,90', 'description': 'Mousepad extra grande com bordas costuradas e superfície de alta precisão.', 'icon': 'fas fa-square'},
-                {'id': 'acc2', 'name': 'Boné FURIA', 'price': '99,90', 'description': 'Boné oficial FURIA com logo bordado.', 'icon': 'fas fa-hat-cowboy'},
-                {'id': 'acc3', 'name': 'Máscara FURIA', 'price': '49,90', 'description': 'Máscara facial com logo da FURIA.', 'icon': 'fas fa-mask'},
-                {'id': 'acc4', 'name': 'Garrafa FURIA', 'price': '79,90', 'description': 'Garrafa térmica com logo da FURIA.', 'icon': 'fas fa-flask'}
+                {'id': 'acc1', 'name': 'Mousepad FURIA XL Gamer Pro', 'price': '149,90', 'description': 'Mousepad extra grande com bordas costuradas e superfície de alta precisão.', 'icon': 'fas fa-square', 'games': ['cs', 'valorant'], 'fan_level': 'Fã Dedicado', 'score': 0},
+                {'id': 'acc2', 'name': 'Boné FURIA Snapback', 'price': '99,90', 'description': 'Boné oficial FURIA com logo bordado.', 'icon': 'fas fa-hat-cowboy', 'games': ['cs', 'rainbow6'], 'fan_level': 'Fã Regular', 'score': 0},
+                {'id': 'acc3', 'name': 'Máscara FURIA Edição Especial', 'price': '49,90', 'description': 'Máscara facial com logo da FURIA.', 'icon': 'fas fa-mask', 'games': ['freefire', 'lol'], 'fan_level': 'Fã Casual', 'score': 0},
+                {'id': 'acc4', 'name': 'Garrafa FURIA Térmica', 'price': '79,90', 'description': 'Garrafa térmica com logo da FURIA.', 'icon': 'fas fa-flask', 'games': ['cs', 'valorant', 'rainbow6', 'freefire'], 'fan_level': 'Fã Casual', 'score': 0}
             ],
             'collectibles': [
-                {'id': 'col1', 'name': 'Miniaturas jogadores FURIA', 'price': '199,90', 'description': 'Kit com miniaturas dos jogadores da FURIA.', 'icon': 'fas fa-chess-pawn'},
-                {'id': 'col2', 'name': 'Pôster time FURIA CS:GO', 'price': '59,90', 'description': 'Pôster oficial do time de CS:GO da FURIA, tamanho A2.', 'icon': 'fas fa-image'},
-                {'id': 'col3', 'name': 'Caneca FURIA', 'price': '69,90', 'description': 'Caneca térmica com logo da FURIA.', 'icon': 'fas fa-mug-hot'},
-                {'id': 'col4', 'name': 'Pins colecionáveis FURIA', 'price': '29,90', 'description': 'Kit com 5 pins colecionáveis da FURIA.', 'icon': 'fas fa-thumbtack'}
+                {'id': 'col1', 'name': 'Miniaturas Jogadores FURIA CS:GO', 'price': '199,90', 'description': 'Kit com miniaturas dos jogadores da FURIA.', 'icon': 'fas fa-chess-pawn', 'games': ['cs'], 'fan_level': 'Super Fã', 'score': 0},
+                {'id': 'col2', 'name': 'Pôster Time FURIA CS:GO 2024', 'price': '59,90', 'description': 'Pôster oficial do time de CS:GO da FURIA, tamanho A2.', 'icon': 'fas fa-image', 'games': ['cs'], 'fan_level': 'Fã Regular', 'score': 0},
+                {'id': 'col3', 'name': 'Caneca FURIA Personalizada', 'price': '69,90', 'description': 'Caneca térmica com logo da FURIA.', 'icon': 'fas fa-mug-hot', 'games': ['cs', 'valorant', 'rainbow6', 'freefire', 'lol'], 'fan_level': 'Fã Casual', 'score': 0},
+                {'id': 'col4', 'name': 'Pins Colecionáveis FURIA', 'price': '29,90', 'description': 'Kit com 5 pins colecionáveis da FURIA.', 'icon': 'fas fa-thumbtack', 'games': ['cs', 'valorant', 'rainbow6', 'freefire', 'lol'], 'fan_level': 'Fã Casual', 'score': 0}
             ]
         }
         
-        # Filter products based on user interests
-        recommended_products = []
+        # Calculate recommendation score for each product
+        for category, products in all_products.items():
+            for product in products:
+                # Game interests match (highest weight)
+                game_match = sum(1 for game in product['games'] if game in user_interests)
+                product['score'] += game_match * 10
+                
+                # Fan level match
+                fan_levels = {"Super Fã": 4, "Fã Dedicado": 3, "Fã Regular": 2, "Fã Casual": 1}
+                user_fan_level = fan_levels.get(fan_level, 1)
+                product_fan_level = fan_levels.get(product['fan_level'], 1)
+                
+                # Prefer products that match the user's fan level
+                if user_fan_level >= product_fan_level:
+                    product['score'] += 5
+                
+                # Boost products based on purchase history
+                if category == 'jerseys' and 'team_jersey' in purchase_history:
+                    product['score'] += 3
+                if category == 'accessories' and 'team_merch' in purchase_history:
+                    product['score'] += 3
+                if category == 'collectibles' and 'team_merch' in purchase_history:
+                    product['score'] += 2
         
-        # Map games to product types
-        game_to_products = {
-            'cs': ['jersey1', 'col1', 'col2'],
-            'valorant': ['jersey2', 'acc1'],
-            'rainbow6': ['jersey3', 'acc2'],
-            'freefire': ['jersey4', 'acc3'],
-        }
+        # Flatten the products list and sort by score
+        all_products_list = []
+        for category, products in all_products.items():
+            all_products_list.extend(products)
         
-        # Add products based on user interests
-        for interest in user_interests:
-            if interest in game_to_products:
-                for product_id in game_to_products[interest]:
-                    # Find and add the product to recommendations
-                    for category, products in all_products.items():
-                        for product in products:
-                            if product['id'] == product_id and product not in recommended_products:
-                                recommended_products.append(product)
+        # Sort by score (descending)
+        all_products_list.sort(key=lambda x: x['score'], reverse=True)
         
-        # If no interests match or not enough recommendations, add some default products
-        if len(recommended_products) < 3:
-            default_products = [all_products['jerseys'][0], all_products['accessories'][0], all_products['collectibles'][0]]
-            for product in default_products:
-                if product not in recommended_products:
-                    recommended_products.append(product)
+        # Get top recommendations
+        recommended_products = all_products_list[:4]
         
-        # Limit recommendations to 4 products
-        recommended_products = recommended_products[:4]
+        # Ensure we have at least one product from each category
+        categories_in_recommendations = set(p['id'].split('_')[0].rstrip('0123456789') for p in recommended_products)
+        if len(categories_in_recommendations) < 3 and len(recommended_products) < 4:
+            for category_name, products in all_products.items():
+                category_prefix = category_name.rstrip('s')  # Remove plural 's'
+                if category_prefix not in categories_in_recommendations and products:
+                    # Add the highest-scored product from this missing category
+                    best_product = max(products, key=lambda x: x['score'])
+                    if best_product not in recommended_products:
+                        recommended_products.append(best_product)
+                        categories_in_recommendations.add(category_prefix)
+                        if len(recommended_products) >= 4:
+                            break
+        
+        # Sort each category by score for display
+        for category, products in all_products.items():
+            all_products[category] = sorted(products, key=lambda x: x['score'], reverse=True)
         
         return render_template('app_store.html', 
                               user=user,
