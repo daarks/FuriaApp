@@ -424,9 +424,9 @@ def validate_document(file_path, user_name, user_cpf):
         logger.debug("Configurando cliente Gemini")
         genai.configure(api_key=api_key)
         
-        # Obter modelo Gemini Pro Vision
-        logger.debug("Obtendo modelo Gemini Pro Vision")
-        model = genai.GenerativeModel('gemini-pro-vision')
+        # Obter modelo Gemini mais recente
+        logger.debug("Obtendo modelo Gemini 1.5 Flash (modelo atual)")
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         # Prompt para análise do documento
         prompt = """
@@ -471,13 +471,21 @@ def validate_document(file_path, user_name, user_cpf):
             logger.debug(f"Resposta da API Gemini: {response_text}")
         except Exception as gen_error:
             logger.error(f"Erro específico na geração de conteúdo: {str(gen_error)}")
-            # Se houver erro na geração, usar o fallback
-            return _document_validation_fallback(file_path, user_name, user_cpf)
+            # Registrar o erro e rejeitar
+            return {
+                "status": "rejected",
+                "message": f"Erro na análise do documento: {str(gen_error)}",
+                "data": {}
+            }
         
     except Exception as api_error:
         logger.error(f"Erro ao chamar a API Gemini: {str(api_error)}")
-        # Em caso de falha, usar algoritmo de fallback
-        return _document_validation_fallback(file_path, user_name, user_cpf)
+        # Registrar o erro e rejeitar
+        return {
+            "status": "rejected",
+            "message": f"Erro na comunicação com o serviço de validação: {str(api_error)}",
+            "data": {}
+        }
     
     # 5. Processar os dados extraídos
     try:
