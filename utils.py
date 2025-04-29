@@ -353,7 +353,9 @@ def validate_document(file_path, user_name, user_cpf):
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": f"data:image/{file_ext[1:]};base64,{base64_image}"
+                                "url": f"data:image/jpeg;base64,{base64_image}" if file_ext.lower() in ['.jpg', '.jpeg'] else
+                                       f"data:image/png;base64,{base64_image}" if file_ext.lower() == '.png' else
+                                       f"data:application/pdf;base64,{base64_image}"
                             }
                         }
                     ]
