@@ -593,39 +593,30 @@ def calendar():
     favorites = Calendar.query.filter_by(user_id=user.id, is_favorite=True).all()
     favorite_ids = [favorite.event_id for favorite in favorites]
     
-    # Eventos de esports atuais e futuros (fictícios para 2024-2025)
+    # Eventos de esports futuros (fictícios para 2025)
     all_events = [
-        # Maio 2024
-        {"id": "vct_americas_2024", "date": "2024-05-20", "title": "VCT Americas 2024", "location": "Los Angeles, EUA", "game": "Valorant", "game_tag": "valorant", "description": "Campeonato regional de Valorant com as melhores equipes das Américas, incluindo FURIA."},
-        {"id": "msi_2024", "date": "2024-05-25", "title": "Mid-Season Invitational 2024", "location": "Seul, Coreia do Sul", "game": "League of Legends", "game_tag": "lol", "description": "Competição internacional de meio de temporada de LoL."},
-        {"id": "freefire_ws_2024", "date": "2024-05-10", "title": "Free Fire World Series 2024", "location": "Bangkok, Tailândia", "game": "Free Fire", "game_tag": "freefire", "description": "O maior torneio mundial de Free Fire."},
+        # Maio 2025
+        {"id": "esl_rio_2025", "date": "2025-05-15", "title": "ESL One Rio 2025", "location": "Rio de Janeiro, Brasil", "game": "CS:GO", "game_tag": "cs", "description": "Counter-Strike major tournament no Rio de Janeiro com participação da FURIA."},
+        {"id": "r6_major_sao_paulo_2025", "date": "2025-05-22", "title": "Rainbow Six Major - São Paulo 2025", "location": "São Paulo, Brasil", "game": "Rainbow Six Siege", "game_tag": "rainbow6", "description": "Major de Rainbow Six sediado em São Paulo com times brasileiros."},
+        {"id": "ff_world_series_2025", "date": "2025-05-29", "title": "Free Fire World Series 2025", "location": "Bangkok, Tailândia", "game": "Free Fire", "game_tag": "freefire", "description": "Campeonato mundial de Free Fire reunindo os melhores times."},
         
-        # Junho 2024
-        {"id": "cblol_split2_2024", "date": "2024-06-05", "title": "CBLOL Split 2 - 2024", "location": "São Paulo, Brasil", "game": "League of Legends", "game_tag": "lol", "description": "Segunda etapa do Campeonato Brasileiro de League of Legends."},
-        {"id": "esl_one_bh_2024", "date": "2024-06-12", "title": "ESL One Belo Horizonte 2024", "location": "Belo Horizonte, Brasil", "game": "CS:GO", "game_tag": "cs", "description": "Torneio internacional de CS:GO sediado no Brasil."},
-        {"id": "blast_premier_spring_2024", "date": "2024-06-12", "title": "BLAST Premier Spring Finals 2024", "location": "Londres, Reino Unido", "game": "CS:GO", "game_tag": "cs", "description": "Finais da temporada Spring da BLAST Premier."},
-        {"id": "apex_global_series_2024", "date": "2024-06-18", "title": "Apex Legends Global Series 2024", "location": "Estocolmo, Suécia", "game": "Apex Legends", "game_tag": "apex", "description": "Competição mundial de Apex Legends."},
-        {"id": "rlcs_2024", "date": "2024-06-22", "title": "Rocket League Championship Series 2024", "location": "Dallas, EUA", "game": "Rocket League", "game_tag": "rocket_league", "description": "Campeonato mundial oficial de Rocket League."},
+        # Junho 2025
+        {"id": "vct_americas_2025", "date": "2025-06-05", "title": "VCT Americas 2025", "location": "Los Angeles, EUA", "game": "Valorant", "game_tag": "valorant", "description": "Etapa regional das Américas do Valorant Champions Tour."},
+        {"id": "cblol_split2_2025", "date": "2025-06-12", "title": "CBLOL Split 2 - 2025", "location": "São Paulo, Brasil", "game": "League of Legends", "game_tag": "lol", "description": "Segunda etapa do Campeonato Brasileiro de League of Legends."},
+        {"id": "blast_premier_summer_2025", "date": "2025-06-19", "title": "BLAST Premier Summer Finals 2025", "location": "Lisboa, Portugal", "game": "CS:GO", "game_tag": "cs", "description": "Finais da temporada de verão do circuito BLAST Premier."},
+        {"id": "apex_global_series_2025", "date": "2025-06-26", "title": "Apex Legends Global Series 2025", "location": "Estocolmo, Suécia", "game": "Apex Legends", "game_tag": "apex", "description": "Competição mundial de Apex Legends reunindo as melhores equipes."},
         
-        # Julho 2024
-        {"id": "valorant_masters_2024", "date": "2024-07-10", "title": "Valorant Masters Shanghai 2024", "location": "Shanghai, China", "game": "Valorant", "game_tag": "valorant", "description": "Segundo Masters internacional de Valorant da temporada."},
-        {"id": "iem_cologne_2024", "date": "2024-07-15", "title": "IEM Cologne 2024", "location": "Colônia, Alemanha", "game": "CS:GO", "game_tag": "cs", "description": "Um dos torneios mais prestigiados do calendário de CS:GO."},
+        # Julho 2025
+        {"id": "rlcs_world_2025", "date": "2025-07-03", "title": "Rocket League World Championship 2025", "location": "Tokyo, Japão", "game": "Rocket League", "game_tag": "rocket_league", "description": "Campeonato mundial de Rocket League em Tokyo."},
+        {"id": "furia_invitational_2025", "date": "2025-07-10", "title": "FURIA Invitational 2025", "location": "São Paulo, Brasil", "game": "Multi-Game", "game_tag": "cs", "description": "Torneio multi-game organizado pela FURIA Esports com equipes convidadas."},
+        {"id": "game_changers_2025", "date": "2025-07-17", "title": "Game Changers Championship 2025", "location": "Berlin, Alemanha", "game": "Valorant", "game_tag": "valorant", "description": "Campeonato feminino de Valorant com a participação da FURIA Fe."},
+        {"id": "pubg_global_2025", "date": "2025-07-24", "title": "PUBG Global Championship 2025", "location": "Seoul, Coreia do Sul", "game": "PUBG", "game_tag": "pubg", "description": "Campeonato mundial de PUBG com as melhores equipes do mundo."},
+        {"id": "copa_brasil_ff_2025", "date": "2025-07-31", "title": "Copa Brasil de Free Fire 2025", "location": "Rio de Janeiro, Brasil", "game": "Free Fire", "game_tag": "freefire", "description": "Competição nacional de Free Fire com os melhores times brasileiros."},
         
-        # Agosto 2024
-        {"id": "r6_major_saopaulo_2024", "date": "2024-08-05", "title": "Rainbow Six Major São Paulo 2024", "location": "São Paulo, Brasil", "game": "Rainbow Six Siege", "game_tag": "rainbow6", "description": "Major de R6 sediado no Brasil com a participação da FURIA."},
-        {"id": "fortnite_invitational_2024", "date": "2024-08-15", "title": "Fortnite Championship Series Invitational", "location": "Atlanta, EUA", "game": "Fortnite", "game_tag": "fortnite", "description": "Campeonato por convite dos melhores jogadores de Fortnite."},
-        
-        # Setembro 2024
-        {"id": "overwatch_contenders_2024", "date": "2024-09-03", "title": "Overwatch Contenders 2024 - Season 2", "location": "Online", "game": "Overwatch", "game_tag": "overwatch", "description": "Segunda temporada do circuito de base do Overwatch."},
-        {"id": "lol_worlds_2024", "date": "2024-09-25", "title": "League of Legends World Championship 2024", "location": "Diversas cidades, Japão", "game": "League of Legends", "game_tag": "lol", "description": "Campeonato Mundial de League of Legends."},
-        
-        # Outubro 2024
-        {"id": "valorant_champions_2024", "date": "2024-10-10", "title": "Valorant Champions 2024", "location": "Berlim, Alemanha", "game": "Valorant", "game_tag": "valorant", "description": "Campeonato mundial de Valorant que encerra a temporada."},
-        {"id": "blast_premier_fall_2024", "date": "2024-10-20", "title": "BLAST Premier Fall Finals 2024", "location": "Copenhague, Dinamarca", "game": "CS:GO", "game_tag": "cs", "description": "Finais da temporada Fall da BLAST Premier."},
-        
-        # Novembro 2024
-        {"id": "cs_major_fall_2024", "date": "2024-11-04", "title": "CS Major Fall 2024", "location": "Estocolmo, Suécia", "game": "CS:GO", "game_tag": "cs", "description": "Segundo Major de CS de 2024."},
-        {"id": "freefire_pro_league_2024", "date": "2024-11-15", "title": "Free Fire Pro League Brasil - Grande Final", "location": "São Paulo, Brasil", "game": "Free Fire", "game_tag": "freefire", "description": "Grande final da liga brasileira de Free Fire."}
+        # Agosto 2025
+        {"id": "valorant_masters_2025", "date": "2025-08-07", "title": "Valorant Masters Tokyo 2025", "location": "Tokyo, Japão", "game": "Valorant", "game_tag": "valorant", "description": "Torneio internacional de Valorant reunindo times de todas as regiões."},
+        {"id": "iem_cologne_2025", "date": "2025-08-14", "title": "IEM Cologne 2025", "location": "Colônia, Alemanha", "game": "CS:GO", "game_tag": "cs", "description": "Um dos torneios mais prestigiosos do calendário de CS:GO."},
+        {"id": "overwatch_world_cup_2025", "date": "2025-08-21", "title": "Overwatch World Cup 2025", "location": "Paris, França", "game": "Overwatch", "game_tag": "overwatch", "description": "Copa do Mundo de Overwatch com seleções nacionais."}
     ]
     
     # Filtrar eventos com base nos interesses do usuário
