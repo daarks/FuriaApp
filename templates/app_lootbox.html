@@ -45,9 +45,10 @@
             </div>
             <div class="app-card-body">
                 {% if user.lootbox_rewards %}
-                    {% set rewards_json = user.lootbox_rewards|tojson|safe if user.lootbox_rewards else [] %}
+                    {% set rewards_json = user.lootbox_rewards|safe %}
+                    {% set rewards = rewards_json|replace("'", '"')|from_json if rewards_json else [] %}
                     
-                    {% if rewards_json|length > 0 %}
+                    {% if rewards|length > 0 %}
                         <div class="app-rewards-grid">
                             {% for reward in rewards_json %}
                                 <div class="app-reward-item app-reward-{{ reward.rarity }}">

@@ -289,50 +289,61 @@ def upload_profile_photo():
 @app.route('/document_validation', methods=['GET', 'POST'])
 def document_validation():
     if 'user_id' not in session:
-        flash('Please login first.', 'warning')
+        flash('Por favor, faça login primeiro.', 'warning')
         return redirect(url_for('login'))
     
-    form = DocumentUploadForm()
-    user = User.query.get(session['user_id'])
-    
-    if form.validate_on_submit():
-        # Get the uploaded file
-        document_file = form.document.data
-        filename = secure_filename(document_file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_{filename}")
-        document_file.save(file_path)
+    try:
+        form = DocumentUploadForm()
+        user = User.query.get(session['user_id'])
         
-        # Simulate document validation
-        validation_result = validate_document(file_path, user.name, user.cpf)
+        if form.validate_on_submit():
+            # Create uploads directory if it doesn't exist
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+            
+            # Get the uploaded file
+            document_file = form.document.data
+            filename = secure_filename(document_file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_{filename}")
+            document_file.save(file_path)
+            
+            app.logger.debug(f"Validando documento com IA: {file_path}")
+            
+            # Simulate document validation
+            validation_result = validate_document(file_path, user.name, user.cpf)
+            
+            # Save document record
+            document = Document.query.filter_by(user_id=user.id).first()
+            if document:
+                document.file_path = file_path
+                document.document_type = form.document_type.data
+                document.validation_status = validation_result['status']
+                document.validation_data = json.dumps(validation_result)
+            else:
+                document = Document(
+                    user_id=user.id,
+                    file_path=file_path,
+                    document_type=form.document_type.data,
+                    validation_status=validation_result['status'],
+                    validation_data=json.dumps(validation_result)
+                )
+                db.session.add(document)
+            
+            db.session.commit()
+            
+            if validation_result['status'] == 'verified':
+                flash('Documento validado com sucesso!', 'success')
+            else:
+                flash(f'Falha na validação do documento: {validation_result["message"]}', 'danger')
+            
+            return redirect(url_for('document_validation'))
         
-        # Save document record
         document = Document.query.filter_by(user_id=user.id).first()
-        if document:
-            document.file_path = file_path
-            document.document_type = form.document_type.data
-            document.validation_status = validation_result['status']
-            document.validation_data = json.dumps(validation_result)
-        else:
-            document = Document(
-                user_id=user.id,
-                file_path=file_path,
-                document_type=form.document_type.data,
-                validation_status=validation_result['status'],
-                validation_data=json.dumps(validation_result)
-            )
-            db.session.add(document)
-        
-        db.session.commit()
-        
-        if validation_result['status'] == 'verified':
-            flash('Document successfully validated!', 'success')
-        else:
-            flash(f'Document validation failed: {validation_result["message"]}', 'danger')
-        
-        return redirect(url_for('profile'))
+        return render_template('app_document_validation.html', form=form, document=document)
     
-    document = Document.query.filter_by(user_id=user.id).first()
-    return render_template('app_document_validation.html', form=form, document=document)
+    except Exception as e:
+        app.logger.error(f"Erro na validação de documentos: {str(e)}")
+        flash('Ocorreu um erro ao processar o documento. Por favor, tente novamente.', 'danger')
+        return redirect(url_for('profile'))
 
 @app.route('/social_media_remove/<platform>')
 def social_media_remove(platform):
