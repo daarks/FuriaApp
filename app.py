@@ -54,7 +54,6 @@ def from_json(value):
 # Import models and forms
 with app.app_context():
     from models import User, UserInterest, Document, SocialMedia, ContentLink, Quiz, Calendar
-    from models_oauth import OAuthConnection, OAuthInteraction, OAuthContentAnalysis
     from forms import (
         RegistrationForm, LoginForm, DocumentUploadForm, SocialMediaForm, 
         ContentValidationForm, QuizForm
@@ -63,15 +62,7 @@ with app.app_context():
         validate_document, analyze_social_media, validate_content_links,
         match_player, get_fan_power, get_lootbox_reward
     )
-    from oauth_routes import oauth_blueprint
     
-    # Registrar blueprint OAuth
-    app.register_blueprint(oauth_blueprint, url_prefix='/oauth')
-    
-    # Importar folha de estilo OAuth
-    app.config['OAUTH_CSS'] = 'css/oauth-style.css'
-    
-    # Criar tabelas
     db.create_all()
 
 # Routes
@@ -394,45 +385,6 @@ def document_validation():
     
     return render_template('app_document_validation.html', form=form, document=document)
 
-@app.route('/remove_document', methods=['POST'])
-def remove_document():
-    if 'user_id' not in session:
-        flash('Por favor, faça login primeiro.', 'warning')
-        return redirect(url_for('login'))
-    
-    try:
-        user = User.query.get(session['user_id'])
-        if not user:
-            session.pop('user_id', None)
-            flash('Usuário não encontrado. Faça login novamente.', 'danger')
-            return redirect(url_for('login'))
-            
-        document = Document.query.filter_by(user_id=user.id).first()
-        
-        if document:
-            # Remover o arquivo físico, se existir
-            if document.file_path and os.path.exists(document.file_path):
-                try:
-                    os.remove(document.file_path)
-                    app.logger.info(f"Arquivo de documento removido: {document.file_path}")
-                except Exception as file_error:
-                    app.logger.error(f"Erro ao remover arquivo: {str(file_error)}")
-            
-            # Remover registro do banco de dados
-            db.session.delete(document)
-            db.session.commit()
-            flash('Documento removido com sucesso. Você pode enviar um novo documento para validação.', 'success')
-        else:
-            flash('Nenhum documento encontrado para remover.', 'warning')
-        
-        return redirect(url_for('document_validation'))
-    
-    except Exception as e:
-        app.logger.error(f"Erro ao remover documento: {str(e)}")
-        db.session.rollback()
-        flash('Ocorreu um erro ao remover o documento. Por favor, tente novamente.', 'danger')
-        return redirect(url_for('document_validation'))
-
 @app.route('/social_media_remove/<platform>')
 def social_media_remove(platform):
     if 'user_id' not in session:
@@ -744,110 +696,6 @@ def toggle_favorite():
     db.session.commit()
     
     return {"success": True, "is_favorite": favorite.is_favorite}
-
-@app.route('/social_oauth')
-def social_oauth():
-    """
-    Página de gerenciamento de conexões OAuth para redes sociais.
-    """
-    if 'user_id' not in session:
-        flash('Por favor, faça login primeiro.', 'warning')
-        return redirect(url_for('login'))
-    
-    user_id = session['user_id']
-    user = User.query.get(user_id)
-    
-    if not user:
-        session.pop('user_id', None)
-        flash('Usuário não encontrado. Faça login novamente.', 'danger')
-        return redirect(url_for('login'))
-        
-    # Buscar conexões OAuth ativas
-    connections = OAuthConnection.query.filter_by(user_id=user_id, is_active=True).all()
-    
-    # Organizar conexões por plataforma
-    facebook_connection = next((c for c in connections if c.platform == 'facebook'), None)
-    twitter_connection = next((c for c in connections if c.platform == 'twitter'), None)
-    instagram_connection = next((c for c in connections if c.platform == 'instagram'), None)
-    discord_connection = next((c for c in connections if c.platform == 'discord'), None)
-    
-    # Buscar interações para estatísticas
-    facebook_interactions = []
-    twitter_interactions = []
-    discord_interactions = []
-    instagram_content = []
-    
-    # Quantidade de interações relacionadas à FURIA
-    facebook_furia_count = 0
-    twitter_furia_count = 0
-    discord_furia_count = 0
-    
-    # Conexões do Facebook
-    if facebook_connection:
-        facebook_interactions = OAuthInteraction.query.filter_by(oauth_connection_id=facebook_connection.id).all()
-        facebook_furia_count = sum(1 for i in facebook_interactions if i.is_furia_related)
-    
-    # Conexões do Twitter
-    if twitter_connection:
-        twitter_interactions = OAuthInteraction.query.filter_by(oauth_connection_id=twitter_connection.id).all()
-        twitter_furia_count = sum(1 for i in twitter_interactions if i.is_furia_related)
-    
-    # Conexões do Discord
-    if discord_connection:
-        discord_interactions = OAuthInteraction.query.filter_by(oauth_connection_id=discord_connection.id).all()
-        discord_furia_count = sum(1 for i in discord_interactions if i.is_furia_related)
-    
-    # Conteúdo do Instagram
-    if instagram_connection:
-        instagram_content = OAuthContentAnalysis.query.filter_by(oauth_connection_id=instagram_connection.id).all()
-    
-    # Estatísticas gerais
-    active_connections = len(connections)
-    total_esports_interactions = OAuthInteraction.query.join(
-        OAuthConnection, OAuthInteraction.oauth_connection_id == OAuthConnection.id
-    ).filter(
-        OAuthConnection.user_id == user_id,
-        OAuthConnection.is_active == True,
-        OAuthInteraction.is_esports_related == True
-    ).count()
-    
-    total_furia_interactions = OAuthInteraction.query.join(
-        OAuthConnection, OAuthInteraction.oauth_connection_id == OAuthConnection.id
-    ).filter(
-        OAuthConnection.user_id == user_id,
-        OAuthConnection.is_active == True,
-        OAuthInteraction.is_furia_related == True
-    ).count()
-    
-    # Buscar dados de engajamento
-    social_media = SocialMedia.query.filter_by(user_id=user_id).first()
-    engagement_score = social_media.engagement_score if social_media and social_media.engagement_score else 0
-    fan_badge = user.fan_badge if user.fan_badge else "Novo Fã"
-    
-    return render_template(
-        'app_social_oauth.html',
-        user=user,
-        # Conexões
-        facebook_connection=facebook_connection,
-        twitter_connection=twitter_connection,
-        instagram_connection=instagram_connection,
-        discord_connection=discord_connection,
-        # Interações
-        facebook_interactions=facebook_interactions,
-        twitter_interactions=twitter_interactions,
-        discord_interactions=discord_interactions,
-        instagram_content=instagram_content,
-        # Contagens FURIA
-        facebook_furia_count=facebook_furia_count,
-        twitter_furia_count=twitter_furia_count,
-        discord_furia_count=discord_furia_count,
-        # Estatísticas gerais
-        active_connections=active_connections,
-        total_esports_interactions=total_esports_interactions,
-        total_furia_interactions=total_furia_interactions,
-        engagement_score=engagement_score,
-        fan_badge=fan_badge
-    )
 
 @app.route('/fan_power')
 def fan_power():
