@@ -332,37 +332,46 @@ def document_validation():
                 flash('Nenhum arquivo selecionado.', 'danger')
                 return render_template('app_document_validation.html', form=form, document=document)
                 
-            filename = secure_filename(document_file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_{filename}")
+            # Secure the filename and save the file
+            original_filename = secure_filename(document_file.filename)
+            # Add timestamp to ensure uniqueness
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S%f')
+            filename = f"user_{user.id}_{original_filename.split('.')[0]}_{timestamp}{os.path.splitext(original_filename)[1]}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             document_file.save(file_path)
             
-            app.logger.debug(f"Validando documento com IA: {file_path}")
+            app.logger.info(f"Documento salvo em: {file_path}")
+            app.logger.info(f"Iniciando validação com OCR via OpenAI")
             
-            # Processar documento com OCR
-            app.logger.info(f"Iniciando validação de documento com OCR: {file_path}")
+            # Validate document using OpenAI
             validation_result = validate_document(file_path, user.name, user.cpf)
             app.logger.info(f"Resultado da validação: {validation_result['status']}")
             
-            # Save document record
+            # Create or update document record
             if document:
+                # If there's an existing document, update it
                 document.file_path = file_path
                 document.document_type = form.document_type.data
                 document.validation_status = validation_result['status']
-                document.validation_data = json.dumps(validation_result)
+                document.validation_data = json.dumps(validation_result['data'], ensure_ascii=False)
+                document.updated_at = datetime.utcnow()
             else:
+                # Create new document record
                 document = Document(
                     user_id=user.id,
                     file_path=file_path,
                     document_type=form.document_type.data,
-                    validation_status = validation_result['status'],
-                    validation_data = json.dumps(validation_result)
+                    validation_status=validation_result['status'],
+                    validation_data=json.dumps(validation_result['data'], ensure_ascii=False)
                 )
                 db.session.add(document)
             
+            # Commit changes to database
             db.session.commit()
             
+            # Show appropriate message based on validation result
             if validation_result['status'] == 'verified':
-                flash('Documento validado com sucesso!', 'success')
+                flash('Documento validado com sucesso! Os dados do documento foram confirmados.', 'success')
             else:
                 flash(f'Falha na validação do documento: {validation_result["message"]}', 'danger')
             

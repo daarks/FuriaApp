@@ -275,73 +275,213 @@ LOOTBOX_REWARDS = [
 
 def validate_document(file_path, user_name, user_cpf):
     """
-    Implementação simplificada de validação de documentos (simulação de verificação)
+    Validação de documentos usando a API OpenAI (GPT-4o) para OCR e comparação de dados
     
     Args:
-        file_path: Path to the uploaded document
-        user_name: User's registered name
-        user_cpf: User's registered CPF
+        file_path: Path to the uploaded document file
+        user_name: User's registered name for verification
+        user_cpf: User's registered CPF number for verification
     
     Returns:
-        dict: Validation result with status and message
+        dict: Validation result with status, message and extracted data
     """
     import os
-    import random
+    import base64
+    import json
+    import re
+    from openai import OpenAI
     
-    logger.debug(f"Validando documento: {file_path}")
+    logger.debug(f"Iniciando validação de documento via OpenAI OCR: {file_path}")
     
-    # Verificar se o arquivo existe
+    # 1. Verificações iniciais
     if not os.path.exists(file_path):
-        logger.error(f"Arquivo não encontrado: {file_path}")
+        logger.error(f"Documento não encontrado no caminho: {file_path}")
         return {
             "status": "rejected",
             "message": "Arquivo do documento não foi encontrado",
             "data": {}
         }
-        
+    
+    # 2. Validar formato do arquivo
+    file_ext = os.path.splitext(file_path)[1].lower()
+    if file_ext not in ['.jpg', '.jpeg', '.png', '.pdf']:
+        logger.error(f"Formato de arquivo não suportado: {file_ext}")
+        return {
+            "status": "rejected", 
+            "message": "Formato de arquivo não suportado. Use JPG, PNG ou PDF.",
+            "data": {}
+        }
+    
+    # 3. Preparar imagem para processamento
     try:
-        # Verificar extensão do arquivo
-        file_ext = os.path.splitext(file_path)[1].lower()
+        # Converter o arquivo para base64
+        with open(file_path, "rb") as image_file:
+            file_content = image_file.read()
+            base64_image = base64.b64encode(file_content).decode('utf-8')
         
-        if file_ext not in ['.jpg', '.jpeg', '.png', '.pdf']:
-            logger.error(f"Formato de arquivo não suportado: {file_ext}")
+        # Definir o tipo MIME correto
+        if file_ext in ['.jpg', '.jpeg']:
+            content_type = "image/jpeg"
+        elif file_ext == '.png':
+            content_type = "image/png"
+        else:
+            content_type = "application/pdf"
+            
+        # URL da imagem em base64
+        image_url = f"data:{content_type};base64,{base64_image}"
+        
+    except Exception as e:
+        logger.error(f"Erro ao processar arquivo: {str(e)}")
+        return {
+            "status": "rejected",
+            "message": "Erro ao processar o arquivo. O arquivo pode estar corrompido.",
+            "data": {}
+        }
+    
+    # 4. Configurar e chamar a API OpenAI
+    try:
+        # Verificar chave da API
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            logger.error("Chave da API OpenAI não encontrada no ambiente")
             return {
                 "status": "rejected",
-                "message": "Formato de arquivo não suportado. Use JPG, PNG ou PDF.",
+                "message": "Serviço de validação indisponível no momento.",
                 "data": {}
             }
-
-        # Simular análise do documento para propósitos de demonstração
-        # Em um cenário real, usaríamos OCR com a API do OpenAI/GPT-4o
         
-        # Extrair o primeiro nome e sobrenome do usuário para simulação
-        name_parts = user_name.split()
-        first_name = name_parts[0] if name_parts else ""
-        last_name = name_parts[-1] if len(name_parts) > 1 else ""
+        # Inicializar cliente OpenAI
+        client = OpenAI(api_key=api_key)
         
-        # Dados fictícios extraídos do "documento"
-        extracted_data = {
-            "nome": user_name,  # Usamos o nome do usuário para simular extração
-            "data_nascimento": "01/01/1990",  # Data fictícia
-            "numero_documento": "".join([str(random.randint(0, 9)) for _ in range(9)]),
-            "tipo_documento": random.choice(["RG", "CNH", "Passaporte"]),
-            "cpf": user_cpf  # Usamos o CPF do usuário para simulação
+        # Prompt para análise do documento
+        system_prompt = """
+        Você é um especialista em análise de documentos de identidade. Sua tarefa é extrair informações de documentos brasileiros como RG, CNH ou Passaporte.
+        """
+        
+        user_prompt = """
+        Extraia as seguintes informações do documento de identidade na imagem:
+        1. Nome completo
+        2. Data de nascimento (no formato DD/MM/AAAA)
+        3. Número do documento 
+        4. Tipo de documento (RG, CNH ou Passaporte)
+        5. CPF (se visível)
+        
+        Responda APENAS no formato JSON a seguir:
+        {
+            "nome": "NOME COMPLETO EXTRAÍDO",
+            "data_nascimento": "DD/MM/AAAA",
+            "numero_documento": "NÚMERO DO DOCUMENTO",
+            "tipo_documento": "TIPO DO DOCUMENTO",
+            "cpf": "NÚMERO DO CPF SE VISÍVEL"
         }
         
-        # Simulação de verificação bem-sucedida (neste caso sempre passa)
-        # Em um ambiente real, estaríamos comparando os dados do documento com os do usuário
+        Se alguma informação não estiver visível ou legível, use null para seu valor.
+        Se a imagem não for claramente um documento de identidade brasileiro, responda com {"erro": "Não é um documento de identidade válido"}.
+        """
+        
+        # Chamada da API
+        logger.debug("Enviando documento para análise via OpenAI API")
+        response = client.chat.completions.create(
+            model="gpt-4o", # o modelo mais recente com capacidade de visão
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": [
+                    {"type": "text", "text": user_prompt},
+                    {"type": "image_url", "image_url": {"url": image_url}}
+                ]}
+            ],
+            response_format={"type": "json_object"},
+            max_tokens=1000
+        )
+        
+        # Processar resposta
+        response_text = response.choices[0].message.content
+        logger.debug(f"Resposta da API: {response_text}")
+        
+    except Exception as api_error:
+        logger.error(f"Erro ao chamar a API OpenAI: {str(api_error)}")
+        return {
+            "status": "rejected",
+            "message": "Erro na comunicação com o serviço de validação. Tente novamente mais tarde.",
+            "data": {}
+        }
+    
+    # 5. Processar os dados extraídos
+    try:
+        # Converter resposta para dicionário
+        extracted_data = json.loads(response_text)
+        
+        # Verificar se houve erro na análise
+        if "erro" in extracted_data:
+            return {
+                "status": "rejected",
+                "message": f"Falha na análise: {extracted_data['erro']}",
+                "data": {}
+            }
+            
+        # Verificar se foram extraídas informações essenciais
+        if not extracted_data.get("nome"):
+            return {
+                "status": "rejected", 
+                "message": "Não foi possível identificar o nome no documento",
+                "data": extracted_data
+            }
+            
+    except json.JSONDecodeError as e:
+        logger.error(f"Erro ao decodificar JSON: {str(e)}")
+        return {
+            "status": "rejected",
+            "message": "Falha ao processar os dados extraídos do documento.",
+            "data": {}
+        }
+    
+    # 6. Validar as informações extraídas com os dados do usuário
+    
+    # Normalizar o nome do usuário e o nome extraído para comparação
+    user_name_normalized = " ".join(part.lower() for part in user_name.split())
+    extracted_name = extracted_data.get("nome", "")
+    extracted_name_normalized = " ".join(part.lower() for part in extracted_name.split())
+    
+    # Calcular similaridade entre os nomes (usando método de conjuntos de palavras)
+    user_name_parts = set(user_name_normalized.split())
+    extracted_name_parts = set(extracted_name_normalized.split())
+    
+    common_parts = user_name_parts.intersection(extracted_name_parts)
+    name_match_score = len(common_parts) / max(len(user_name_parts), 1)
+    
+    logger.debug(f"Pontuação de correspondência de nome: {name_match_score}")
+    
+    # Verificar CPF se disponível
+    cpf_match = False
+    if extracted_data.get("cpf"):
+        # Limpar formatação do CPF para comparação
+        user_cpf_clean = re.sub(r'[^0-9]', '', user_cpf)
+        extracted_cpf_clean = re.sub(r'[^0-9]', '', extracted_data.get("cpf", ""))
+        cpf_match = user_cpf_clean == extracted_cpf_clean
+        logger.debug(f"CPF extraído: {extracted_cpf_clean}, CPF do usuário: {user_cpf_clean}, Match: {cpf_match}")
+    
+    # 7. Determinar resultado final
+    
+    # Se pelo menos 70% do nome corresponder, considerar validado
+    if name_match_score >= 0.7:
+        # Se o CPF foi extraído, mas não corresponde, rejeitar
+        if extracted_data.get("cpf") and not cpf_match:
+            return {
+                "status": "rejected",
+                "message": "O CPF no documento não corresponde ao CPF cadastrado.",
+                "data": extracted_data
+            }
+        # Se tudo está ok, verificar
         return {
             "status": "verified",
             "message": "Documento validado com sucesso",
             "data": extracted_data
         }
-            
-    except Exception as e:
-        logger.error(f"Erro na validação do documento: {str(e)}")
+    else:
         return {
             "status": "rejected",
-            "message": "Ocorreu um erro ao processar o documento. Tente novamente mais tarde.",
-            "data": {}
+            "message": "O nome no documento não corresponde ao nome cadastrado.",
+            "data": extracted_data
         }
 
 def analyze_social_media(social_media_data):

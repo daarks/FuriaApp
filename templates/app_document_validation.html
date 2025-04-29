@@ -21,6 +21,30 @@
                     <div class="app-document-title">Documento Verificado!</div>
                     <div class="app-document-type">{{ document.document_type }}</div>
                     <div class="app-document-message">Sua identidade foi confirmada com sucesso.</div>
+                    
+                    {% if document.validation_data %}
+                        {% set data = document.validation_data|from_json %}
+                        <div class="app-document-details app-mt-2">
+                            <h4 class="app-text-center">Dados Extraídos do Documento</h4>
+                            <ul class="app-document-data-list">
+                                {% if data.nome %}
+                                <li><strong>Nome:</strong> {{ data.nome }}</li>
+                                {% endif %}
+                                
+                                {% if data.data_nascimento %}
+                                <li><strong>Data de Nascimento:</strong> {{ data.data_nascimento }}</li>
+                                {% endif %}
+                                
+                                {% if data.tipo_documento %}
+                                <li><strong>Tipo de Documento:</strong> {{ data.tipo_documento }}</li>
+                                {% endif %}
+                                
+                                {% if data.numero_documento %}
+                                <li><strong>Número do Documento:</strong> {{ data.numero_documento }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             {% elif document and document.validation_status == 'rejected' %}
