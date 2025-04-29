@@ -306,16 +306,27 @@ def document_validation():
         flash('Por favor, faça login primeiro.', 'warning')
         return redirect(url_for('login'))
     
-    try:
-        form = DocumentUploadForm()
-        user = User.query.get(session['user_id'])
+    form = DocumentUploadForm()
+    user = User.query.get(session['user_id'])
+    
+    if not user:
+        session.pop('user_id', None)
+        flash('Usuário não encontrado. Faça login novamente.', 'danger')
+        return redirect(url_for('login'))
         
-        if form.validate_on_submit():
+    document = Document.query.filter_by(user_id=user.id).first()
+    
+    if request.method == 'POST' and form.validate_on_submit():
+        try:
             # Create uploads directory if it doesn't exist
             os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
             
             # Get the uploaded file
             document_file = form.document.data
+            if not document_file:
+                flash('Nenhum arquivo selecionado.', 'danger')
+                return render_template('app_document_validation.html', form=form, document=document)
+                
             filename = secure_filename(document_file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_{filename}")
             document_file.save(file_path)
@@ -328,7 +339,6 @@ def document_validation():
             app.logger.info(f"Resultado da validação: {validation_result['status']}")
             
             # Save document record
-            document = Document.query.filter_by(user_id=user.id).first()
             if document:
                 document.file_path = file_path
                 document.document_type = form.document_type.data
@@ -352,14 +362,14 @@ def document_validation():
                 flash(f'Falha na validação do documento: {validation_result["message"]}', 'danger')
             
             return redirect(url_for('document_validation'))
-        
-        document = Document.query.filter_by(user_id=user.id).first()
-        return render_template('app_document_validation.html', form=form, document=document)
+            
+        except Exception as e:
+            app.logger.error(f"Erro na validação de documentos: {str(e)}")
+            db.session.rollback()
+            flash('Ocorreu um erro ao processar o documento. Por favor, tente novamente.', 'danger')
+            return render_template('app_document_validation.html', form=form, document=document)
     
-    except Exception as e:
-        app.logger.error(f"Erro na validação de documentos: {str(e)}")
-        flash('Ocorreu um erro ao processar o documento. Por favor, tente novamente.', 'danger')
-        return redirect(url_for('profile'))
+    return render_template('app_document_validation.html', form=form, document=document)
 
 @app.route('/social_media_remove/<platform>')
 def social_media_remove(platform):

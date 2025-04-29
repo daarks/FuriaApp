@@ -293,6 +293,7 @@ def validate_document(file_path, user_name, user_cpf):
     
     # Verificar se o arquivo existe
     if not os.path.exists(file_path):
+        logger.error(f"Arquivo não encontrado: {file_path}")
         return {
             "status": "rejected",
             "message": "Arquivo do documento não foi encontrado",
@@ -304,6 +305,7 @@ def validate_document(file_path, user_name, user_cpf):
         file_ext = os.path.splitext(file_path)[1].lower()
         
         if file_ext not in ['.jpg', '.jpeg', '.png', '.pdf']:
+            logger.error(f"Formato de arquivo não suportado: {file_ext}")
             return {
                 "status": "rejected",
                 "message": "Formato de arquivo não suportado. Use JPG, PNG ou PDF.",
@@ -311,11 +313,45 @@ def validate_document(file_path, user_name, user_cpf):
             }
             
         # Carregar arquivo e converter para base64
-        with open(file_path, "rb") as image_file:
-            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
-        
+        try:
+            with open(file_path, "rb") as image_file:
+                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+                
+            if not base64_image:
+                logger.error("Arquivo vazio ou corrompido")
+                return {
+                    "status": "rejected",
+                    "message": "O arquivo parece estar vazio ou corrompido. Tente fazer upload novamente.",
+                    "data": {}
+                }
+        except Exception as file_error:
+            logger.error(f"Erro ao ler o arquivo: {str(file_error)}")
+            return {
+                "status": "rejected",
+                "message": "Não foi possível ler o arquivo. Verifique se ele está corrompido.",
+                "data": {}
+            }
+            
+        # Verificar chave da API
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            logger.error("Chave da API OpenAI não configurada")
+            return {
+                "status": "rejected",
+                "message": "Configuração de validação de documentos indisponível no momento.",
+                "data": {}
+            }
+            
         # Inicializar cliente OpenAI com a chave da API
-        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        try:
+            client = OpenAI(api_key=api_key)
+        except Exception as client_error:
+            logger.error(f"Erro ao inicializar cliente OpenAI: {str(client_error)}")
+            return {
+                "status": "rejected",
+                "message": "Serviço de validação indisponível no momento.",
+                "data": {}
+            }
         
         # Preparar o prompt para extração de dados do documento
         prompt = """
@@ -342,31 +378,45 @@ def validate_document(file_path, user_name, user_cpf):
         
         logger.debug("Enviando imagem para análise com OCR...")
         
+        # Definir o tipo MIME correto com base na extensão do arquivo
+        content_type = "image/jpeg"
+        if file_ext.lower() == '.png':
+            content_type = "image/png"
+        elif file_ext.lower() == '.pdf':
+            content_type = "application/pdf"
+            
         # Chamar a API da OpenAI para análise da imagem
-        response = client.chat.completions.create(
-            model="gpt-4o",  # A versão mais recente com suporte a visão
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}" if file_ext.lower() in ['.jpg', '.jpeg'] else
-                                       f"data:image/png;base64,{base64_image}" if file_ext.lower() == '.png' else
-                                       f"data:application/pdf;base64,{base64_image}"
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o",  # A versão mais recente com suporte a visão
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{content_type};base64,{base64_image}"
+                                }
                             }
-                        }
-                    ]
-                }
-            ],
-            max_tokens=500
-        )
-        
-        # Extrair a resposta
-        response_text = response.choices[0].message.content
-        logger.debug(f"Resposta do OCR: {response_text}")
+                        ]
+                    }
+                ],
+                max_tokens=500
+            )
+            
+            # Extrair a resposta
+            response_text = response.choices[0].message.content
+            logger.debug(f"Resposta do OCR: {response_text}")
+            
+        except Exception as api_error:
+            logger.error(f"Erro na chamada da API OpenAI: {str(api_error)}")
+            return {
+                "status": "rejected",
+                "message": "Falha na análise do documento. Serviço temporariamente indisponível.",
+                "data": {}
+            }
         
         # Processar a resposta
         import json
@@ -404,7 +454,7 @@ def validate_document(file_path, user_name, user_cpf):
             
         # Comparar nome extraído com o nome do usuário
         user_name_normalized = " ".join(part.lower() for part in user_name.split())
-        extracted_name_normalized = " ".join(part.lower() for part in extracted_data.get("nome", "").split())
+        extracted_name_normalized = " ".join(part.lower() for part in str(extracted_data.get("nome", "")).split())
         
         # Verificar correspondência de nome com tolerância
         name_parts_user = set(user_name_normalized.split())
@@ -419,8 +469,8 @@ def validate_document(file_path, user_name, user_cpf):
         # Verificar o CPF se estiver presente (alguns documentos podem não exibir CPF)
         cpf_match = False
         if extracted_data.get("cpf"):
-            user_cpf_clean = user_cpf.replace(".", "").replace("-", "")
-            extracted_cpf_clean = extracted_data["cpf"].replace(".", "").replace("-", "")
+            user_cpf_clean = str(user_cpf).replace(".", "").replace("-", "")
+            extracted_cpf_clean = str(extracted_data["cpf"]).replace(".", "").replace("-", "")
             cpf_match = user_cpf_clean == extracted_cpf_clean
             logger.debug(f"CPF extraído: {extracted_cpf_clean}, CPF do usuário: {user_cpf_clean}, Match: {cpf_match}")
             
@@ -448,7 +498,7 @@ def validate_document(file_path, user_name, user_cpf):
         logger.error(f"Erro na validação do documento: {str(e)}")
         return {
             "status": "rejected",
-            "message": f"Ocorreu um erro ao processar o documento: {str(e)}",
+            "message": "Ocorreu um erro ao processar o documento. Tente novamente mais tarde.",
             "data": {}
         }
 
