@@ -1842,27 +1842,3 @@ p {
   font-weight: 700;
   font-family: var(--font-special);
 }
-
-/* Document Upload Improvements */
-.app-document-helper {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-bottom: var(--spacing-xs);
-}
-
-.app-document-notice {
-  background-color: rgba(255, 165, 0, 0.1);
-  border: 1px solid rgba(255, 165, 0, 0.3);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-sm);
-  margin-top: var(--spacing-md);
-}
-
-.app-text-warning {
-  color: var(--warning-color);
-  font-size: 0.9rem;
-}
-
-.app-text-warning i {
-  margin-right: var(--spacing-xs);
-}

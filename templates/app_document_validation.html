@@ -55,7 +55,7 @@
                 </div>
                 <div class="app-document-info">
                     <div class="app-document-title">Nenhum Documento Enviado</div>
-                    <div class="app-document-message">Envie os lados FRENTE E VERSO do seu documento para verificação.</div>
+                    <div class="app-document-message">Envie um documento válido para verificação.</div>
                 </div>
             </div>
             {% endif %}
@@ -77,48 +77,21 @@
                 </div>
                 
                 <div class="app-form-group">
-                    <label for="document_front" class="app-form-label">{{ form.document_front.label }}</label>
-                    <div class="app-document-helper">{{ form.document_front.description }}</div>
+                    <label for="document" class="app-form-label">{{ form.document.label }}</label>
                     <div class="app-file-input-wrapper">
-                        <button type="button" class="app-file-btn app-btn app-btn-outline" data-target="document_front">
-                            <i class="fas fa-upload"></i> FRENTE do Documento
+                        <button type="button" class="app-file-btn app-btn app-btn-outline">
+                            <i class="fas fa-upload"></i> Selecionar Arquivo
                         </button>
-                        <span class="app-file-name" id="document_front_name">Nenhum arquivo selecionado</span>
-                        {{ form.document_front(class="app-file-input", id="document_front", accept=".jpg,.jpeg,.png") }}
+                        <span class="app-file-name">Nenhum arquivo selecionado</span>
+                        {{ form.document(class="app-file-input", id="document", accept=".jpg,.jpeg,.png,.pdf") }}
                     </div>
-                    {% if form.document_front.errors %}
+                    {% if form.document.errors %}
                     <div class="app-form-feedback">
-                        {% for error in form.document_front.errors %}
+                        {% for error in form.document.errors %}
                         <span>{{ error }}</span>
                         {% endfor %}
                     </div>
                     {% endif %}
-                </div>
-                
-                <div class="app-form-group">
-                    <label for="document_back" class="app-form-label">{{ form.document_back.label }}</label>
-                    <div class="app-document-helper">{{ form.document_back.description }}</div>
-                    <div class="app-file-input-wrapper">
-                        <button type="button" class="app-file-btn app-btn app-btn-outline" data-target="document_back">
-                            <i class="fas fa-upload"></i> VERSO do Documento
-                        </button>
-                        <span class="app-file-name" id="document_back_name">Nenhum arquivo selecionado</span>
-                        {{ form.document_back(class="app-file-input", id="document_back", accept=".jpg,.jpeg,.png") }}
-                    </div>
-                    {% if form.document_back.errors %}
-                    <div class="app-form-feedback">
-                        {% for error in form.document_back.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-                
-                <div class="app-document-notice app-mt-2">
-                    <p class="app-text-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>IMPORTANTE:</strong> Para RG e CNH, tanto a frente quanto o verso do documento são obrigatórios.
-                    </p>
                 </div>
                 
                 <div class="app-form-group app-mt-3">
@@ -180,51 +153,23 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // File input handling for multiple file inputs
-    const fileInputs = document.querySelectorAll('.app-file-input');
-    const fileBtns = document.querySelectorAll('.app-file-btn');
+    // File input handling
+    const fileInput = document.querySelector('.app-file-input');
+    const fileName = document.querySelector('.app-file-name');
+    const fileBtn = document.querySelector('.app-file-btn');
     
-    fileBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const targetId = this.getAttribute('data-target');
-            const targetInput = document.getElementById(targetId);
-            if (targetInput) {
-                targetInput.click();
-            }
-        });
-    });
-    
-    fileInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            const nameElement = document.getElementById(this.id + '_name');
-            if (nameElement) {
-                if (this.files.length > 0) {
-                    nameElement.textContent = this.files[0].name;
-                } else {
-                    nameElement.textContent = 'Nenhum arquivo selecionado';
-                }
-            }
-        });
-    });
-    
-    // Verify document type and show warning for back side requirement
-    const docTypeSelect = document.getElementById('document_type');
-    const docTypeWarning = document.querySelector('.app-document-notice');
-    
-    if (docTypeSelect && docTypeWarning) {
-        docTypeSelect.addEventListener('change', function() {
-            const selectedValue = this.value;
-            if (selectedValue === 'passport') {
-                docTypeWarning.style.display = 'none';
-            } else {
-                docTypeWarning.style.display = 'block';
-            }
+    if (fileInput && fileName && fileBtn) {
+        fileBtn.addEventListener('click', function() {
+            fileInput.click();
         });
         
-        // Initialize on page load
-        if (docTypeSelect.value === 'passport') {
-            docTypeWarning.style.display = 'none';
-        }
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+            } else {
+                fileName.textContent = 'Nenhum arquivo selecionado';
+            }
+        });
     }
 });
 </script>

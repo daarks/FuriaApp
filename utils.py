@@ -273,14 +273,12 @@ LOOTBOX_REWARDS = [
     }
 ]
 
-def validate_document(front_path, back_path, doc_type, user_name, user_cpf):
+def validate_document(file_path, user_name, user_cpf):
     """
     Implementação avançada de validação de documentos com OCR usando OpenAI
     
     Args:
-        front_path: Path to the front side of the document
-        back_path: Path to the back side of the document (optional for passports)
-        doc_type: Type of document (rg, cnh, passport)
+        file_path: Path to the uploaded document
         user_name: User's registered name
         user_cpf: User's registered CPF
     
@@ -291,70 +289,48 @@ def validate_document(front_path, back_path, doc_type, user_name, user_cpf):
     import base64
     from openai import OpenAI
     
-    logger.debug(f"Validando documento com OCR via OpenAI: {front_path} e {back_path}")
+    logger.debug(f"Validando documento com OCR via OpenAI: {file_path}")
     
-    # Verificar se os arquivos existem
-    if not os.path.exists(front_path):
-        logger.error(f"Arquivo da frente não encontrado: {front_path}")
+    # Verificar se o arquivo existe
+    if not os.path.exists(file_path):
+        logger.error(f"Arquivo não encontrado: {file_path}")
         return {
             "status": "rejected",
-            "message": "Arquivo da frente do documento não foi encontrado",
-            "data": {}
-        }
-    
-    # Verificar o verso para documentos que precisam dos dois lados
-    if doc_type in ['rg', 'cnh'] and (not back_path or not os.path.exists(back_path)):
-        logger.error(f"Arquivo do verso não encontrado ou não fornecido: {back_path}")
-        return {
-            "status": "rejected",
-            "message": "Para RG e CNH, é necessário enviar a frente e o verso do documento",
+            "message": "Arquivo do documento não foi encontrado",
             "data": {}
         }
         
     try:
-        # Verificar extensão dos arquivos
-        front_ext = os.path.splitext(front_path)[1].lower()
-        if front_ext not in ['.jpg', '.jpeg', '.png']:
-            logger.error(f"Formato de arquivo não suportado: {front_ext}")
-            return {
-                "status": "rejected",
-                "message": "Formato de arquivo não suportado. Use JPG ou PNG.",
-                "data": {}
-            }
+        # Verificar extensão do arquivo
+        file_ext = os.path.splitext(file_path)[1].lower()
         
-        # Carregar frente do documento e converter para base64
-        try:
-            with open(front_path, "rb") as image_file:
-                front_base64 = base64.b64encode(image_file.read()).decode('utf-8')
-                
-            if not front_base64:
-                logger.error("Arquivo da frente vazio ou corrompido")
-                return {
-                    "status": "rejected",
-                    "message": "O arquivo da frente parece estar vazio ou corrompido. Tente fazer upload novamente.",
-                    "data": {}
-                }
-        except Exception as file_error:
-            logger.error(f"Erro ao ler o arquivo da frente: {str(file_error)}")
+        if file_ext not in ['.jpg', '.jpeg', '.png', '.pdf']:
+            logger.error(f"Formato de arquivo não suportado: {file_ext}")
             return {
                 "status": "rejected",
-                "message": "Não foi possível ler o arquivo da frente. Verifique se ele está corrompido.",
+                "message": "Formato de arquivo não suportado. Use JPG, PNG ou PDF.",
                 "data": {}
             }
             
-        # Carregar verso do documento se necessário
-        back_base64 = None
-        if doc_type in ['rg', 'cnh'] and back_path:
-            try:
-                with open(back_path, "rb") as image_file:
-                    back_base64 = base64.b64encode(image_file.read()).decode('utf-8')
-            except Exception as file_error:
-                logger.error(f"Erro ao ler o arquivo do verso: {str(file_error)}")
+        # Carregar arquivo e converter para base64
+        try:
+            with open(file_path, "rb") as image_file:
+                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+                
+            if not base64_image:
+                logger.error("Arquivo vazio ou corrompido")
                 return {
                     "status": "rejected",
-                    "message": "Não foi possível ler o arquivo do verso. Verifique se ele está corrompido.",
+                    "message": "O arquivo parece estar vazio ou corrompido. Tente fazer upload novamente.",
                     "data": {}
                 }
+        except Exception as file_error:
+            logger.error(f"Erro ao ler o arquivo: {str(file_error)}")
+            return {
+                "status": "rejected",
+                "message": "Não foi possível ler o arquivo. Verifique se ele está corrompido.",
+                "data": {}
+            }
             
         # Verificar chave da API
         api_key = os.environ.get("OPENAI_API_KEY")
@@ -377,77 +353,56 @@ def validate_document(front_path, back_path, doc_type, user_name, user_cpf):
                 "data": {}
             }
         
-        # Definir o tipo de documento no prompt
-        doc_type_str = "RG (Carteira de Identidade)"
-        if doc_type == 'cnh':
-            doc_type_str = "CNH (Carteira Nacional de Habilitação)"
-        elif doc_type == 'passport':
-            doc_type_str = "Passaporte"
-            
         # Preparar o prompt para extração de dados do documento
-        prompt = f"""
-        Estas são imagens de um {doc_type_str}. 
-
+        prompt = """
+        Esta é uma imagem de um documento de identidade (RG, CNH ou Passaporte). 
         Por favor, extraia as seguintes informações:
         1. Nome completo
         2. Data de nascimento (no formato DD/MM/AAAA)
         3. Número do documento (se visível)
-        4. CPF (se visível)
+        4. Tipo de documento (RG, CNH ou Passaporte)
+        5. CPF (se visível)
         
         Responda APENAS com um JSON no seguinte formato:
-        {{
+        {
             "nome": "NOME COMPLETO EXTRAÍDO",
             "data_nascimento": "DD/MM/AAAA",
             "numero_documento": "NÚMERO DO DOCUMENTO",
+            "tipo_documento": "TIPO DO DOCUMENTO",
             "cpf": "NÚMERO DO CPF (SE VISÍVEL)"
-        }}
+        }
         
         Se alguma informação não for visível ou legível, use null para o valor correspondente.
-        Se a imagem não for claramente um documento de identidade, responda com {{"erro": "Não é um documento válido"}}.
-        
-        Lembre-se que você está analisando um {doc_type_str}. Considere a formatação e localização específica dos campos para este tipo de documento.
+        Se a imagem não for claramente um documento de identidade, responda com {"erro": "Não é um documento válido"}.
         """
         
-        logger.debug("Enviando imagens para análise com OCR...")
+        logger.debug("Enviando imagem para análise com OCR...")
         
         # Definir o tipo MIME correto com base na extensão do arquivo
-        front_content_type = "image/jpeg"
-        if front_ext.lower() == '.png':
-            front_content_type = "image/png"
+        content_type = "image/jpeg"
+        if file_ext.lower() == '.png':
+            content_type = "image/png"
+        elif file_ext.lower() == '.pdf':
+            content_type = "application/pdf"
             
-        # Preparar conteúdo para a requisição
-        content = [
-            {"type": "text", "text": prompt},
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:{front_content_type};base64,{front_base64}"
-                }
-            }
-        ]
-        
-        # Adicionar verso se disponível
-        if back_base64:
-            back_ext = os.path.splitext(back_path)[1].lower()
-            back_content_type = "image/jpeg"
-            if back_ext.lower() == '.png':
-                back_content_type = "image/png"
-                
-            content.append({
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:{back_content_type};base64,{back_base64}"
-                }
-            })
-            
-        # Chamar a API da OpenAI para análise das imagens
+        # Chamar a API da OpenAI para análise da imagem
         try:
             response = client.chat.completions.create(
                 model="gpt-4o",  # A versão mais recente com suporte a visão
-                messages=[{
-                    "role": "user",
-                    "content": content
-                }],
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{content_type};base64,{base64_image}"
+                                }
+                            }
+                        ]
+                    }
+                ],
                 max_tokens=500
             )
             
@@ -493,15 +448,10 @@ def validate_document(front_path, back_path, doc_type, user_name, user_cpf):
         if not extracted_data.get("nome"):
             return {
                 "status": "rejected",
-                "message": "Não foi possível identificar o nome no documento. Verifique se a imagem está nítida e tente novamente.",
+                "message": "Não foi possível identificar o nome no documento",
                 "data": extracted_data
             }
             
-        # Verificar o número do documento
-        if not extracted_data.get("numero_documento"):
-            logger.warning("Número do documento não encontrado")
-            # Continuamos mesmo sem o número do documento, mas registramos o aviso
-        
         # Comparar nome extraído com o nome do usuário
         user_name_normalized = " ".join(part.lower() for part in user_name.split())
         extracted_name_normalized = " ".join(part.lower() for part in str(extracted_data.get("nome", "")).split())
@@ -523,14 +473,9 @@ def validate_document(front_path, back_path, doc_type, user_name, user_cpf):
             extracted_cpf_clean = str(extracted_data["cpf"]).replace(".", "").replace("-", "")
             cpf_match = user_cpf_clean == extracted_cpf_clean
             logger.debug(f"CPF extraído: {extracted_cpf_clean}, CPF do usuário: {user_cpf_clean}, Match: {cpf_match}")
-        else:
-            logger.warning("CPF não encontrado no documento")
             
-        # Adicionar o tipo do documento aos dados extraídos
-        extracted_data["tipo_documento"] = doc_type_str
-            
-        # Determinar resultado com base na correspondência do nome
-        if name_similarity >= 0.6:  # Se pelo menos 60% do nome corresponder
+        # Determinar resultado com base na correspondência do nome e CPF
+        if name_similarity >= 0.7:  # Se pelo menos 70% do nome corresponder
             if extracted_data.get("cpf") and not cpf_match:
                 return {
                     "status": "rejected",
@@ -545,7 +490,7 @@ def validate_document(front_path, back_path, doc_type, user_name, user_cpf):
         else:
             return {
                 "status": "rejected",
-                "message": "O nome no documento não corresponde ao cadastrado no sistema. Verifique se as imagens do documento estão nítidas e correspondem ao mesmo titular.",
+                "message": "O nome no documento não corresponde ao cadastrado no sistema",
                 "data": extracted_data
             }
             

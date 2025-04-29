@@ -227,17 +227,8 @@ def profile():
         flash('Ocorreu um erro ao acessar seu perfil. Por favor, tente novamente.', 'danger')
         return redirect(url_for('login'))
     
-    # Get document verification status - usando query específica para evitar o erro com campos novos
-    document = db.session.query(
-        Document.id, 
-        Document.user_id, 
-        Document.document_type, 
-        Document.file_path,
-        Document.validation_status, 
-        Document.validation_data,
-        Document.created_at, 
-        Document.updated_at
-    ).filter_by(user_id=user.id).first()
+    # Get document verification status
+    document = Document.query.filter_by(user_id=user.id).first()
     
     # Get social media profiles
     social_media = SocialMedia.query.filter_by(user_id=user.id).first()
@@ -328,7 +319,6 @@ def document_validation():
         flash('Usuário não encontrado. Faça login novamente.', 'danger')
         return redirect(url_for('login'))
         
-    # Use a query específica para evitar problemas com os novos campos
     document = Document.query.filter_by(user_id=user.id).first()
     
     if request.method == 'POST' and form.validate_on_submit():
@@ -336,56 +326,36 @@ def document_validation():
             # Create uploads directory if it doesn't exist
             os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
             
-            # Get the uploaded files
-            front_file = form.document_front.data
-            back_file = form.document_back.data
-            doc_type = form.document_type.data
-            
-            if not front_file:
-                flash('Nenhuma imagem da frente do documento selecionada.', 'danger')
+            # Get the uploaded file
+            document_file = form.document.data
+            if not document_file:
+                flash('Nenhum arquivo selecionado.', 'danger')
                 return render_template('app_document_validation.html', form=form, document=document)
                 
-            # Para RG e CNH, o verso é obrigatório
-            if doc_type in ['rg', 'cnh'] and not back_file:
-                flash('Para RG e CNH, é necessário enviar a imagem do verso do documento.', 'danger')
-                return render_template('app_document_validation.html', form=form, document=document)
+            filename = secure_filename(document_file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_{filename}")
+            document_file.save(file_path)
             
-            # Salvar a imagem da frente
-            front_filename = secure_filename(front_file.filename)
-            front_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_front_{front_filename}")
-            front_file.save(front_path)
+            app.logger.debug(f"Validando documento com IA: {file_path}")
             
-            # Salvar a imagem do verso se fornecida
-            back_path = None
-            if back_file:
-                back_filename = secure_filename(back_file.filename)
-                back_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user.id}_back_{back_filename}")
-                back_file.save(back_path)
-            
-            app.logger.debug(f"Validando documento com IA - Frente: {front_path}, Verso: {back_path}")
-            
-            # Processar documento com OCR usando a API da OpenAI
-            app.logger.info(f"Iniciando validação de documento com OCR via OpenAI API")
-            validation_result = validate_document(front_path, back_path, doc_type, user.name, user.cpf)
+            # Processar documento com OCR
+            app.logger.info(f"Iniciando validação de documento com OCR: {file_path}")
+            validation_result = validate_document(file_path, user.name, user.cpf)
             app.logger.info(f"Resultado da validação: {validation_result['status']}")
             
             # Save document record
             if document:
-                document.front_file_path = front_path
-                document.back_file_path = back_path
-                document.file_path = front_path  # Para compatibilidade com código existente
-                document.document_type = doc_type
+                document.file_path = file_path
+                document.document_type = form.document_type.data
                 document.validation_status = validation_result['status']
                 document.validation_data = json.dumps(validation_result)
             else:
                 document = Document(
                     user_id=user.id,
-                    front_file_path=front_path,
-                    back_file_path=back_path,
-                    file_path=front_path,  # Para compatibilidade com código existente
-                    document_type=doc_type,
-                    validation_status=validation_result['status'],
-                    validation_data=json.dumps(validation_result)
+                    file_path=file_path,
+                    document_type=form.document_type.data,
+                    validation_status = validation_result['status'],
+                    validation_data = json.dumps(validation_result)
                 )
                 db.session.add(document)
             
@@ -734,18 +704,7 @@ def fan_power():
         # Get all user data for fan power analysis
         social_media = SocialMedia.query.filter_by(user_id=user.id).first()
         content_links = ContentLink.query.filter_by(user_id=user.id).order_by(ContentLink.created_at.desc()).limit(5).all()
-        
-        # Use a query que seleciona apenas as colunas necessárias sem front_file_path e back_file_path
-        document = db.session.query(
-            Document.id, 
-            Document.user_id, 
-            Document.document_type, 
-            Document.file_path,
-            Document.validation_status, 
-            Document.validation_data,
-            Document.created_at, 
-            Document.updated_at
-        ).filter_by(user_id=user.id).first()
+        document = Document.query.filter_by(user_id=user.id).first()
         
         # Calculate fan power metrics (with error handling)
         try:
