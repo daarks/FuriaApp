@@ -745,6 +745,110 @@ def toggle_favorite():
     
     return {"success": True, "is_favorite": favorite.is_favorite}
 
+@app.route('/social_oauth')
+def social_oauth():
+    """
+    Página de gerenciamento de conexões OAuth para redes sociais.
+    """
+    if 'user_id' not in session:
+        flash('Por favor, faça login primeiro.', 'warning')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+    
+    if not user:
+        session.pop('user_id', None)
+        flash('Usuário não encontrado. Faça login novamente.', 'danger')
+        return redirect(url_for('login'))
+        
+    # Buscar conexões OAuth ativas
+    connections = OAuthConnection.query.filter_by(user_id=user_id, is_active=True).all()
+    
+    # Organizar conexões por plataforma
+    facebook_connection = next((c for c in connections if c.platform == 'facebook'), None)
+    twitter_connection = next((c for c in connections if c.platform == 'twitter'), None)
+    instagram_connection = next((c for c in connections if c.platform == 'instagram'), None)
+    discord_connection = next((c for c in connections if c.platform == 'discord'), None)
+    
+    # Buscar interações para estatísticas
+    facebook_interactions = []
+    twitter_interactions = []
+    discord_interactions = []
+    instagram_content = []
+    
+    # Quantidade de interações relacionadas à FURIA
+    facebook_furia_count = 0
+    twitter_furia_count = 0
+    discord_furia_count = 0
+    
+    # Conexões do Facebook
+    if facebook_connection:
+        facebook_interactions = OAuthInteraction.query.filter_by(oauth_connection_id=facebook_connection.id).all()
+        facebook_furia_count = sum(1 for i in facebook_interactions if i.is_furia_related)
+    
+    # Conexões do Twitter
+    if twitter_connection:
+        twitter_interactions = OAuthInteraction.query.filter_by(oauth_connection_id=twitter_connection.id).all()
+        twitter_furia_count = sum(1 for i in twitter_interactions if i.is_furia_related)
+    
+    # Conexões do Discord
+    if discord_connection:
+        discord_interactions = OAuthInteraction.query.filter_by(oauth_connection_id=discord_connection.id).all()
+        discord_furia_count = sum(1 for i in discord_interactions if i.is_furia_related)
+    
+    # Conteúdo do Instagram
+    if instagram_connection:
+        instagram_content = OAuthContentAnalysis.query.filter_by(oauth_connection_id=instagram_connection.id).all()
+    
+    # Estatísticas gerais
+    active_connections = len(connections)
+    total_esports_interactions = OAuthInteraction.query.join(
+        OAuthConnection, OAuthInteraction.oauth_connection_id == OAuthConnection.id
+    ).filter(
+        OAuthConnection.user_id == user_id,
+        OAuthConnection.is_active == True,
+        OAuthInteraction.is_esports_related == True
+    ).count()
+    
+    total_furia_interactions = OAuthInteraction.query.join(
+        OAuthConnection, OAuthInteraction.oauth_connection_id == OAuthConnection.id
+    ).filter(
+        OAuthConnection.user_id == user_id,
+        OAuthConnection.is_active == True,
+        OAuthInteraction.is_furia_related == True
+    ).count()
+    
+    # Buscar dados de engajamento
+    social_media = SocialMedia.query.filter_by(user_id=user_id).first()
+    engagement_score = social_media.engagement_score if social_media and social_media.engagement_score else 0
+    fan_badge = user.fan_badge if user.fan_badge else "Novo Fã"
+    
+    return render_template(
+        'app_social_oauth.html',
+        user=user,
+        # Conexões
+        facebook_connection=facebook_connection,
+        twitter_connection=twitter_connection,
+        instagram_connection=instagram_connection,
+        discord_connection=discord_connection,
+        # Interações
+        facebook_interactions=facebook_interactions,
+        twitter_interactions=twitter_interactions,
+        discord_interactions=discord_interactions,
+        instagram_content=instagram_content,
+        # Contagens FURIA
+        facebook_furia_count=facebook_furia_count,
+        twitter_furia_count=twitter_furia_count,
+        discord_furia_count=discord_furia_count,
+        # Estatísticas gerais
+        active_connections=active_connections,
+        total_esports_interactions=total_esports_interactions,
+        total_furia_interactions=total_furia_interactions,
+        engagement_score=engagement_score,
+        fan_badge=fan_badge
+    )
+
 @app.route('/fan_power')
 def fan_power():
     if 'user_id' not in session:
