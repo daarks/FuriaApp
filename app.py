@@ -828,6 +828,7 @@ def edit_interests():
         # Get user's current interests
         interests = UserInterest.query.filter_by(user_id=user.id).all()
         current_interests = [interest.interest for interest in interests]
+        app.logger.debug(f"Current interests: {current_interests}")
         
         # Get user's attended events
         user_events = []
@@ -838,6 +839,7 @@ def edit_interests():
                     user_events = json.loads(user.events_attended)
                 elif isinstance(user.events_attended, list):
                     user_events = user.events_attended
+                app.logger.debug(f"User events: {user_events}")
             except Exception as e:
                 app.logger.error(f"Error parsing events_attended: {str(e)}")
                 user_events = []
@@ -848,6 +850,7 @@ def edit_interests():
             
             # Get new interests from form
             new_interests = request.form.getlist('interests[]')
+            app.logger.debug(f"New interests from form: {new_interests}")
             
             # Add new interests
             for interest in new_interests:
@@ -859,6 +862,7 @@ def edit_interests():
             
             # Update attended events
             new_events = request.form.getlist('events[]')
+            app.logger.debug(f"New events from form: {new_events}")
             user.events_attended = json.dumps(new_events)
             
             db.session.commit()
