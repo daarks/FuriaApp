@@ -662,7 +662,7 @@ def analyze_social_media(social_media_data):
 
 def validate_content_links(url):
     """
-    Implementação avançada de validação de conteúdo com IA
+    Implementação avançada de validação de conteúdo com Google Gemini
     
     Args:
         url: Content URL to validate
@@ -670,9 +670,25 @@ def validate_content_links(url):
     Returns:
         dict: Validation results com análise detalhada
     """
-    logger.debug(f"Validando link de conteúdo com IA: {url}")
+    logger.debug(f"Validando link de conteúdo com Google Gemini: {url}")
     import re
+    import json
+    import urllib.request
+    import google.generativeai as genai
     from urllib.parse import urlparse
+    from urllib.error import URLError, HTTPError
+    
+    # Configurando o Google Gemini
+    try:
+        api_key = os.environ.get('GEMINI_API_KEY')
+        genai.configure(api_key=api_key)
+    except Exception as e:
+        logger.error(f"Erro ao configurar Gemini API: {str(e)}")
+        return {
+            "status": "error",
+            "message": "Erro ao configurar a API do Google Gemini",
+            "error": str(e)
+        }
     
     # Análise da URL para determinar tipo e fonte
     parsed_url = urlparse(url)
@@ -738,123 +754,219 @@ def validate_content_links(url):
         else:
             content_type = "article"
     
-    # Detecção de relevância para esports baseada na plataforma e palavras-chave na URL
-    esports_terms = ['esports', 'esport', 'gaming', 'game', 'tournament', 'championship', 
-                     'league', 'match', 'competition', 'player', 'team', 'roster']
-    furia_terms = ['furia', 'furiagg', 'furiafps', 'kscerato', 'art', 'yuurih', 'saffee', 'guerri']
-    cs_terms = ['cs', 'csgo', 'cs2', 'counterstrike', 'counter-strike', 'valve', 'fps']
-    valorant_terms = ['valorant', 'val', 'riot', 'fps', 'vct']
-    
-    # Calculando score de relevância
-    relevance_score = 50  # Pontuação base
-    
-    # Bônus por plataforma relevante
-    if detected_platform in ['liquipedia', 'hltv', 'vlr', 'esports_insider', 
-                            'dotesports', 'esports_talk', 'thespike']:
-        relevance_score += 20
-    elif detected_platform in ['youtube', 'twitch', 'twitter', 'reddit']:
-        relevance_score += 10
-    
-    # Analisar URL para pontos de relevância adicionais
-    url_lower = url.lower()
-    
-    # Bônus para termos FURIA na URL
-    for term in furia_terms:
-        if term in url_lower:
-            relevance_score += 15
-            break
-    
-    # Bônus para termos de esports na URL
-    esports_bonus = False
-    for term in esports_terms:
-        if term in url_lower:
-            relevance_score += 10
-            esports_bonus = True
-            break
-    
-    # Bônus para termos de jogos específicos na URL
-    game_bonus = False
-    for term in cs_terms + valorant_terms:
-        if term in url_lower:
-            relevance_score += 5
-            game_bonus = True
-            break
-    
-    # Ajuste de pontuação para ficar dentro dos limites
-    relevance_score = min(100, max(0, relevance_score))
-    
-    # Determinar se é um conteúdo FURIA (alta confiança)
-    is_furia_content = any(term in url_lower for term in furia_terms)
-    
-    # Gerar palavras-chave detectadas com base na análise
-    # Em uma implementação real, isso viria de uma análise do conteúdo da página
-    keywords = []
-    
-    # Se encontramos termos FURIA na URL, adicionar termos relacionados à FURIA
-    if is_furia_content:
-        keywords.extend(["FURIA", "Esports Brasileiro", "Time Profissional"])
+    # Tenta obter o conteúdo HTML da página
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        req = urllib.request.Request(url, headers=headers)
+        response = urllib.request.urlopen(req, timeout=10)
+        html_content = response.read().decode('utf-8')
         
-        # Adicionar players potencialmente mencionados
-        if 'kscerato' in url_lower:
-            keywords.append("KSCERATO")
-        if 'art' in url_lower or 'andrei' in url_lower:
-            keywords.append("arT")
-        if 'yuurih' in url_lower:
-            keywords.append("yuurih")
-        if 'saffee' in url_lower:
-            keywords.append("saffee")
-        if 'guerri' in url_lower:
-            keywords.append("guerri")
+        # Extrair os primeiros 20000 caracteres para análise (para limitar uso de tokens)
+        html_sample = html_content[:20000]
+        logger.debug("HTML obtido com sucesso para análise")
+    except (URLError, HTTPError) as e:
+        logger.error(f"Erro ao acessar URL: {str(e)}")
+        html_sample = ""
+        logger.debug("Continuando com análise apenas da URL sem conteúdo HTML")
+    except Exception as e:
+        logger.error(f"Erro desconhecido ao acessar URL: {str(e)}")
+        html_sample = ""
+        logger.debug("Continuando com análise apenas da URL sem conteúdo HTML")
     
-    # Se encontramos termos de esports, adicionar palavras-chave de esports
-    if esports_bonus:
-        esports_keywords = ["Competição", "Esports", "Tournament", "Profissional", "Championship"]
-        keywords.extend(random.sample(esports_keywords, min(3, len(esports_keywords))))
+    # Prompt para o Gemini analisar o conteúdo
+    prompt = f"""
+    Por favor, analise esta URL e o conteúdo HTML (se disponível) para verificar sua relevância para fãs de esports da FURIA.
+
+    URL: {url}
     
-    # Se encontramos termos de jogos específicos, adicionar palavras-chave de jogos
-    if game_bonus:
-        if any(term in url_lower for term in cs_terms):
-            game_keywords = ["CS:GO", "Counter-Strike", "Valve", "FPS", "Competitivo"]
-            keywords.extend(random.sample(game_keywords, min(2, len(game_keywords))))
+    HTML: ```{html_sample}```
+    
+    Identifique especificamente estes elementos no conteúdo (responda 'não encontrado' se não estiver presente):
+    
+    1. Nicknames ou Usernames de jogadores
+    2. Nome da organização de e-sports (especialmente FURIA)
+    3. Jogos ou categorias de e-sports mencionados
+    4. Histórico de partidas ou estatísticas
+    5. Referências geográficas ou de região
+    6. Mídias ou imagens associadas a organizações de e-sports
+    7. Tags e categorias HTML relacionadas a esports
+    8. Número de interações ou seguidores
+    
+    Baseado nesta análise, forneça uma pontuação de relevância de 0 a 100, onde:
+    0-20: Sem relevância para esports ou FURIA
+    21-40: Baixa relevância para esports
+    41-60: Relevância moderada para esports
+    61-80: Alta relevância para esports ou menção à FURIA
+    81-100: Conteúdo altamente relevante sobre FURIA
+    
+    Responda em formato JSON com o seguinte formato:
+    {{
+        "nickname_username": [lista de nomes encontrados ou "não encontrado"],
+        "organization": [organizações encontradas ou "não encontrado"],
+        "games": [jogos encontrados ou "não encontrado"],
+        "match_history": [histórico/estatísticas encontrados ou "não encontrado"],
+        "geographic_references": [referências geográficas encontradas ou "não encontrado"],
+        "media_references": [referências de mídia encontradas ou "não encontrado"],
+        "html_tags": [tags relevantes encontradas ou "não encontrado"],
+        "interaction_counts": [contagens encontradas ou "não encontrado"],
+        "relevance_score": número entre 0 e 100,
+        "summary": "breve resumo da análise em português",
+        "recommendation": "approve" ou "review" (approve se score >= 60, review se menor)
+    }}
+    """
+    
+    # Chamando o modelo Gemini para análise
+    try:
+        # Usando o modelo gemini-1.5-flash para análise rápida de conteúdo
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
         
-        if any(term in url_lower for term in valorant_terms):
-            game_keywords = ["Valorant", "Riot Games", "FPS Tático", "VCT"]
-            keywords.extend(random.sample(game_keywords, min(2, len(game_keywords))))
+        try:
+            # Tentar extrair o JSON da resposta
+            content = response.text
+            # Remover possíveis caracteres de formatação no início ou fim
+            content = content.strip()
+            if content.startswith("```json"):
+                content = content[7:]
+            if content.endswith("```"):
+                content = content[:-3]
+            content = content.strip()
+            
+            analysis_result = json.loads(content)
+            logger.debug("Análise Gemini processada com sucesso")
+            
+            # Adicionar dados base da URL
+            analysis_result["content_type"] = content_type
+            analysis_result["platform"] = detected_platform or "unknown"
+            analysis_result["analyzed_at"] = datetime.now().isoformat()
+            
+            # Convertendo arrays vazios para "não encontrado" para consistência
+            for key in analysis_result:
+                if isinstance(analysis_result[key], list) and len(analysis_result[key]) == 0:
+                    analysis_result[key] = ["não encontrado"]
+            
+            # Limitar a pontuação para o intervalo 0-100
+            analysis_result["relevance_score"] = min(100, max(0, analysis_result["relevance_score"]))
+            
+            # Extrair palavras-chave
+            keywords = []
+            if analysis_result.get("organization") and analysis_result["organization"] != ["não encontrado"]:
+                keywords.extend(analysis_result["organization"])
+            if analysis_result.get("games") and analysis_result["games"] != ["não encontrado"]:
+                keywords.extend(analysis_result["games"])
+            if analysis_result.get("nickname_username") and analysis_result["nickname_username"] != ["não encontrado"]:
+                keywords.extend(analysis_result["nickname_username"])
+            
+            # Remover duplicatas e limitar número de keywords
+            keywords = list(set(keywords))[:10]
+            analysis_result["keywords"] = keywords
+            
+            # Determinar se é conteúdo FURIA com base na organização
+            is_furia = False
+            if analysis_result.get("organization"):
+                for org in analysis_result["organization"]:
+                    if "furia" in org.lower():
+                        is_furia = True
+                        break
+            analysis_result["is_furia_content"] = is_furia
+            
+            # Garantir recomendação consistente
+            if analysis_result["relevance_score"] >= 60:
+                analysis_result["recommendation"] = "approve"
+            else:
+                analysis_result["recommendation"] = "review"
+                
+            # Adicionar explicação baseada no score para consistência com implementação anterior
+            if analysis_result["relevance_score"] >= 85:
+                analysis_result["analysis"] = "Conteúdo altamente relevante para fãs da FURIA."
+            elif analysis_result["relevance_score"] >= 70:
+                analysis_result["analysis"] = "Conteúdo bem relevante para o ecossistema de esports."
+            elif analysis_result["relevance_score"] >= 60:
+                analysis_result["analysis"] = "Conteúdo relacionado a esports ou gaming."
+            elif analysis_result["relevance_score"] >= 40:
+                analysis_result["analysis"] = "Conteúdo possivelmente relacionado a gaming, mas relevância limitada."
+            else:
+                analysis_result["analysis"] = "Baixa relevância para esports ou FURIA."
+            
+            return analysis_result
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Erro ao processar resposta JSON do Gemini: {str(e)}")
+            logger.debug(f"Conteúdo recebido: {response.text}")
+            
+            # Criar resultado de fallback para continuar
+            return {
+                "content_type": content_type,
+                "platform": detected_platform or "unknown",
+                "relevance_score": 50,  # Score neutro
+                "keywords": [],
+                "is_furia_content": False,
+                "analyzed_at": datetime.now().isoformat(),
+                "recommendation": "review",
+                "error": "Falha ao processar resposta JSON",
+                "summary": "Não foi possível analisar completamente este conteúdo. Por favor, revise manualmente.",
+                "raw_response": response.text[:500]  # Incluir parte da resposta para debug
+            }
     
-    # Garantir que temos pelo menos algumas palavras-chave
-    if not keywords:
-        general_keywords = [
-            "Conteúdo Gaming", "Entretenimento", "Comunidade", "Jogos", "Online"
-        ]
-        keywords.extend(random.sample(general_keywords, 3))
+    except Exception as e:
+        logger.error(f"Erro ao chamar API Gemini: {str(e)}")
+        
+        # Análise de fallback baseada só na URL, similar ao código anterior
+        esports_terms = ['esports', 'esport', 'gaming', 'game', 'tournament', 'championship', 
+                        'league', 'match', 'competition', 'player', 'team', 'roster']
+        furia_terms = ['furia', 'furiagg', 'furiafps', 'kscerato', 'art', 'yuurih', 'saffee', 'guerri']
+        
+        # URL analysis (fallback)
+        url_lower = url.lower()
+        relevance_score = 50  # Base score
+        
+        # Bonus por plataforma
+        if detected_platform in ['liquipedia', 'hltv', 'vlr', 'esports_insider']:
+            relevance_score += 20
+            
+        # Bonus por termos FURIA na URL
+        is_furia_content = False
+        for term in furia_terms:
+            if term in url_lower:
+                relevance_score += 15
+                is_furia_content = True
+                break
+        
+        # Bonus por termos esports
+        for term in esports_terms:
+            if term in url_lower:
+                relevance_score += 10
+                break
+        
+        relevance_score = min(100, max(0, relevance_score))
+        
+        # Fallback result
+        return {
+            "content_type": content_type,
+            "platform": detected_platform or "unknown",
+            "relevance_score": relevance_score,
+            "keywords": ["Análise Limitada"],
+            "is_furia_content": is_furia_content,
+            "analyzed_at": datetime.now().isoformat(),
+            "recommendation": "review",
+            "summary": "Análise limitada devido a erro na API. Por favor, revise manualmente.",
+            "error": str(e)
+        }
     
-    # Remover possíveis duplicatas
-    keywords = list(set(keywords))
-    
-    # Construir o resultado com informações detalhadas    
-    result = {
+    # Esta linha não deve ser alcançada, mas está aqui como prevenção
+    logger.error("Fluxo de código inesperado na função validate_content_links")
+    return {
         "content_type": content_type,
         "platform": detected_platform or "unknown",
-        "relevance_score": relevance_score,
-        "keywords": keywords,
-        "is_furia_content": is_furia_content,
+        "relevance_score": 50,
+        "keywords": ["Análise Incompleta"],
+        "is_furia_content": False,
         "analyzed_at": datetime.now().isoformat(),
-        "recommendation": "approve" if relevance_score >= 60 else "review"
+        "recommendation": "review",
+        "summary": "Ocorreu um erro inesperado durante a análise. Por favor, revise manualmente."
     }
-    
-    # Adicionar explicação baseada no score
-    if relevance_score >= 85:
-        result["analysis"] = "Conteúdo altamente relevante para fãs da FURIA."
-    elif relevance_score >= 70:
-        result["analysis"] = "Conteúdo bem relevante para o ecossistema de esports."
-    elif relevance_score >= 60:
-        result["analysis"] = "Conteúdo relacionado a esports ou gaming."
-    elif relevance_score >= 40:
-        result["analysis"] = "Conteúdo possivelmente relacionado a gaming, mas relevância limitada."
-    else:
-        result["analysis"] = "Baixa relevância para esports ou FURIA."
-    
-    return result
 
 def match_player(user_interests, social_media):
     """
