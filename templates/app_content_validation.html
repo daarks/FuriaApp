@@ -126,9 +126,15 @@
                 
                 {% if link.keywords %}
                 <div class="app-keywords">
-                    {% set keywords = link.keywords|tojson|safe if link.keywords|string|lower != 'none' else '[]' %}
+                    {% set raw_keywords = link.keywords %}
+                    {% if raw_keywords.startswith('[') %}
+                        {% set keywords = raw_keywords|from_json %}
+                    {% else %}
+                        {% set keywords = [] %}
+                    {% endif %}
+                    
                     {% for keyword in keywords %}
-                    <span class="app-keyword">{{ keyword }}</span>
+                        <span class="app-keyword">{{ keyword }}</span>
                     {% endfor %}
                 </div>
                 {% endif %}
