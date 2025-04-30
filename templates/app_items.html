@@ -13,14 +13,17 @@
         <div class="app-card-body">
             <p class="app-text-light">Todos os itens que você obteve das lootboxes.</p>
             
-            {% if user.lootbox_rewards and user.lootbox_rewards|length > 2 %}
-                {% set rewards = user.lootbox_rewards|tojson|safe %}
+            {% if user.lootbox_rewards %}
+                {% set rewards_json = user.lootbox_rewards|safe %}
+                {% set rewards = rewards_json|replace("'", '"')|from_json if rewards_json else [] %}
+                
+                {% if rewards|length > 0 %}
                 <div class="app-items-grid">
                     {% for reward in rewards %}
                     <div class="app-item-card app-rarity-{{ reward.rarity|lower }}">
                         <div class="app-item-icon">
                             {% if reward.type == 'avatar' %}
-                            <i class="fas fa-user"></i>
+                            <i class="fas fa-user-circle"></i>
                             {% elif reward.type == 'badge' %}
                             <i class="fas fa-certificate"></i>
                             {% elif reward.type == 'emote' %}
@@ -33,6 +36,14 @@
                             <i class="fas fa-ticket-alt"></i>
                             {% elif reward.type == 'card' %}
                             <i class="fas fa-id-card"></i>
+                            {% elif reward.type == 'gif' %}
+                            <i class="fas fa-film"></i>
+                            {% elif reward.type == 'discount' %}
+                            <i class="fas fa-percent"></i>
+                            {% elif reward.type == 'digital_item' %}
+                            <i class="fas fa-gift"></i>
+                            {% elif reward.type == 'exclusive' %}
+                            <i class="fas fa-crown"></i>
                             {% else %}
                             <i class="fas fa-gift"></i>
                             {% endif %}
@@ -45,6 +56,14 @@
                     </div>
                     {% endfor %}
                 </div>
+                {% else %}
+                <div class="app-empty-state">
+                    <i class="fas fa-box-open app-icon-large app-mb-1"></i>
+                    <p>Você ainda não possui itens</p>
+                    <p class="app-text-light">Abra lootboxes diárias para ganhar recompensas</p>
+                    <a href="{{ url_for('lootbox') }}" class="app-btn app-btn-primary app-mt-2">Abrir Lootbox</a>
+                </div>
+                {% endif %}
             {% else %}
                 <div class="app-empty-state">
                     <i class="fas fa-box-open app-icon-large app-mb-1"></i>
