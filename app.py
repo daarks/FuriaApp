@@ -824,6 +824,14 @@ def edit_interests():
         interests = UserInterest.query.filter_by(user_id=user.id).all()
         current_interests = [interest.interest for interest in interests]
         
+        # Get user's attended events
+        user_events = []
+        if user.events_attended:
+            try:
+                user_events = json.loads(user.events_attended)
+            except:
+                user_events = []
+        
         if request.method == 'POST':
             # Clear existing interests
             UserInterest.query.filter_by(user_id=user.id).delete()
@@ -839,11 +847,15 @@ def edit_interests():
                 )
                 db.session.add(user_interest)
             
+            # Update attended events
+            new_events = request.form.getlist('events[]')
+            user.events_attended = json.dumps(new_events)
+            
             db.session.commit()
             flash('Seus interesses foram atualizados com sucesso!', 'success')
             return redirect(url_for('profile'))
         
-        return render_template('app_edit_interests.html', user=user, current_interests=current_interests)
+        return render_template('app_edit_interests.html', user=user, current_interests=current_interests, user_events=user_events)
         
     except Exception as e:
         app.logger.error(f"Error in edit_interests route: {str(e)}")
@@ -1030,6 +1042,25 @@ def quiz():
     
     return render_template('app_quiz.html', form=form, user=user, quiz_results=quiz_results)
 
+
+@app.route('/items')
+def items():
+    if 'user_id' not in session:
+        flash('Por favor, faça login primeiro.', 'warning')
+        return redirect(url_for('login'))
+    
+    try:
+        user = User.query.get(session['user_id'])
+        if not user:
+            session.pop('user_id', None)
+            flash('Usuário não encontrado. Faça login novamente.', 'danger')
+            return redirect(url_for('login'))
+        
+        return render_template('app_items.html', user=user)
+    except Exception as e:
+        app.logger.error(f"Error in items route: {str(e)}")
+        flash('Ocorreu um erro ao carregar seus itens. Tente novamente.', 'danger')
+        return redirect(url_for('home_dashboard'))
 
 @app.route('/store')
 def store():

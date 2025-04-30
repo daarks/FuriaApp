@@ -10,13 +10,13 @@
             <h3>Seus Interesses em Esports</h3>
         </div>
         <div class="app-card-body">
-            <p class="app-text-light">Selecione os jogos e categorias de esports que você acompanha ou está interessado.</p>
+            <p class="app-text-light">Selecione os jogos e eventos de esports que você acompanha ou está interessado.</p>
             
             <form method="post" action="{{ url_for('edit_interests') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
                 <div class="app-section app-mb-3">
-                    <h4 class="app-section-title">Jogos</h4>
+                    <h4 class="app-section-title">Interesses em Esports</h4>
                     <div class="app-checkbox-grid">
                         <div class="app-checkbox-item">
                             <input type="checkbox" name="interests[]" id="cs" value="cs" {% if 'cs' in current_interests %}checked{% endif %}>
@@ -76,85 +76,60 @@
                 </div>
                 
                 <div class="app-section app-mb-3">
-                    <h4 class="app-section-title">Categorias</h4>
+                    <h4 class="app-section-title">Eventos que Participou</h4>
                     <div class="app-checkbox-grid">
                         <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="fps" value="fps" {% if 'fps' in current_interests %}checked{% endif %}>
-                            <label for="fps">FPS</label>
+                            <input type="checkbox" name="events[]" id="major_rio" value="major_rio" {% if 'major_rio' in user_events %}checked{% endif %}>
+                            <label for="major_rio">CS:GO Major Rio</label>
                         </div>
                         
                         <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="moba" value="moba" {% if 'moba' in current_interests %}checked{% endif %}>
-                            <label for="moba">MOBA</label>
+                            <input type="checkbox" name="events[]" id="esl_one" value="esl_one" {% if 'esl_one' in user_events %}checked{% endif %}>
+                            <label for="esl_one">ESL One</label>
                         </div>
                         
                         <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="battle_royale" value="battle_royale" {% if 'battle_royale' in current_interests %}checked{% endif %}>
-                            <label for="battle_royale">Battle Royale</label>
+                            <input type="checkbox" name="events[]" id="blast_premier" value="blast_premier" {% if 'blast_premier' in user_events %}checked{% endif %}>
+                            <label for="blast_premier">BLAST Premier</label>
                         </div>
                         
                         <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="strategy" value="strategy" {% if 'strategy' in current_interests %}checked{% endif %}>
-                            <label for="strategy">Estratégia</label>
+                            <input type="checkbox" name="events[]" id="dreamhack" value="dreamhack" {% if 'dreamhack' in user_events %}checked{% endif %}>
+                            <label for="dreamhack">DreamHack</label>
                         </div>
                         
                         <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="fighting" value="fighting" {% if 'fighting' in current_interests %}checked{% endif %}>
-                            <label for="fighting">Luta</label>
+                            <input type="checkbox" name="events[]" id="copa_brasil" value="copa_brasil" {% if 'copa_brasil' in user_events %}checked{% endif %}>
+                            <label for="copa_brasil">Copa Brasil</label>
                         </div>
                         
                         <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="mobile" value="mobile" {% if 'mobile' in current_interests %}checked{% endif %}>
-                            <label for="mobile">Mobile</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="app-section app-mb-3">
-                    <h4 class="app-section-title">Campeonatos & Eventos</h4>
-                    <div class="app-checkbox-grid">
-                        <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="major" value="major" {% if 'major' in current_interests %}checked{% endif %}>
-                            <label for="major">CS:GO Major</label>
+                            <input type="checkbox" name="events[]" id="vct_americas" value="vct_americas" {% if 'vct_americas' in user_events %}checked{% endif %}>
+                            <label for="vct_americas">VCT Americas</label>
                         </div>
                         
                         <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="blast" value="blast" {% if 'blast' in current_interests %}checked{% endif %}>
-                            <label for="blast">BLAST Premier</label>
-                        </div>
-                        
-                        <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="esl" value="esl" {% if 'esl' in current_interests %}checked{% endif %}>
-                            <label for="esl">ESL/IEM</label>
-                        </div>
-                        
-                        <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="vct" value="vct" {% if 'vct' in current_interests %}checked{% endif %}>
-                            <label for="vct">Valorant Champions Tour</label>
-                        </div>
-                        
-                        <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="worlds" value="worlds" {% if 'worlds' in current_interests %}checked{% endif %}>
-                            <label for="worlds">Worlds (LoL)</label>
-                        </div>
-                        
-                        <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="ti" value="ti" {% if 'ti' in current_interests %}checked{% endif %}>
-                            <label for="ti">The International</label>
-                        </div>
-                        
-                        <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="cblol" value="cblol" {% if 'cblol' in current_interests %}checked{% endif %}>
-                            <label for="cblol">CBLOL</label>
-                        </div>
-                        
-                        <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="cbcs" value="cbcs" {% if 'cbcs' in current_interests %}checked{% endif %}>
+                            <input type="checkbox" name="events[]" id="cbcs" value="cbcs" {% if 'cbcs' in user_events %}checked{% endif %}>
                             <label for="cbcs">CBCS</label>
                         </div>
                         
                         <div class="app-checkbox-item">
-                            <input type="checkbox" name="interests[]" id="kings_league" value="kings_league" {% if 'kings_league' in current_interests %}checked{% endif %}>
+                            <input type="checkbox" name="events[]" id="cblol" value="cblol" {% if 'cblol' in user_events %}checked{% endif %}>
+                            <label for="cblol">CBLOL</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="events[]" id="gamecon" value="gamecon" {% if 'gamecon' in user_events %}checked{% endif %}>
+                            <label for="gamecon">GameCon Brasil</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="events[]" id="bgc" value="bgc" {% if 'bgc' in user_events %}checked{% endif %}>
+                            <label for="bgc">Brasil Game Cup</label>
+                        </div>
+                        
+                        <div class="app-checkbox-item">
+                            <input type="checkbox" name="events[]" id="kings_league" value="kings_league" {% if 'kings_league' in user_events %}checked{% endif %}>
                             <label for="kings_league">Kings League</label>
                         </div>
                     </div>

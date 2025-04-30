@@ -38,59 +38,11 @@
         <!-- Confetti Container -->
         <div class="confetti-container"></div>
         
-        <!-- Previous Rewards -->
-        <div class="app-card app-mt-3">
-            <div class="app-card-header">
-                <h3>Recompensas Anteriores</h3>
-            </div>
-            <div class="app-card-body">
-                {% if user.lootbox_rewards %}
-                    {% set rewards_json = user.lootbox_rewards|safe %}
-                    {% set rewards = rewards_json|replace("'", '"')|from_json if rewards_json else [] %}
-                    
-                    {% if rewards|length > 0 %}
-                        <div class="app-rewards-grid">
-                            {% for reward in rewards %}
-                                <div class="app-reward-item app-reward-{{ reward.rarity }}">
-                                    <div class="app-reward-icon">
-                                        {% if reward.type == 'wallpaper' %}
-                                            <i class="fas fa-image"></i>
-                                        {% elif reward.type == 'avatar' %}
-                                            <i class="fas fa-user-circle"></i>
-                                        {% elif reward.type == 'gif' %}
-                                            <i class="fas fa-film"></i>
-                                        {% elif reward.type == 'discount' %}
-                                            <i class="fas fa-percent"></i>
-                                        {% elif reward.type == 'digital_item' %}
-                                            <i class="fas fa-gift"></i>
-                                        {% elif reward.type == 'exclusive' %}
-                                            <i class="fas fa-crown"></i>
-                                        {% else %}
-                                            <i class="fas fa-question"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div class="app-reward-info">
-                                        <h4 class="app-reward-name">{{ reward.name }}</h4>
-                                        <div class="app-reward-rarity rarity-{{ reward.rarity }}">
-                                            {{ reward.rarity|capitalize }}
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="app-empty-state">
-                            <i class="fas fa-box-open app-icon-large"></i>
-                            <p>Você ainda não possui recompensas</p>
-                        </div>
-                    {% endif %}
-                {% else %}
-                    <div class="app-empty-state">
-                        <i class="fas fa-box-open app-icon-large"></i>
-                        <p>Você ainda não possui recompensas</p>
-                    </div>
-                {% endif %}
-            </div>
+        <!-- Link to view all rewards -->
+        <div class="app-text-center app-mt-3">
+            <a href="{{ url_for('items') }}" class="app-btn app-btn-primary app-btn-block">
+                <i class="fas fa-box-open"></i> Ver Todos os Itens
+            </a>
         </div>
         
         <!-- Rarity Info -->
