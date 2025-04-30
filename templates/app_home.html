@@ -6,7 +6,7 @@
 {% block content %}
 <div class="app-container">
     <div class="app-welcome">
-        <h2>Olá, {{ user.name.split()[0] }}!</h2>
+        <h2>Olá, {{ user.username if user.username else user.name.split()[0] }}!</h2>
         <p class="app-fan-level {% if user.fan_badge == 'Super Fã' %}badge-super-fan{% elif user.fan_badge == 'Fã Dedicado' %}badge-dedicated-fan{% elif user.fan_badge == 'Fã Regular' %}badge-regular-fan{% elif user.fan_badge == 'Novo Fã' %}badge-new-fan{% else %}badge-casual-fan{% endif %}">{{ user.fan_badge if user.fan_badge else 'Novo Fã' }}</p>
     </div>
     
