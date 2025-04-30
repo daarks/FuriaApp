@@ -193,6 +193,57 @@
     </div>
     {% endif %}
     
+    <!-- Nova seção para validação de conteúdo -->
+    <div class="app-card app-mt-3">
+        <div class="app-card-header">
+            <h3>Validação de Conteúdo</h3>
+        </div>
+        <div class="app-card-body">
+            <p class="app-text-light">Aumente seu Fan Power validando conteúdos relacionados aos esports e FURIA que você compartilhou ou criou.</p>
+            
+            {% if content_links and content_links|length > 0 %}
+            <h4 class="app-interaction-title">Seus Conteúdos Validados</h4>
+            <div class="app-content-links">
+                {% for link in content_links %}
+                <div class="app-content-link-item">
+                    <div class="app-content-link-info">
+                        <a href="{{ link.url }}" target="_blank" class="app-content-link-url">{{ link.url }}</a>
+                        <div class="app-content-link-meta">
+                            <span class="app-content-link-type">{{ link.content_type }}</span>
+                            <span class="app-content-link-date">{{ link.created_at.strftime('%d/%m/%Y') }}</span>
+                        </div>
+                    </div>
+                    <div class="app-content-link-score">
+                        <span class="app-content-relevance">{{ (link.relevance_score * 100)|round|int }}%</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="app-empty-state app-my-3">
+                <i class="fas fa-link app-icon-large app-mb-1"></i>
+                <p>Nenhum conteúdo validado</p>
+                <p class="app-text-light">Envie links para aumentar seu Fan Power</p>
+            </div>
+            {% endif %}
+            
+            <div class="app-form app-mt-3">
+                <form action="{{ url_for('content_validation') }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="app-form-group">
+                        <label for="content_url" class="app-form-label">URL do Conteúdo</label>
+                        <div class="app-input-group">
+                            <input type="url" name="content_url" id="content_url" class="app-form-control" 
+                                placeholder="https://twitter.com/seu_tweet ou https://www.youtube.com/watch?v=...">
+                            <button type="submit" class="app-btn app-btn-primary">Validar</button>
+                        </div>
+                        <small class="app-form-text">Cole a URL do seu conteúdo relacionado à FURIA ou esports</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
     <div class="app-card app-mt-3">
         <div class="app-card-header">
             <h3>Como Aumentar seu Fan Power</h3>
@@ -469,6 +520,91 @@
 .app-btn-sm {
     padding: 0.25rem 0.5rem;
     font-size: 0.8rem;
+}
+
+/* Estilos para seção de conteúdo validado */
+.app-content-links {
+    margin-top: var(--spacing-sm);
+}
+
+.app-content-link-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.app-content-link-item:last-child {
+    border-bottom: none;
+}
+
+.app-content-link-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.app-content-link-url {
+    display: block;
+    color: var(--text-color);
+    text-decoration: none;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.app-content-link-url:hover {
+    text-decoration: underline;
+}
+
+.app-content-link-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.app-content-link-score {
+    margin-left: var(--spacing-md);
+    text-align: right;
+}
+
+.app-content-relevance {
+    background-color: var(--success-color);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.app-input-group {
+    display: flex;
+    align-items: center;
+}
+
+.app-input-group .app-form-control {
+    flex: 1;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.app-input-group .app-btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.app-empty-state {
+    text-align: center;
+    padding: var(--spacing-md);
+    color: var(--text-muted);
+}
+
+.app-icon-large {
+    font-size: 3rem;
+    opacity: 0.5;
+    display: block;
 }
 </style>
 {% endblock %}
