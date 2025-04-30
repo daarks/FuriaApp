@@ -153,6 +153,17 @@ FURIA_PLAYERS = [
 # Esports events data
 ESPORTS_EVENTS = [
     {
+        "id": "kings_league_finals",
+        "title": "Kings League: Finais de Temporada 2025",
+        "date": "2025-03-16",
+        "end_date": "2025-03-20",
+        "location": "Barcelona, Espanha",
+        "game": "Fut7",
+        "teams": ["FURIA", "Kunisports", "Porcinos FC", "Ultimate Móstoles", "Saiyans FC", "PIO FC"],
+        "description": "A Kings League chega ao Brasil e FURIA participa das finais de temporada em Barcelona. Um grande evento de Fut7 com formato inovador e jogadores lendários.",
+        "tags": ["fut7", "international", "kings_league"]
+    },
+    {
         "id": "blast_premier_fall",
         "title": "BLAST Premier: Fall Finals 2023",
         "date": "2023-11-22",
@@ -261,6 +272,17 @@ ESPORTS_EVENTS = [
         "teams": ["FURIA", "Team Liquid", "FaZe Clan", "Ninjas in Pyjamas", "Team oNe", "w7m esports"],
         "description": "The Rainbow Six Major comes to Brazil, featuring the world's top R6 teams competing for a major title.",
         "tags": ["rainbow6", "brazil", "international"]
+    },
+    {
+        "id": "kings_league_brasil",
+        "title": "Kings League Brasil: Temporada Inaugural",
+        "date": "2025-06-10",
+        "end_date": "2025-08-15",
+        "location": "São Paulo, Brasil",
+        "game": "Fut7",
+        "teams": ["FURIA", "Flamengo Kings", "Corinthians FC", "Palmeiras Kings", "Santos Kings", "Grêmio FC"],
+        "description": "A primeira temporada da Kings League no Brasil com a participação da FURIA como um dos clubes fundadores. Formato inovador de Fut7 com regras especiais e participação de streamers e ex-jogadores profissionais.",
+        "tags": ["fut7", "brazil", "kings_league"]
     }
 ]
 

@@ -53,7 +53,8 @@ class RegistrationForm(FlaskForm):
             ('apex', 'Apex Legends'),
             ('rainbow6', 'Rainbow Six Siege'),
             ('freefire', 'Free Fire'),
-            ('rocket_league', 'Rocket League')
+            ('rocket_league', 'Rocket League'),
+            ('fut7', 'Fut7')
         ]
     )
     
@@ -70,7 +71,8 @@ class RegistrationForm(FlaskForm):
             ('cbcs', 'CBCS'),
             ('cblol', 'CBLOL'),
             ('gamecon', 'GameCon Brasil'),
-            ('bgc', 'Brasil Game Cup')
+            ('bgc', 'Brasil Game Cup'),
+            ('kings_league', 'Kings League')
         ]
     )
     

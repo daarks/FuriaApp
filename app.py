@@ -183,15 +183,18 @@ def home_dashboard():
         # Eventos futuros - Fictícios para teste
         all_events = [
             {"date": "15 Mai", "title": "ESL One Rio 2025", "subtitle": "Rio de Janeiro, Brasil", "game": "CS:GO", "game_tag": "cs"},
+            {"date": "18 Mai", "title": "Kings League Superclássico", "subtitle": "São Paulo, Brasil", "game": "Fut7", "game_tag": "fut7"},
             {"date": "22 Mai", "title": "Rainbow Six Major - São Paulo 2025", "subtitle": "São Paulo, Brasil", "game": "R6 Siege", "game_tag": "rainbow6"},
             {"date": "29 Mai", "title": "Free Fire World Series 2025", "subtitle": "Bangkok, Tailândia", "game": "Free Fire", "game_tag": "freefire"},
             {"date": "05 Jun", "title": "VCT Americas 2025", "subtitle": "Los Angeles, EUA", "game": "Valorant", "game_tag": "valorant"},
             {"date": "12 Jun", "title": "CBLOL Split 2 - 2025", "subtitle": "São Paulo, Brasil", "game": "League of Legends", "game_tag": "lol"},
+            {"date": "15 Jun", "title": "Kings League: FURIA vs Flamengo", "subtitle": "Rio de Janeiro, Brasil", "game": "Fut7", "game_tag": "fut7"},
             {"date": "19 Jun", "title": "BLAST Premier Summer Finals 2025", "subtitle": "Lisboa, Portugal", "game": "CS:GO", "game_tag": "cs"},
             {"date": "26 Jun", "title": "Apex Legends Global Series 2025", "subtitle": "Estocolmo, Suécia", "game": "Apex Legends", "game_tag": "apex"},
             {"date": "03 Jul", "title": "Rocket League World Championship 2025", "subtitle": "Tokyo, Japão", "game": "Rocket League", "game_tag": "rocket_league"},
             {"date": "10 Jul", "title": "FURIA Invitational 2025", "subtitle": "São Paulo, Brasil", "game": "Multi-Game", "game_tag": "cs"},
             {"date": "17 Jul", "title": "Game Changers Championship 2025", "subtitle": "Berlin, Alemanha", "game": "Valorant", "game_tag": "valorant"},
+            {"date": "20 Jul", "title": "Kings League Final Four", "subtitle": "Barcelona, Espanha", "game": "Fut7", "game_tag": "fut7"},
             {"date": "24 Jul", "title": "PUBG Global Championship 2025", "subtitle": "Seoul, Coreia do Sul", "game": "PUBG", "game_tag": "pubg"},
             {"date": "31 Jul", "title": "Copa Brasil de Free Fire 2025", "subtitle": "Rio de Janeiro, Brasil", "game": "Free Fire", "game_tag": "freefire"}
         ]
