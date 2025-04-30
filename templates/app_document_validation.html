@@ -45,12 +45,6 @@
                             </ul>
                         </div>
                     {% endif %}
-                    
-                    <div class="app-mt-3 app-text-center">
-                        <a href="{{ url_for('remove_document') }}" class="app-btn app-btn-danger app-btn-sm">
-                            <i class="fas fa-trash-alt"></i> Remover Documento
-                        </a>
-                    </div>
                 </div>
             </div>
             {% elif document and document.validation_status == 'rejected' %}
