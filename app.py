@@ -833,8 +833,13 @@ def edit_interests():
         user_events = []
         if user.events_attended:
             try:
-                user_events = json.loads(user.events_attended)
-            except:
+                # Ensure we have a JSON string or a list
+                if isinstance(user.events_attended, str):
+                    user_events = json.loads(user.events_attended)
+                elif isinstance(user.events_attended, list):
+                    user_events = user.events_attended
+            except Exception as e:
+                app.logger.error(f"Error parsing events_attended: {str(e)}")
                 user_events = []
         
         if request.method == 'POST':

@@ -1127,6 +1127,7 @@ def get_fan_power(user, social_media, content_links):
             pass
     
     # Document verification contribution
+    from models import Document
     document = Document.query.filter_by(user_id=user.id).first()
     if document and document.validation_status == 'verified':
         engagement_score += 20  # Verified document adds 20%
