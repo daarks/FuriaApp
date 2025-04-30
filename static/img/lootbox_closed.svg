@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200px" height="200px" viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>FURIA Lootbox</title>
+    <defs>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="gradient1">
+            <stop stop-color="#111111" offset="0%"></stop>
+            <stop stop-color="#333333" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="gradient2">
+            <stop stop-color="#FFFFFF" offset="0%"></stop>
+            <stop stop-color="#CCCCCC" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g stroke="none" fill="none">
+        <!-- Main Box -->
+        <rect fill="url(#gradient1)" x="20" y="40" width="160" height="120" rx="5"></rect>
+        
+        <!-- Box Lid -->
+        <path d="M20,40 L60,10 L140,10 L180,40" stroke="#444444" stroke-width="3"></path>
+        
+        <!-- Box Edges -->
+        <rect stroke="#444444" stroke-width="3" x="20" y="40" width="160" height="120" rx="5"></rect>
+        
+        <!-- Box Face details -->
+        <rect fill="#222222" x="40" y="70" width="120" height="60" rx="3"></rect>
+        
+        <!-- FURIA Logo -->
+        <text x="100" y="110" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="url(#gradient2)">FURIA</text>
+        
+        <!-- Lock and straps -->
+        <rect fill="#444444" x="90" y="130" width="20" height="20" rx="2"></rect>
+        <rect fill="#666666" x="95" y="135" width="10" height="10" rx="2"></rect>
+        
+        <!-- Metal straps -->
+        <rect fill="#555555" x="30" y="80" width="140" height="5" rx="2"></rect>
+        <rect fill="#555555" x="30" y="115" width="140" height="5" rx="2"></rect>
+        
+        <!-- Glow effect -->
+        <rect stroke="#FFFFFF" stroke-width="0.5" opacity="0.3" x="25" y="45" width="150" height="110" rx="3"></rect>
+        
+        <!-- Shine effect -->
+        <path d="M40,50 L160,50 L150,80 L50,80 Z" fill="#FFFFFF" opacity="0.1"></path>
+    </g>
+</svg>

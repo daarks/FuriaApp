@@ -29,8 +29,10 @@
         <div class="app-profile-info">
             <h2 class="app-profile-name">{{ user.name }}</h2>
             
-            <div class="app-badge {% if fan_badge == 'Super Fã' %}app-badge-super{% elif fan_badge == 'Intermediário' %}app-badge-dedicated{% else %}app-badge-casual{% endif %}">
-                {{ fan_badge }}
+            <div class="app-fan-level">
+                <span class="app-badge {% if user.fan_badge == 'Super Fã' %}badge-super-fan{% elif user.fan_badge == 'Fã Dedicado' %}badge-dedicated-fan{% elif user.fan_badge == 'Fã Regular' %}badge-regular-fan{% elif user.fan_badge == 'Novo Fã' %}badge-new-fan{% else %}badge-casual-fan{% endif %}">
+                    {{ user.fan_badge if user.fan_badge else 'Novo Fã' }}
+                </span>
             </div>
             
             <p class="app-profile-since">Membro desde {{ user.registration_date.strftime('%d/%m/%Y') }}</p>
@@ -293,6 +295,36 @@ document.addEventListener('DOMContentLoaded', function() {
 .app-avatar-edit:hover {
     background-color: rgba(0, 0, 0, 0.9);
     transform: scale(1.1);
+}
+
+.app-fan-level {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.badge-super-fan {
+    background-color: #ffd700; /* Gold for Super Fãs */
+    color: #000;
+}
+
+.badge-dedicated-fan {
+    background-color: #c0c0c0; /* Silver for Fãs Dedicados */
+    color: #000;
+}
+
+.badge-regular-fan {
+    background-color: #cd7f32; /* Bronze for Fãs Regulares */
+    color: #000;
+}
+
+.badge-casual-fan {
+    background-color: #ffffff; /* White for Fãs Casuais */
+    color: #000;
+}
+
+.badge-new-fan {
+    background-color: #b6e6bd; /* Light green for Novos Fãs */
+    color: #000;
 }
 </style>
 {% endblock %}

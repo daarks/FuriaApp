@@ -14,7 +14,7 @@
         
         <!-- Lootbox -->
         <div id="lootbox" class="app-lootbox {% if not can_open %}disabled{% endif %}" onclick="openLootbox()">
-            <img src="{{ url_for('static', filename='img/lootbox_closed.png') }}" alt="Lootbox" class="app-lootbox-img" id="lootbox-img">
+            <img src="{{ url_for('static', filename='img/lootbox_closed.svg') }}" alt="Lootbox" class="app-lootbox-img" id="lootbox-img">
             {% if not can_open %}
                 <div class="app-lootbox-overlay">
                     <i class="fas fa-lock"></i>

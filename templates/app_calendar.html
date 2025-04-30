@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span class="app-event-game"><i class="fas fa-gamepad"></i> ${event.game}</span>
                             <span class="app-event-location"><i class="fas fa-map-marker-alt"></i> ${event.location}</span>
                         </div>
-                        ${event.teams.includes("FURIA") ? '<span class="app-badge app-badge-furia">FURIA</span>' : ''}
+                        ${event.teams.includes("FURIA") ? '<span class="app-badge app-badge-furia" style="display: inline-block; color: #000; background-color: #ffffff; padding: 0.2em 0.6em; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">FURIA</span>' : ''}
                     </div>
                     <div class="app-event-actions">
                         <button class="app-btn app-event-favorite-btn ${isFavorite ? 'app-favorite-active' : ''}" onclick="toggleFavorite('${event.id}')">
