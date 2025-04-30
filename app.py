@@ -825,10 +825,53 @@ def edit_interests():
         flash('Ocorreu um erro ao editar seus interesses. Por favor, tente novamente.', 'danger')
         return redirect(url_for('profile'))
 
+@app.route('/items')
+def items():
+    """Items page showing lootbox reward history"""
+    if 'user_id' not in session:
+        flash('Por favor, faça login primeiro.', 'warning')
+        return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    
+    # Check if user can open lootbox today
+    today = datetime.now().date()
+    can_open_lootbox = True
+    
+    if user.last_lootbox_date and user.last_lootbox_date == today:
+        can_open_lootbox = False
+    
+    # Get rewards from user
+    rewards = []
+    if user.lootbox_rewards:
+        try:
+            # Parse rewards JSON and add date formatting
+            raw_rewards = json.loads(user.lootbox_rewards)
+            for reward in raw_rewards:
+                # Add date if missing
+                if 'date' not in reward:
+                    reward['date'] = datetime.now().strftime('%d/%m/%Y')
+                # Make sure date is properly formatted
+                elif 'date' in reward and reward['date']:
+                    try:
+                        date_obj = datetime.fromisoformat(reward['date'])
+                        reward['date'] = date_obj.strftime('%d/%m/%Y')
+                    except (ValueError, TypeError):
+                        reward['date'] = 'Data desconhecida'
+                rewards.append(reward)
+                
+            # Sort by date, most recent first (if dates are available)
+            rewards.sort(key=lambda x: x.get('date', ''), reverse=True)
+        except json.JSONDecodeError:
+            # If there's an issue with the JSON, show empty rewards
+            rewards = []
+    
+    return render_template('app_items.html', user=user, rewards=rewards, can_open_lootbox=can_open_lootbox)
+
 @app.route('/lootbox')
 def lootbox():
     if 'user_id' not in session:
-        flash('Please login first.', 'warning')
+        flash('Por favor, faça login primeiro.', 'warning')
         return redirect(url_for('login'))
     
     user = User.query.get(session['user_id'])
@@ -881,6 +924,9 @@ def open_lootbox():
         
         # Update user's last lootbox date
         user.last_lootbox_date = today
+        
+        # Add date to reward
+        reward['date'] = today.isoformat()
         
         # Add reward to user's lootbox rewards
         # Make sure we handle both None values and existing JSON strings
