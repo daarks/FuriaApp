@@ -26,13 +26,17 @@ def validate_birth_date(form, field):
 
 class RegistrationForm(FlaskForm):
     name = StringField('Nome Completo', validators=[DataRequired(), Length(min=3, max=100)])
+    username = StringField('Nome de Usuário', validators=[DataRequired(), Length(min=3, max=50)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Senha', validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField(
         'Confirmar Senha', 
         validators=[DataRequired(), EqualTo('password', message='As senhas devem ser iguais')]
     )
-    address = TextAreaField('Endereço', validators=[DataRequired(), Length(min=10, max=200)])
+    street = StringField('Rua', validators=[DataRequired(), Length(min=3, max=100)])
+    city = StringField('Cidade', validators=[DataRequired(), Length(min=2, max=100)])
+    state = StringField('Estado', validators=[DataRequired(), Length(min=2, max=50)])
+    complement = StringField('Complemento', validators=[Optional(), Length(max=100)])
     cpf = StringField('CPF', validators=[DataRequired(), validate_cpf])
     birth_date = DateField('Data de Nascimento', validators=[DataRequired(), validate_birth_date])
     
