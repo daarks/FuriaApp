@@ -95,8 +95,13 @@ def register():
                 
             user = User(
                 name=form.name.data,
+                username=form.username.data,
                 email=form.email.data,
                 address=address,
+                street=form.street.data,
+                city=form.city.data,
+                state=form.state.data,
+                complement=form.complement.data,
                 cpf=form.cpf.data,
                 birth_date=form.birth_date.data,
                 password_hash=generate_password_hash(form.password.data)
