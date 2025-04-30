@@ -28,6 +28,23 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+/* Fix para os botões de filtro selecionados no calendário */
+.app-filter-btn.active {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+}
+
+/* Fix para círculos de categoria nos eventos */
+.app-event-category {
+    color: #000000;
+    background-color: #ffffff;
+}
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
