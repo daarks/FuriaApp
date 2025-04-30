@@ -52,16 +52,17 @@
                 </div>
                 
                 <div class="app-stat">
-                    <div class="app-stat-value">{{ social_media.engagement_score|default(0)|round|int if social_media else 0 }}%</div>
+                    <div class="app-stat-value">{{ fan_power.engagement_score|default(0)|round|int if fan_power else 0 }}%</div>
                     <div class="app-stat-label">Engajamento</div>
                 </div>
                 
                 <div class="app-stat">
                     <div class="app-stat-value">
                     {% if user.lootbox_rewards %}
-                        {% set rewards_json = user.lootbox_rewards %}
-                        {% if rewards_json|length > 2 %}
-                            {{ rewards_json.count(',') + 1 }}
+                        {% set rewards_json = user.lootbox_rewards|safe %}
+                        {% set rewards = rewards_json|replace("'", '"')|from_json if rewards_json else [] %}
+                        {% if rewards is iterable %}
+                            {{ rewards|length }}
                         {% else %}
                             0
                         {% endif %}
@@ -73,7 +74,7 @@
                 </div>
                 
                 <div class="app-stat">
-                    <div class="app-stat-value">{{ player_match|default('Nenhum') }}</div>
+                    <div class="app-stat-value">{{ 'Nenhum' if not user.player_match else user.player_match }}</div>
                     <div class="app-stat-label">Match</div>
                 </div>
             </div>
