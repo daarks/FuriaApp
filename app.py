@@ -87,21 +87,16 @@ def register():
                 flash('CPF já cadastrado. Por favor, use outro CPF.', 'danger')
                 return redirect(url_for('register'))
                 
-            # Check if username already exists
-            existing_username = User.query.filter_by(username=form.username.data).first()
-            if existing_username:
-                flash('Nome de usuário já está em uso. Por favor, escolha outro.', 'danger')
-                return redirect(url_for('register'))
-            
             # Create the user
+            # Montando endereço completo a partir dos campos separados
+            address = f"{form.street.data}, {form.city.data}, {form.state.data}"
+            if form.complement.data:
+                address += f", {form.complement.data}"
+                
             user = User(
                 name=form.name.data,
-                username=form.username.data,
                 email=form.email.data,
-                street=form.street.data,
-                city=form.city.data,
-                state=form.state.data,
-                complement=form.complement.data,
+                address=address,
                 cpf=form.cpf.data,
                 birth_date=form.birth_date.data,
                 password_hash=generate_password_hash(form.password.data)
