@@ -68,7 +68,10 @@ with app.app_context():
 # Routes
 @app.route('/')
 def home():
-    # Route principal diretamente para a página de login
+    # Se o usuário já estiver logado, redirecionar para a home
+    if 'user_id' in session:
+        return redirect(url_for('home_dashboard'))
+    # Caso contrário, mostrar a página de login
     return render_template('app_login.html', form=LoginForm())
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -137,6 +140,10 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Se o usuário já estiver logado, redirecionar para a home
+    if 'user_id' in session:
+        return redirect(url_for('home_dashboard'))
+        
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()

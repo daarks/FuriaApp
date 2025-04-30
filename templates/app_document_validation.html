@@ -112,6 +112,10 @@
                         <span class="app-file-name">Nenhum arquivo selecionado</span>
                         {{ form.document(class="app-file-input", id="document", accept=".jpg,.jpeg,.png,.pdf") }}
                     </div>
+                    <div class="app-upload-instructions">
+                        <p class="app-text-light"><i class="fas fa-info-circle"></i> Para RG, envie uma única imagem contendo frente e verso do documento.</p>
+                        <p class="app-text-light"><i class="fas fa-image"></i> Garanta que o documento esteja bem iluminado e todos os dados visíveis.</p>
+                    </div>
                     {% if form.document.errors %}
                     <div class="app-form-feedback">
                         {% for error in form.document.errors %}
@@ -175,6 +179,27 @@
         </p>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.app-upload-instructions {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    background-color: rgba(255, 255, 255, 0.1);
+    font-size: 0.85rem;
+}
+.app-upload-instructions p {
+    margin-bottom: 0.5rem;
+}
+.app-upload-instructions p:last-child {
+    margin-bottom: 0;
+}
+.app-upload-instructions i {
+    margin-right: 0.35rem;
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
