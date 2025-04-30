@@ -1043,6 +1043,36 @@ p {
   to { transform: rotate(360deg); }
 }
 
+/* Checkboxes */
+.app-checkbox-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.app-checkbox-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.app-checkbox-item.checked {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.app-checkbox-item input[type="checkbox"] {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--primary-color);
+}
+
+.app-checkbox-item label {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
 /* Modal */
 .app-modal {
   position: fixed;

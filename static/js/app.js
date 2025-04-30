@@ -30,6 +30,7 @@ function initializeApp() {
   // Inicializar outras funcionalidades
   initializeFormValidation();
   initializeNotifications();
+  initializeCheckboxes();
 }
 
 /**
@@ -103,6 +104,39 @@ function initializeNotifications() {
       alert.classList.add('fade-out');
       setTimeout(() => alert.remove(), 300);
     });
+  });
+}
+
+/**
+ * Inicializa as checkboxes para garantir funcionalidade de múltipla seleção
+ */
+function initializeCheckboxes() {
+  // Busca todas as checkboxes na página
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+  
+  checkboxes.forEach(checkbox => {
+    // Garantir que o estilo é aplicado para mostrar status visual correto
+    checkbox.addEventListener('change', function() {
+      // Garante que o pai da checkbox tenha a classe correta
+      const parent = this.closest('.app-checkbox-item');
+      if (parent) {
+        if (this.checked) {
+          parent.classList.add('checked');
+        } else {
+          parent.classList.remove('checked');
+        }
+      }
+      
+      console.log(`Checkbox ${this.id} alterada para: ${this.checked}`);
+    });
+    
+    // Inicializa o estado visual baseado no estado atual
+    if (checkbox.checked) {
+      const parent = checkbox.closest('.app-checkbox-item');
+      if (parent) {
+        parent.classList.add('checked');
+      }
+    }
   });
 }
 
