@@ -868,70 +868,110 @@ def open_lootbox():
     
     try:
         user = User.query.get(session['user_id'])
-        
-        # Check if user already opened a lootbox today
-        last_lootbox = user.last_lootbox_date
-        today = datetime.now().date()
-        
-        # Verificar se o cliente enviou uma recompensa já gerada
-        reward = None
-        client_reward = None
-        
-        if request.json and 'reward' in request.json:
-            client_reward = request.json.get('reward')
-            app.logger.debug(f"Client provided reward: {client_reward}")
+        if not user:
+            return {"success": False, "message": "Usuário não encontrado"}, 404
             
-            # Validar a recompensa do cliente (verificações básicas)
-            if (isinstance(client_reward, dict) and 
-                'type' in client_reward and 
-                'name' in client_reward and 
-                'rarity' in client_reward):
-                reward = client_reward
+        # Obtém a data atual para controle de lootbox diária
+        today = datetime.now().date()
+        last_lootbox = user.last_lootbox_date
         
-        # Se não houver recompensa válida do cliente, gerar uma
+        # Logs para debug
+        app.logger.debug(f"User ID: {user.id}, Username: {user.username}")
+        app.logger.debug(f"Last lootbox date: {last_lootbox}, Today: {today}")
+        app.logger.debug(f"Current lootbox rewards: {user.lootbox_rewards}")
+        
+        # Verifica o payload da requisição
+        client_reward = None
+        reward = None
+        app.logger.debug(f"Request data: {request.get_data()}")
+        
+        # Tenta extrair a recompensa do corpo da requisição
+        try:
+            if request.is_json and request.json:
+                app.logger.debug(f"JSON request received: {request.json}")
+                if 'reward' in request.json:
+                    client_reward = request.json.get('reward')
+                    app.logger.debug(f"Client provided reward: {client_reward}")
+                    
+                    # Validar a recompensa do cliente
+                    if (isinstance(client_reward, dict) and 
+                        'type' in client_reward and 
+                        'name' in client_reward and 
+                        'rarity' in client_reward):
+                        reward = client_reward
+                        app.logger.debug(f"Client reward validated successfully")
+        except Exception as parse_error:
+            app.logger.error(f"Error parsing request data: {str(parse_error)}")
+        
+        # Se não houver recompensa válida do cliente, gerar uma nova
         if not reward:
+            app.logger.debug("No valid client reward, generating a new one")
+            
             # Se o usuário já abriu a lootbox hoje (e não estamos apenas salvando uma recompensa gerada pelo cliente)
             if last_lootbox and last_lootbox == today and not client_reward:
+                app.logger.debug("User already opened lootbox today")
                 return {"success": False, "message": "Você já abriu sua lootbox hoje"}, 400
             
             # Gerar nova recompensa
             reward = get_lootbox_reward()
+            app.logger.debug(f"Generated new reward: {reward}")
         
-        # Update user's last lootbox date
+        # Atualiza a data do último lootbox aberto
         user.last_lootbox_date = today
+        app.logger.debug(f"Updated last_lootbox_date to {today}")
         
-        # Add reward to user's lootbox rewards
-        # Make sure we handle both None values and existing JSON strings
+        # Adiciona a recompensa à lista de recompensas do usuário
         if not user.lootbox_rewards:
+            # Se não tiver recompensas anteriores, cria uma nova lista
             user.lootbox_rewards = json.dumps([reward])
+            app.logger.debug("Created new lootbox_rewards list")
         else:
             try:
+                # Tenta carregar as recompensas existentes
                 current_rewards = json.loads(user.lootbox_rewards)
-                if isinstance(current_rewards, list):
-                    # Evitar duplicação se a recompensa já existir (pelo ID)
-                    if 'id' in reward and any(r.get('id') == reward['id'] for r in current_rewards if isinstance(r, dict) and 'id' in r):
-                        pass  # Recompensa já existe
-                    else:
-                        current_rewards.append(reward)
-                else:
-                    # If current_rewards is not a list, initialize a new list
+                
+                if not isinstance(current_rewards, list):
+                    # Se não for uma lista, inicializa uma nova
                     current_rewards = [reward]
+                    app.logger.debug("Current rewards was not a list, creating new one")
+                else:
+                    # Verifica se a recompensa já existe (pelo ID)
+                    reward_exists = False
+                    if 'id' in reward:
+                        for existing in current_rewards:
+                            if isinstance(existing, dict) and 'id' in existing and existing['id'] == reward['id']:
+                                reward_exists = True
+                                app.logger.debug(f"Reward with ID {reward['id']} already exists")
+                                break
+                    
+                    # Se não existir, adiciona à lista
+                    if not reward_exists:
+                        current_rewards.append(reward)
+                        app.logger.debug(f"Added new reward to list, now has {len(current_rewards)} items")
+                
+                # Salva a lista atualizada de recompensas
                 user.lootbox_rewards = json.dumps(current_rewards)
-            except json.JSONDecodeError:
-                # Handle case where lootbox_rewards exists but isn't valid JSON
+                
+            except json.JSONDecodeError as json_error:
+                # Se houver erro ao decodificar o JSON existente, cria uma nova lista
+                app.logger.error(f"JSON decode error: {str(json_error)}")
                 user.lootbox_rewards = json.dumps([reward])
+                app.logger.debug("JSON decode error, created new rewards list")
         
         # Commit changes to database
         db.session.commit()
+        app.logger.debug(f"Database commit successful")
         
-        app.logger.debug(f"Lootbox reward saved: {reward}")
-        
-        # Return success response with reward data
+        # Return success response
         return {"success": True, "reward": reward}
+        
     except Exception as e:
-        db.session.rollback()
         app.logger.error(f"Error opening lootbox: {str(e)}")
-        return {"success": False, "message": "Erro ao abrir lootbox: " + str(e)}, 500
+        try:
+            db.session.rollback()
+        except:
+            pass
+        return {"success": False, "message": f"Erro ao abrir lootbox: {str(e)}"}, 500
 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():

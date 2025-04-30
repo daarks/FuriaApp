@@ -59,7 +59,15 @@ function openLootbox() {
             // Enviar a recompensa para o servidor em background
             // sem bloquear a experiência do usuário
             try {
+                // Obter o token CSRF do meta tag
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                console.log('CSRF Token:', csrfToken ? 'Obtido' : 'Não encontrado');
+                
+                // Criar dados para envio
+                const rewardData = { reward: reward };
+                console.log('Enviando dados para o servidor:', rewardData);
+                
+                // Enviar requisição ao servidor
                 fetch('/open_lootbox', {
                     method: 'POST',
                     headers: {
@@ -67,10 +75,26 @@ function openLootbox() {
                         'X-CSRFToken': csrfToken
                     },
                     credentials: 'same-origin',
-                    body: JSON.stringify({ reward: reward }) // Enviar a recompensa já gerada
-                }).catch(e => console.log('Background lootbox sync failed, will try next time'));
+                    body: JSON.stringify(rewardData)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Lootbox salva com sucesso no servidor');
+                        return response.json();
+                    } else {
+                        console.log('Erro ao salvar lootbox:', response.status, response.statusText);
+                        throw new Error('Falha ao salvar lootbox');
+                    }
+                })
+                .then(data => {
+                    console.log('Resposta do servidor:', data);
+                })
+                .catch(e => {
+                    console.log('Erro na comunicação com o servidor:', e);
+                    console.log('A recompensa será sincronizada na próxima vez');
+                });
             } catch (e) {
-                console.log('Error saving lootbox reward:', e);
+                console.log('Erro ao processar salvamento da lootbox:', e);
             }
         }, 1000);
     }, 800);
