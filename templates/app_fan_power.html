@@ -1,19 +1,19 @@
 {% extends 'app_base.html' %}
 
-{% block title %}Fan Power - FURIA Fan App{% endblock %}
-{% block header_title %}Fan Power{% endblock %}
+{% block title %}Poder de Fã - FURIA Fan App{% endblock %}
+{% block header_title %}Poder de Fã{% endblock %}
 
 {% block content %}
 <div class="app-container">
     <div class="app-card">
         <div class="app-card-header">
-            <h3>Seu Fan Power</h3>
+            <h3>Seu Poder de Fã</h3>
         </div>
         <div class="app-card-body">
             <div class="app-fan-power-summary">
                 <div class="app-power-gauge">
                     <div class="app-power-value">{{ fan_power.fan_score|round|int }}%</div>
-                    <div class="app-power-label">Fan Power</div>
+                    <div class="app-power-label">Poder de Fã</div>
                 </div>
                 
                 <div class="app-fan-level">
@@ -60,7 +60,7 @@
             <h3>Conecte suas Redes Sociais</h3>
         </div>
         <div class="app-card-body">
-            <p class="app-text-light">Conecte suas redes sociais para aumentar seu Fan Power. Isso nos permite analisar seu engajamento com a FURIA e outras organizações de esports.</p>
+            <p class="app-text-light">Conecte suas redes sociais para aumentar seu Poder de Fã. Isso nos permite analisar seu engajamento com a FURIA e outras organizações de esports.</p>
             
             <ul class="social-connect-list">
                 <li class="social-connect-item">
@@ -199,7 +199,7 @@
             <h3>Validação de Conteúdo</h3>
         </div>
         <div class="app-card-body">
-            <p class="app-text-light">Aumente seu Fan Power validando conteúdos relacionados aos esports e FURIA que você compartilhou ou criou.</p>
+            <p class="app-text-light">Aumente seu Poder de Fã validando conteúdos relacionados aos esports e FURIA que você compartilhou ou criou.</p>
             
             {% if content_links and content_links|length > 0 %}
             <h4 class="app-interaction-title">Seus Conteúdos Validados</h4>
@@ -223,7 +223,7 @@
             <div class="app-empty-state app-my-3">
                 <i class="fas fa-link app-icon-large app-mb-1"></i>
                 <p>Nenhum conteúdo validado</p>
-                <p class="app-text-light">Envie links para aumentar seu Fan Power</p>
+                <p class="app-text-light">Envie links para aumentar seu Poder de Fã</p>
             </div>
             {% endif %}
             
@@ -246,7 +246,7 @@
     
     <div class="app-card app-mt-3">
         <div class="app-card-header">
-            <h3>Como Aumentar seu Fan Power</h3>
+            <h3>Como Aumentar seu Poder de Fã</h3>
         </div>
         <div class="app-card-body">
             <ul class="app-tips-list">
@@ -273,7 +273,7 @@
                     <i class="fas fa-check-circle app-tip-icon {% if document and document.validation_status == 'verified' %}app-tip-completed{% endif %}"></i>
                     <div class="app-tip-info">
                         <div class="app-tip-title">Valide seu documento</div>
-                        <div class="app-tip-desc">Garanta segurança e ganhe +15% de Fan Power</div>
+                        <div class="app-tip-desc">Garanta segurança e ganhe +15% de Poder de Fã</div>
                         {% if not document or document.validation_status != 'verified' %}
                         <a href="{{ url_for('document_validation') }}" class="app-btn app-btn-sm app-btn-primary app-mt-1">Validar</a>
                         {% endif %}
