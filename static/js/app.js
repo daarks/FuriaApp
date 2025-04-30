@@ -115,27 +115,32 @@ function initializeCheckboxes() {
   const checkboxes = document.querySelectorAll('input[type="checkbox"]');
   
   checkboxes.forEach(checkbox => {
-    // Garantir que o estilo é aplicado para mostrar status visual correto
-    checkbox.addEventListener('change', function() {
-      // Garante que o pai da checkbox tenha a classe correta
-      const parent = this.closest('.app-checkbox-item');
-      if (parent) {
-        if (this.checked) {
-          parent.classList.add('checked');
-        } else {
-          parent.classList.remove('checked');
+    // Adiciona evento para quando o usuário clicar no item inteiro (não apenas na checkbox)
+    const parent = checkbox.closest('.app-checkbox-item');
+    if (parent) {
+      parent.addEventListener('click', function(e) {
+        // Impede propagação se o clique foi diretamente na checkbox
+        if (e.target !== checkbox) {
+          e.preventDefault();
+          // Toggle o estado da checkbox
+          checkbox.checked = !checkbox.checked;
+          // Atualiza a classe do elemento pai
+          this.classList.toggle('checked', checkbox.checked);
+          // Dispara o evento de mudança para que qualquer listener na checkbox seja notificado
+          checkbox.dispatchEvent(new Event('change'));
         }
-      }
+      });
       
-      console.log(`Checkbox ${this.id} alterada para: ${this.checked}`);
-    });
-    
-    // Inicializa o estado visual baseado no estado atual
-    if (checkbox.checked) {
-      const parent = checkbox.closest('.app-checkbox-item');
-      if (parent) {
-        parent.classList.add('checked');
-      }
+      // Adiciona também evento na própria checkbox para garantir
+      checkbox.addEventListener('change', function() {
+        // Atualiza o elemento pai com a classe correta
+        parent.classList.toggle('checked', this.checked);
+        
+        console.log(`Checkbox ${this.id} alterada para: ${this.checked}`);
+      });
+      
+      // Inicializa a aparência visual baseada no estado atual
+      parent.classList.toggle('checked', checkbox.checked);
     }
   });
 }

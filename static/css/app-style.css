@@ -1048,9 +1048,11 @@ p {
   display: flex;
   align-items: center;
   margin-bottom: var(--spacing-xs);
-  padding: 8px;
+  padding: 10px;
   border-radius: 4px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
 }
 
 .app-checkbox-item:hover {
@@ -1058,7 +1060,8 @@ p {
 }
 
 .app-checkbox-item.checked {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 0, 87, 0.1);
+  border-color: var(--primary-color);
 }
 
 .app-checkbox-item input[type="checkbox"] {
@@ -1071,6 +1074,8 @@ p {
 .app-checkbox-item label {
   font-size: 0.9rem;
   color: var(--text-color);
+  flex: 1;
+  cursor: pointer;
 }
 
 /* Modal */

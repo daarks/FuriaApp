@@ -18,12 +18,12 @@
                 <div class="app-section app-mb-3">
                     <h4 class="app-section-title">Interesses em Esports</h4>
                     <div class="app-checkbox-grid">
-                        <div class="app-checkbox-item">
+                        <div class="app-checkbox-item {% if 'cs' in current_interests %}checked{% endif %}">
                             <input type="checkbox" name="interests[]" id="cs" value="cs" {% if 'cs' in current_interests %}checked{% endif %}>
                             <label for="cs">Counter-Strike</label>
                         </div>
                         
-                        <div class="app-checkbox-item">
+                        <div class="app-checkbox-item {% if 'valorant' in current_interests %}checked{% endif %}">
                             <input type="checkbox" name="interests[]" id="valorant" value="valorant" {% if 'valorant' in current_interests %}checked{% endif %}>
                             <label for="valorant">Valorant</label>
                         </div>
