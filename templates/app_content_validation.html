@@ -41,7 +41,23 @@
             <div class="app-content-item">
                 <div class="app-content-header">
                     <span class="app-badge app-badge-{{ link.content_type|default('artigo')|lower }}">
-                        {{ link.content_type|default('Artigo') }}
+                        {% if link.content_type == 'article' %}
+                            Artigo
+                        {% elif link.content_type == 'social_post' %}
+                            Post Social
+                        {% elif link.content_type == 'video' %}
+                            Vídeo
+                        {% elif link.content_type == 'news' %}
+                            Notícia
+                        {% elif link.content_type == 'profile' %}
+                            Perfil
+                        {% elif link.content_type == 'stream' %}
+                            Stream
+                        {% elif link.content_type == 'forum' %}
+                            Fórum
+                        {% else %}
+                            {{ link.content_type|default('Artigo')|title }}
+                        {% endif %}
                     </span>
                     <span class="app-content-date">
                         {% if link.created_at %}
@@ -53,7 +69,49 @@
                 </div>
                 
                 <a href="{{ link.url }}" target="_blank" class="app-content-link">
-                    {{ link.url }}
+                    {% set platform = link.url.split('/')[2] if link.url.split('/')|length > 2 else 'site' %}
+                    
+                    {% if 'twitter.com' in link.url or 'x.com' in link.url %}
+                        Post no Twitter sobre 
+                        {% if link.keywords and link.keywords|length > 0 %}
+                            {% set kw = link.keywords|tojson|safe if link.keywords|string|lower != 'none' else '[]' %}
+                            {% if kw|length > 0 %}FURIA {% if kw[0] %}{{ kw[0] }}{% endif %}{% else %}FURIA Esports{% endif %}
+                        {% else %}
+                            FURIA Esports
+                        {% endif %}
+                    {% elif 'instagram.com' in link.url %}
+                        Publicação no Instagram sobre 
+                        {% if link.keywords and link.keywords|length > 0 %}
+                            {% set kw = link.keywords|tojson|safe if link.keywords|string|lower != 'none' else '[]' %}
+                            {% if kw|length > 0 %}{{ kw[0] }}{% else %}esports{% endif %}
+                        {% else %}
+                            esports
+                        {% endif %}
+                    {% elif 'youtube.com' in link.url %}
+                        Vídeo no YouTube sobre 
+                        {% if link.keywords and link.keywords|length > 0 %}
+                            {% set kw = link.keywords|tojson|safe if link.keywords|string|lower != 'none' else '[]' %}
+                            {% if kw|length > 0 %}{{ kw[0] }}{% else %}esports{% endif %}
+                        {% else %}
+                            esports
+                        {% endif %}
+                    {% elif 'twitch.tv' in link.url %}
+                        Stream na Twitch de 
+                        {% if link.keywords and link.keywords|length > 0 %}
+                            {% set kw = link.keywords|tojson|safe if link.keywords|string|lower != 'none' else '[]' %}
+                            {% if kw|length > 0 %}{{ kw[0] }}{% else %}gameplay{% endif %}
+                        {% else %}
+                            gameplay
+                        {% endif %}
+                    {% else %}
+                        {% if link.content_type == 'article' %}Artigo{% elif link.content_type == 'news' %}Notícia{% elif link.content_type == 'video' %}Vídeo{% else %}Conteúdo{% endif %} em {{ platform }} sobre 
+                        {% if link.keywords and link.keywords|length > 0 %}
+                            {% set kw = link.keywords|tojson|safe if link.keywords|string|lower != 'none' else '[]' %}
+                            {% if kw|length > 0 %}{{ kw[0] }}{% else %}esports{% endif %}
+                        {% else %}
+                            esports
+                        {% endif %}
+                    {% endif %}
                 </a>
                 
                 <div class="app-relevance">
@@ -177,9 +235,14 @@
 
 .app-keyword {
     font-size: 0.8rem;
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 2px 8px;
+    background-color: rgba(255, 0, 0, 0.2);
+    padding: 3px 10px;
     border-radius: 12px;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    color: #fff;
+    border: 1px solid rgba(255, 0, 0, 0.3);
 }
 
 .app-divider {
@@ -205,6 +268,18 @@
 
 .app-badge-social {
     background-color: #fd7e14;
+}
+
+.app-badge-social_post {
+    background-color: #fd7e14;
+}
+
+.app-badge-stream {
+    background-color: #9146ff; /* Twitch color */
+}
+
+.app-badge-forum {
+    background-color: #ff4500; /* Reddit color */
 }
 </style>
 {% endblock %}
