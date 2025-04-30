@@ -262,6 +262,10 @@ def profile():
     # Current date for lootbox check
     today = datetime.now().date()
     
+    # Get fan power metrics
+    content_links = ContentLink.query.filter_by(user_id=user.id).all()
+    fan_power = get_fan_power(user, social_media, content_links)
+    
     return render_template(
         'app_profile.html', 
         user=user, 
@@ -270,6 +274,7 @@ def profile():
         social_media=social_media,
         fan_badge=fan_badge,
         player_match=player_match,
+        fan_power=fan_power,
         now=lambda: datetime.now()
     )
 

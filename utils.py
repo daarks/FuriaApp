@@ -1127,16 +1127,14 @@ def get_fan_power(user, social_media, content_links):
             pass
     
     # Document verification contribution
-    if hasattr(user, 'documents') and user.documents:
-        for doc in user.documents:
-            if doc.validation_status == 'verified':
-                engagement_score += 20  # Verified document adds 20%
-                engagement_factors += 1
-                break
+    document = Document.query.filter_by(user_id=user.id).first()
+    if document and document.validation_status == 'verified':
+        engagement_score += 20  # Verified document adds 20%
+        engagement_factors += 1
     
     # Normalize engagement score
     if engagement_factors > 0:
-        result["engagement_score"] = engagement_score / engagement_factors
+        result["engagement_score"] = min(100, engagement_score)
     else:
         # Basic engagement score even with no factors
         result["engagement_score"] = 10

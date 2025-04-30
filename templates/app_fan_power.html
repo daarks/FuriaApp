@@ -24,7 +24,7 @@
             </div>
             
             <div class="app-progress app-mt-1 app-mb-2">
-                <div class="app-progress-bar" style="width: {{ fan_power.fan_score }}%"></div>
+                <div class="app-progress-bar" style="width: {{ fan_power.fan_score|round|int }}%"></div>
             </div>
             
             <div class="app-power-metrics">
@@ -32,7 +32,7 @@
                     <div class="app-metric-value">{{ fan_power.social_score|round|int }}%</div>
                     <div class="app-metric-label">Social</div>
                     <div class="app-progress app-metric-progress">
-                        <div class="app-progress-bar" style="width: {{ fan_power.social_score }}%"></div>
+                        <div class="app-progress-bar" style="width: {{ fan_power.social_score|round|int }}%"></div>
                     </div>
                 </div>
                 
