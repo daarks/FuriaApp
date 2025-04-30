@@ -26,6 +26,18 @@
                 </div>
                 
                 <div class="app-form-group">
+                    <label for="username" class="app-form-label">{{ form.username.label }}</label>
+                    {{ form.username(class="app-form-control", id="username", placeholder="Seu nome de usuário") }}
+                    {% if form.username.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.username.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
                     <label for="email" class="app-form-label">{{ form.email.label }}</label>
                     {{ form.email(class="app-form-control", id="email", placeholder="seu@email.com") }}
                     {% if form.email.errors %}
@@ -72,11 +84,47 @@
                 </div>
                 
                 <div class="app-form-group">
-                    <label for="address" class="app-form-label">{{ form.address.label }}</label>
-                    {{ form.address(class="app-form-control", id="address", rows="3", placeholder="Seu endereço completo") }}
-                    {% if form.address.errors %}
+                    <label for="street" class="app-form-label">{{ form.street.label }}</label>
+                    {{ form.street(class="app-form-control", id="street", placeholder="Rua e número") }}
+                    {% if form.street.errors %}
                     <div class="app-form-feedback">
-                        {% for error in form.address.errors %}
+                        {% for error in form.street.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
+                    <label for="city" class="app-form-label">{{ form.city.label }}</label>
+                    {{ form.city(class="app-form-control", id="city", placeholder="Sua cidade") }}
+                    {% if form.city.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.city.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
+                    <label for="state" class="app-form-label">{{ form.state.label }}</label>
+                    {{ form.state(class="app-form-control", id="state", placeholder="Seu estado") }}
+                    {% if form.state.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.state.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="app-form-group">
+                    <label for="complement" class="app-form-label">{{ form.complement.label }}</label>
+                    {{ form.complement(class="app-form-control", id="complement", placeholder="Complemento (opcional)") }}
+                    {% if form.complement.errors %}
+                    <div class="app-form-feedback">
+                        {% for error in form.complement.errors %}
                         <span>{{ error }}</span>
                         {% endfor %}
                     </div>

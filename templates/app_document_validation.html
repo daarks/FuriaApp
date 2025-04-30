@@ -21,6 +21,9 @@
                     <div class="app-document-title">Documento Verificado!</div>
                     <div class="app-document-type">{{ document.document_type }}</div>
                     <div class="app-document-message">Sua identidade foi confirmada com sucesso.</div>
+                    <div class="app-mt-2">
+                        <a href="{{ url_for('document_remove') }}" class="app-btn app-btn-danger app-btn-sm" onclick="return confirm('Tem certeza que deseja remover este documento? Você precisará enviar outro para verificação.');">Remover Documento</a>
+                    </div>
                     
                     {% if document.validation_data %}
                         {% set data = document.validation_data|from_json %}

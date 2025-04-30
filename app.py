@@ -315,6 +315,44 @@ def upload_profile_photo():
         flash('Ocorreu um erro ao atualizar sua foto de perfil. Tente novamente.', 'danger')
         return redirect(url_for('profile'))
 
+@app.route('/document_remove')
+def document_remove():
+    if 'user_id' not in session:
+        flash('Por favor, faça login primeiro.', 'warning')
+        return redirect(url_for('login'))
+    
+    try:
+        user = User.query.get(session['user_id'])
+        if not user:
+            flash('Usuário não encontrado.', 'danger')
+            return redirect(url_for('login'))
+        
+        # Buscar documento atual
+        document = Document.query.filter_by(user_id=user.id).first()
+        
+        if document:
+            # Remover arquivo físico
+            if os.path.exists(document.file_path):
+                try:
+                    os.remove(document.file_path)
+                except Exception as e:
+                    app.logger.error(f"Erro ao remover arquivo: {str(e)}")
+            
+            # Remover registro do banco de dados
+            db.session.delete(document)
+            db.session.commit()
+            
+            flash('Documento removido com sucesso.', 'success')
+        else:
+            flash('Nenhum documento encontrado para remover.', 'warning')
+        
+        return redirect(url_for('document_validation'))
+        
+    except Exception as e:
+        app.logger.error(f"Erro ao remover documento: {str(e)}")
+        flash('Ocorreu um erro ao tentar remover o documento.', 'danger')
+        return redirect(url_for('document_validation'))
+
 @app.route('/document_validation', methods=['GET', 'POST'])
 def document_validation():
     if 'user_id' not in session:
