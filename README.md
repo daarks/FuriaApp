@@ -49,6 +49,3 @@ O projeto foi desenvolvido com foco em acessibilidade web e integração de múl
    - **Calendário**: visualize os próximos eventos e partidas.
    - **Perfil**: área exclusiva onde o usuário pode visualizar e gerenciar suas informações no app. Exibe dados como nome, recompensas desbloqueadas, player match e histórico de quizzes.
 
----
-
-## 🖼️ Imagens e demonstrações
